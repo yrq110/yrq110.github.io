@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>一个像素的一生 - 剖析Chromium渲染流水线 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="一个像素的一生 - 剖析Chromium渲染流水线 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-11-06T11:02:30&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-11-06T11:02:30&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="一个像素的一生 - 剖析Chromium渲染流水线">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">一个像素的一生 - 剖析Chromium渲染流水线</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年11月6日
+        </date>
+        
+        
+        
+        <div class="post-content">
+            <p>介绍目前Chromium中渲染流水线中的主要阶段及其工作。</p>
+<h2 id="简易渲染流程">简易渲染流程</h2>
+<ol>
+<li>HTML/JS/CSS - 解析token，生成DOM树与样式表</li>
+<li>layout - 排版与元素布局计算</li>
+<li>Paint - 图层绘制(生成绘制指令)</li>
+<li>Composite - 图层合成</li>
+<li>Draw - 屏幕绘制</li>
+</ol>
+<p>不同元素操作下渲染流水线执行步骤的差异：</p>
+<ul>
+<li>使用JS修改DOM元素位置与样式时，产生回流(reflow)，重新执行所有步骤</li>
+<li>修改元素颜色，位置不变时，产生重绘(redraw)，从第3步开始执行</li>
+<li>滚动操作或使用CSS transform与opacity属性执行动画时，直接进入第4步执行(元素处于自身合成器层条件下)</li>
+</ul>
+<p>为什么会产生这些差异？下面来看看其中的详细过程自然就会明白</p>
+<h2 id="完整渲染流水线">完整渲染流水线</h2>
+<p>输入：<code>&lt;html&gt;...&lt;/html&gt;</code>
+输出: 屏幕上的像素</p>
+<ol>
+<li>Parse - 数据解析</li>
+<li>Layout - 排版布局</li>
+<li>Paint - 绘制处理</li>
+<li>Composite - 图层合成</li>
+<li>Draw - 屏幕绘制</li>
+</ol>
+<p>此流程是老版的流程，chromium项目在发展过程中已经对其进行了一些改造和优化</p>
+<h3 id="数据解析阶段---parse">数据解析阶段 - Parse</h3>
+<p><code>Node</code> =&gt; <code>RenderObject</code></p>
+<p>一开始通过网络得到的HTML,JS与CSS文件会由浏览器进程传给渲染进程，在渲染进程中进行初步处理。</p>
+<h4 id="处理html">处理HTML</h4>
+<ol>
+<li>
+<p>首先解析html中的token，生成对象模型。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/html/parser/html_document_parser.h?dr=CSs&amp;q=+HTMLDocumentParser&amp;g=0&amp;l=67">HTMLDocumentParser</a></p>
+</li>
+<li>
+<p>生成一颗完整的DOM树。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/html/parser/html_tree_builder.h?q=HTMLTreeBuilder&amp;dr=CSs&amp;l=48">HTMLTreeBuilder</a></p>
+<p>同一document中可以包含多个DOM树，custom element元素具有一颗shadow tree。在shadow tree slot中嵌入的节点时会被FlatTreeTraversal向下遍历时所找到。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/flat_tree_traversal.h?dr=CSs&amp;q=FlatTreeTraversal&amp;g=0&amp;l=53">FlatTreeTraversal</a></p>
+</li>
+</ol>
+<h4 id="处理css">处理CSS</h4>
+<ol>
+<li>解析CSS，处理选择器与声明。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/parser/css_parser.h?q=CSSParser&amp;dr=CSs">CSSParser</a></li>
+<li>生成样式表内容，包含多种样式规则。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/style_sheet_contents.h?q=StyleSheetContents&amp;dr=CSs">StyleSheetContents</a> &amp; <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/style_rule.cc?dr=CSs&amp;g=0">StyleRule</a>
+<ul>
+<li>不同的样式规则均设置了方便查找的索引或类名。比如 <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/css_selector_list.h?q=CSSSelectorList&amp;dr=CSs">CSSSelectorList</a> &amp; <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/css_property_value_set.h?q=CSSPropertyValueSet&amp;dr=CSs">CSSPropertyValueSet</a></li>
+<li>CSS属性类由一些py脚本在构建时自动生成。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/core/css/properties/make_css_property_subclasses.py?dr&amp;g=0">make_css_property_subclasses.py</a></li>
+</ul>
+</li>
+<li>Style将document中解析后的样式规则(StyleSheetContents)与由浏览器提供的默认样式结合，重新计算。 <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/document.h?type=cs&amp;q=Document::UpdateStyle&amp;g=0&amp;l=1705">Document::UpdateStyle</a> &amp; <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/resolver/style_resolver.h?type=cs&amp;q=StyleResolver::StyleForElement&amp;g=0&amp;l=69">StyleResolver::StyleForElement</a></li>
+<li>在为每个DOM元素计算最终的样式属性后，将结果保存在一个大对象ComputedStyle中。<a href="https://cs.chromium.org/chromium/src/third_party/devtools-frontend/src/front_end/elements/ComputedStyleModel.js?q=ComputedStyle&amp;dr=CSs">ComputedStyleModel</a></li>
+</ol>
+<ul>
+<li>可以在Chrome开发者工具中观察任何元素的computed style，也有暴露的JS接口: getComputedStyle(element)，由blink提供</li>
+</ul>
+<h3 id="排版布局阶段---layout">排版布局阶段 - Layout</h3>
+<p><code>RenderObject</code> =&gt; <code>LayoutObject</code></p>
+<p>完成生成DOM树与样式计算后，需要处理的是元素的可视几何属性。</p>
+<h4 id="布局处理">布局处理</h4>
+<p><strong>几何属性</strong></p>
+<p>对于一个块级(block-level)元素，会计算它内容区域所占据的矩形坐标与尺寸。</p>
+<p><strong>流动方向</strong></p>
+<p>最简单的情况下，所有块级元素按照DOM的顺序依次顺着竖直方向排列，称为<code>block flow</code>。而text node和像<code>&lt;span&gt;</code>这样的行内元素会生成inline box，一般情况下是在盒内由左向右的方向，不过RTL的语言，如阿拉伯语和希伯来语，它们的行内流动顺序是相反的。</p>
+<p><strong>字体字形</strong></p>
+<p>根据computed style中的font属性与文本，传入文本整形引擎HarfBuzz中来计算每个字形的尺寸和布局。字体整形时必须考虑其印刷特征：字距调整(kerning)与连写(ligatures)。<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h?q=HarfBuzzShaper&amp;dr=CSs">HarfBuzzShaper</a></p>
+<p><strong>包围矩形</strong></p>
+<p>对于一个简单元素可能会计算多种边界矩形，比如在出现overflow的情况下，会计算border box rect和layout overflow rect，若节点的overflow是可滚动的，则layout同样会计算滚动的边界并保留滚动条的空间。最常见的可滚动DOM节点就是document自身，即树的根节点。</p>
+<p><strong>复杂布局</strong></p>
+<p>某些元素可能具有较复杂的布局，比如table元素或由周围内容包围的浮动元素。注意DOM结构与ComputedStyle值是如何传给布局算法的：每个流水线阶段都会利用前一个阶段的结果。</p>
+<ul>
+<li><code>&lt;table&gt;</code></li>
+<li>float: left</li>
+<li>column-count: 3</li>
+<li>display: flex</li>
+<li>writing-mode: vertical-lr</li>
+</ul>
+<h4 id="布局对象与布局树">布局对象与布局树</h4>
+<p>Layout在一颗与DOM相关联的另一颗树上(布局树)进行操作，布局树中的节点(LayoutObject)均实现了布局算法，LayoutObject有不同的子类，取决于期望的布局行为。 <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_object.h?dr=CSs&amp;q=LayoutObject&amp;g=0&amp;l=225">LayoutObject</a></p>
+<p>在之前的样式更新阶段中会构建布局树，在布局阶段会遍历布局树，在每个LayoutObject上执行布局，计算可视的几何属性。 <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/style_engine.h?q=RebuildLayoutTree&amp;dr=CSs">StyleEngine::RebuildLayoutTree</a> &amp; <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/frame/local_frame_view.h?dr=CSs&amp;q=LocalFrameView::UpdateLayout&amp;g=0&amp;l=157">LocalFrameView::UpdateLayout</a></p>
+<p><strong>构建布局树</strong></p>
+<ul>
+<li>
+<p>通常一个DOM节点会得到一个LayoutObject，有时也存在没有节点的LayoutObject或没有LayoutObject的节点。甚至会出现包含多个LayoutObject的节点，如在一个块级子元素前后的带文本的行内元素</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span>&gt; // [no LayoutObject]
+
+&lt;<span style="color:#f92672">div</span>&gt; block &lt;/<span style="color:#f92672">div</span>&gt; // LayoutBlock DIV
+&lt;<span style="color:#f92672">span</span>&gt; inline &lt;/<span style="color:#f92672">span</span>&gt; // LayoutBlock (anonymous)[no DOM node] -&gt; LayoutInline SPAN
+</code></pre></div></li>
+<li>
+<p>最终，布局树会基于FlatTreeTraversal进行构建，该过程同样会对shadow DOM进行遍历。</p>
+</li>
+</ul>
+<h4 id="layoutng布局引擎">LayoutNG布局引擎</h4>
+<p>在之前的chromium中，所有布局对象都包含布局阶段的所有输入输出，没有清晰划分它们的界限。</p>
+<p>新的布局系统<a href="https://www.chromium.org/blink/layoutng">LayoutNG</a>解决了这个问题，改善了它们的结构。在NG中，布局的输出是一个不可变的<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/ng/ng_layout_result.h?dr=CSs&amp;q=NGLayoutResult&amp;g=0&amp;l=38">NGLayoutResult</a>对象。</p>
+<p>目前的布局树中同时包含旧版和NG的布局对象，随着时间演变，NG会支持越来越多的布局类型。</p>
+<h3 id="绘制处理阶段---paint">绘制处理阶段 - Paint</h3>
+<p><code>LayoutObjects</code> =&gt; <code>PaintLayer</code></p>
+<p>在得到元素的样式和布局几何属性后就该绘制它们了，但这个&quot;绘制&quot;并不是指输出到屏幕上。</p>
+<h4 id="记录绘制操作">记录绘制操作</h4>
+<p>Paint会使用一个列表存储需要绘制的DisplayItem对象，DisplayItem对象中记录了要画出该元素需要执行的绘制操作，比如<strong>使用哪种颜色，在什么位置画一个矩形</strong>。</p>
+<p>每个布局对象根据它的可视情况可能会包含多个DisplayItem，比如背景、前景、边框等。</p>
+<h4 id="绘制顺序">绘制顺序</h4>
+<p>Paint过程会使用层叠顺序而不是DOM元素的顺序</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;foo&#34;</span>&gt;&lt;/<span style="color:#f92672">div</span>&gt;
+&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;bar&#34;</span>&gt;&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-css" data-lang="css">.<span style="color:#a6e22e">foo</span> { <span style="color:#66d9ef">z-index</span>: <span style="color:#ae81ff">2</span> }<span style="color:#f92672">;</span>
+.<span style="color:#a6e22e">bar</span> { <span style="color:#66d9ef">z-index</span>: <span style="color:#ae81ff">1</span> }<span style="color:#f92672">;</span>
+</code></pre></div><h4 id="绘制阶段">绘制阶段</h4>
+<ul>
+<li>在每个绘制阶段(paint phase)中会分别去遍历层叠上下文。</li>
+<li>简化的绘制阶段流程: backgrounds =&gt; floats =&gt; foregrounds =&gt; outlines</li>
+</ul>
+<h4 id="光栅化">光栅化</h4>
+<ul>
+<li>DisplayItem中记录的绘制操作会在光栅化阶段中被执行。 <a href="https://cs.chromium.org/chromium/src/cc/paint/display_item_list.h?q=cc::DisplayItemList&amp;dr=Ss">cc::DisplayItemList</a></li>
+<li>在光栅化后所得到的位图中，每一个栅格都存储着经过颜色与透明度编码后像素比特值。 <a href="https://cs.chromium.org/chromium/src/cc/resources/resource_pool.h?dr=Ss&amp;q=cc::ResourcePool::InUsePoolResource&amp;g=0&amp;l=121">cc::ResourcePool::InUsePoolResource</a></li>
+<li>光栅化过程还会对嵌入页面的图片资源进行解码处理。绘制操作会引用图片的压缩数据(JPEG, PNG等)，光栅化器会调用对应的解码器去处理他们。</li>
+</ul>
+<h4 id="使用位图数据">使用位图数据</h4>
+<ul>
+<li>光栅化后产生的位图会保存在内存中，一般是OpenGL纹理对象所引用的GPU内存。 <a href="https://cs.chromium.org/chromium/src/cc/raster/gpu_raster_buffer_provider.cc?q=GpuRasterBacking&amp;dr=CSs&amp;l=258">GpuRasterBacking</a></li>
+<li>GPU也可以执行绘制操作并生成位图(光栅化加速)。</li>
+</ul>
+<h4 id="调用opengl">调用OpenGL</h4>
+<ul>
+<li>光栅化过程中会使用Skia这个库来执行OpenGL调用。 <a href="https://cs.chromium.org/chromium/src/third_party/skia/src/gpu/gl/GrGLGpu.h?q=GrGLGpu::draw&amp;dr=Ss">GrGLGpu::draw</a></li>
+<li>Skia提供一个硬件抽象层，并且可以理解像路径与贝塞尔曲线等复杂对象。</li>
+<li>在<a href="https://yrq110.me/post/front-end/canvas-travel/">另一篇</a>的最后简单介绍了下Skia，不过那里介绍的是软件渲染的过程，Skia会自己生成Bitmap，而这里是硬件加速的应用。</li>
+<li>Skia在GPU加速过程中会构建自身的绘制操作缓冲区，当光栅化任务结束时会被清空。</li>
+</ul>
+<p>光栅化与Skia绘制相关方法</p>
+<ul>
+<li><a href="https://cs.chromium.org/chromium/src/cc/paint/paint_op_buffer.h?q=DrawRectOp::RasterWithFlags&amp;dr=Ss">DrawRectOp::RasterWithFlags</a></li>
+<li><a href="https://cs.chromium.org/chromium/src/third_party/skia/src/core/SkCanvas.cpp?q=SkCanvas::drawRect&amp;dr=CSs">SkCanvas::drawRect</a></li>
+<li><a href="https://cs.chromium.org/chromium/src/third_party/skia/src/gpu/GrRenderTargetContext.h?q=GrRenderTargetContext::addDrawOp&amp;dr=Ss">GrRenderTargetContext::addDrawOp</a></li>
+</ul>
+<h4 id="gpu进程绘制">GPU进程绘制</h4>
+<p><strong>command buffer</strong></p>
+<ul>
+<li>由于渲染进程是在沙盒中，无法直接进行系统级接口的调用，因此实际上从Skia发出的GL调用是由<strong>command buffer</strong>代理，传入其他进程。 <a href="https://cs.chromium.org/chromium/src/gpu/command_buffer/common/command_buffer.h?q=gpu::CommandBuffer&amp;dr=Ss">gpu::CommandBuffer</a></li>
+<li>GPU进程接收到command buffer后，通过函数指针获取数据执行真正的GL调用。<a href="https://cs.chromium.org/chromium/src/ui/gl/gl_gl_api_implementation.h?q=GLApi::glDrawElementsFn&amp;dr=Ss">GLApi::glDrawElementsFn</a></li>
+<li>隔离GPU进程中GL操作可以避免不稳定或不安全的图形驱动操作</li>
+</ul>
+<p><strong>执行OpenGL调用</strong></p>
+<ul>
+<li>GPU进程中的GL函数指针由与系统共享的OpenGL动态查找来初始化</li>
+<li>在Windows上则使用ANGLE，该库会将OpenGL翻译成DirectX，即微软的Window系统所使用的图形API</li>
+</ul>
+<h3 id="图层合成阶段---composite">图层合成阶段 - Composite</h3>
+<p><code>PaintLayer</code> =&gt; <code>GraphicsLayer</code></p>
+<p>现在我们的元素图像已经处理成位图并存放在了内存中，那么接下来还有什么操作呢？</p>
+<p>由于渲染并不是静态的，页面上可能存在交互操作、属性改变或执行的动画，这些情况下由于图形本身内容未发生改变，并且执行整个渲染流水线是比较耗时的，此时会进入<strong>合成阶段</strong>(composite)。</p>
+<ul>
+<li>一个页面可以分解成多个可以独立光栅化的层(layers)，在另一个线程来合并这些层。</li>
+<li>一般在主线程(main thread)中构建层，并提交(commit)到合成器线程(impl thread)中绘制层。此处的impl由于历史原因，起的名称不是那么的“好”(&ldquo;impl&quot;=Composite thread)</li>
+</ul>
+<h4 id="图层变换">图层变换</h4>
+<p>常见的动画与交互操作都对应着图层的某些变换:</p>
+<ul>
+<li>某些动画: 图层移动</li>
+<li>滚动: 一个图层移动，另一个图层剪裁，剪裁出当前viewport中的内容</li>
+<li>捏合手势：图层缩放</li>
+</ul>
+<h4 id="处理输入的操作">处理输入的操作</h4>
+<p>以滚动操作为例</p>
+<ul>
+<li>浏览器进程检测到滚动操作后会将其发送给渲染进程</li>
+<li>渲染进程接收到后使用合成器线程处理滚动操作，执行图层的移动与剪裁，更新页面</li>
+</ul>
+<p>注意，在这个过程中，页面内容的刷新并没有重新进行layout与paint等过程，而直接通过合成器进行了处理。</p>
+<h4 id="图层提升---layer-promotion">图层提升 - layer promotion</h4>
+<p>一个普通的布局树生层图层的过程:</p>
+<pre><code>LayoutView -&gt; PaintLayer -&gt; GraphicsLayer
+|_LayoutBlockFlow
+  |_LayoutBlockFlow
+    |-LayoutText
+    |_LayoutBlockFlow
+</code></pre><p>其中PaintLayer是合成前的&quot;候补层&rdquo;，参与GraphicsLayer与最终图像的绘制。默认情况下布局树中的元素与其父元素共处同一图层。</p>
+<p>现在给其中一个块级元素添加CSS Animation动画，该过程就会变成:</p>
+<pre><code>LayoutView                         -&gt; PaintLayer -&gt; GraphicsLayer(cc::Layer) : 一颗图层树(layer tree)
+|-LayoutBlockFlow                     |               |
+  |-LayoutBlockFlow[animaiton:...] -&gt; |-PaintLayer -&gt; |-GraphicsLayer(cc::Layer)
+    |-LayoutText
+    |-LayoutBlockFlow
+</code></pre><p>可以看出在添加动画的元素上多生成了一层，这是因为某些指定的样式属性会触发层的生成，为LayoutObject单独生成一个Layer，即<strong>被提升的层</strong>。</p>
+<p>图层提升可以将变化的层直接体现在之后的合并过程中，提高图层合成的效率，无需执行前置步骤。</p>
+<h4 id="图层滚动---scrolling-layer">图层滚动 - scrolling layer</h4>
+<pre><code>LayoutBlockFlow[overflow:scroll] -&gt; PaintLayer[CompositedLayerMapping]
+</code></pre><p>滚动容器会创建一个特殊图层的集合(CompositedLayerMapping):</p>
+<pre><code>main layer
+|-scroll layer // 在这一层执行剪裁
+  |- scrolling content layer
+|-scrollbar container layer
+  |-horz. scrollbar layer
+  |-vert. scrollbar layer
+  |-scroll corner layer
+</code></pre><h4 id="图层树的构建---layer-tree">图层树的构建 - layer tree</h4>
+<p>层级合成更新(compositing update)目前成为了主线程中的一个新的生命周期阶段。</p>
+<ol>
+<li>Parse - 数据解析</li>
+<li>Layout - 排版布局</li>
+<li><strong>Composite update - 合成更新</strong></li>
+<li>Paint - 绘制处理</li>
+<li>Draw - 屏幕绘制</li>
+</ol>
+<p>在该阶段会在paint前根据布局树生成图层树，在之后的paint阶段分别绘制每个层级。</p>
+<p><a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h?q=PaintLayerCompositor::UpdateIfNeeded&amp;dr=Ss">PaintLayerCompositor::UpdateIfNeeded</a></p>
+<h4 id="属性树---proporty-tree">属性树 - proporty tree</h4>
+<p>合成器可以在绘制图层时应用多种属性(transform, clip, effect, scroll)，这些属性会存储在他们自己的树中。</p>
+<p>这个属性树的生成发生在paint阶段前，通过遍历图层树来获取(<a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/paint_invalidator.h?dr=Ss&amp;g=0&amp;l=27">PrePaintTreeWalk::Walk</a> &amp; <a href="https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/paint_property_tree_builder.h?q=PaintPropertyTreeBuilder&amp;dr=CSs">PaintPropertyTreeBuilder
+</a>)，那么流水线就变成了：</p>
+<ol>
+<li>Parse - 数据解析</li>
+<li>Layout - 排版布局</li>
+<li>Composite update - 合成更新</li>
+<li><strong>PrePaint - 绘制准备</strong></li>
+<li>Paint - 绘制处理</li>
+<li>Draw - 屏幕绘制</li>
+</ol>
+<h4 id="将层提交给合成器线程---commit">将层提交给合成器线程 - commit</h4>
+<p>paint结束后，将更新后的layer与属性树提交给合成器线程。cc::Layer -&gt; LayerImpl</p>
+<h4 id="分块渲染---tiled-rendering">分块渲染 - tiled rendering</h4>
+<p>刚才提到，光栅化是paint之后的步骤，作用是将绘制操作转换成位图。</p>
+<p>传入的layer也许会很大，那么光栅化一个完整的layer开销就会很大，当仅有一部分内容可见时没有必要将其完全光栅化。</p>
+<p>因此在这一步合成器线程会将layer分割成多个图块(tiles)，图块是光栅化执行的单元。</p>
+<p>图块会在专用的光栅化线程中，在一个资源池中被光栅化，图块处理的优先级由它们与viewport区域的距离决定。 <a href="https://cs.chromium.org/chromium/src/content/renderer/categorized_worker_pool.h?q=CategorizedWorkerPool&amp;dr=CSs">CategorizedWorkerPool</a></p>
+<h4 id="绘制合成层---composited-layer">绘制合成层 - composited layer</h4>
+<p>当图块被光栅化后，合成器线程会生成“绘制四边形(draw quad)”指令。<a href="https://cs.chromium.org/chromium/src/cc/layers/picture_layer_impl.h?type=cs&amp;q=PictureLayerImpl::AppendQuads&amp;g=0&amp;l=55">PictureLayerImpl::AppendQuads</a> &amp; <a href="https://cs.chromium.org/chromium/src/components/viz/common/quads/draw_quad.h?dr=CSs&amp;g=0">DrawQuad</a></p>
+<ul>
+<li>一个quad就像在屏幕上的特定位置绘制图块的命令，同时考虑了图层树上应用的所有转换。</li>
+<li>每个quad都引用自内存中图块光栅化后的输出</li>
+<li>quad被打包进一个<a href="https://cs.chromium.org/chromium/src/components/viz/common/quads/compositor_frame.h?q=CompositorFrame&amp;dr=CSs">CompositorFrame</a>对象中传递给浏览器进程。</li>
+</ul>
+<h4 id="pending-tree与active-tree">pending tree与active tree</h4>
+<p>合成器线程中有两颗图层树的副本，因此可以实现一边从最新的提交中光栅化图块，一边绘制之前的提交。</p>
+<p>这个流程中的pending tree与active tree均引用自LayerTreeImpl，包含图层列表与属性树的对象。</p>
+<pre><code>pending tree: (commit)LayerTreeImpl ---(raster)--&gt; activation
+active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(draw)--&gt; 
+</code></pre><h3 id="屏幕绘制阶段---draw">屏幕绘制阶段 - Draw</h3>
+<p>到了最后一个阶段：画到屏幕上，此时又来到了GPU进程中。</p>
+<p><strong>接收CompositorFrame与处理surface</strong></p>
+<ul>
+<li>CompositorFrame来自多个渲染进程和浏览器进程(具有UI自身的compositor)，它与一个surface对象关联，surface表示要显示的目标屏幕区域</li>
+<li>surface可以嵌套其他surface，浏览器UI可以嵌套renderer，renderer可以因跨域iframe等场景嵌套其他renderer</li>
+<li>display compositor运行在GPU进程中的Viz合成器线程，它会同步输入的frame并处理嵌套surface之间的依赖。<a href="https://cs.chromium.org/chromium/src/components/viz/service/display/surface_aggregator.h?q=SurfaceAggregator&amp;dr=CSs">SurfaceAggregator</a></li>
+</ul>
+<p><strong>绘制到屏幕上</strong></p>
+<ul>
+<li>Viz会对CompositorFrame中的quad依次执行GL调用将它们显示出来</li>
+<li>与paint阶段类似，这些GL调用被<strong>command buffer</strong>代理，从Viz合成器线程传递给主线程并执行</li>
+<li>在多数平台上display compositor的输出是会被<a href="https://en.wikipedia.org/wiki/Multiple_buffering">双缓冲</a>的(backbuffer与frontbuffer，显示器只负责从frontbuffer中取数据显示)，因此quad会被绘制在backbuffer中，之后的swap指令(切换两个buffer)会使其可见。</li>
+</ul>
+<p>最终绘制好的像素出现在了屏幕上。</p>
+<h3 id="渲染流水线总览">渲染流水线总览</h3>
+<p><img src="/images/blog/front-end/chromium-rendering-pipeline-step-by-step/pixel.jpg" alt=""></p>
+<h2 id="页面动画">页面动画</h2>
+<p>介绍完流水线，有了合成器的基础，了解各种动画的原理应该就比较轻松了，该部分引用一下文章<a href="https://zhuanlan.zhihu.com/p/30534023">浏览器渲染流水线解析与网页动画性能优化</a>的内容。</p>
+<h3 id="合成器动画">合成器动画</h3>
+<ol>
+<li>合成器本身触发并运行的，比如最常见的网页惯性滚动，包括整个网页或者某个页内可滚动元素的滚动</li>
+<li>Blink 触发然后交由合成器运行，比如说传统的 CSS Translation 或者新的 Animation API，如果它们触发的动画经由 Blink 判断可以交由合成器运行</li>
+</ol>
+<h3 id="非合成器动画">非合成器动画</h3>
+<ol>
+<li>使用 CSS Translation 或者 Animation API 创建的动画，但是无法由合成器运行；</li>
+<li>使用 Timer 或者 rAF 由 JS 驱动的动画，比较典型的就是 Canvas/WebGL 游戏，这种动画实际上是由页端自己定义的，浏览器本身并没有对应的动画的概念，也就是说浏览器本身是不知道这个动画什么时候开始，是否正在运行，什么时候结束，这些完全是页端自己的内部逻辑</li>
+</ol>
+<h3 id="对比">对比</h3>
+<p><strong>四种动画按渲染流水线的复杂程度和理论性能排列</strong></p>
+<ol>
+<li>合成器本身触发并运行的动画</li>
+<li>Blink 触发，合成器运行的动画</li>
+<li>Blink 触发，无法由合成器运行的动画</li>
+<li>由 Timer/rAF 驱动的 JS 动画</li>
+</ol>
+<p>理论上我们要实现 60 帧的非合成器动画，只需要保证其中每个线程包含的部分的耗时总和小于 16.7 毫秒即可</p>
+<p>水平有限，如有误还望指正。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://www.chromium.org/developers">For Developers - The Chromium Projects</a></li>
+<li><a href="https://www.alibabacloud.com/blog/front-end-performance-optimization-with-accelerated-compositing-part-1_594194">Front-End Performance Optimization with Accelerated Compositing</a></li>
+<li><a href="https://www.ituring.com.cn/book/miniarticle/40631">Canvas2D及其实现</a></li>
+<li><a href="https://docs.google.com/presentation/d/1boPxbgNrTU0ddsc144rcXayGA_WF53k96imRH8Mp34Y/edit#slide=id.g60f92a5151_40_0">Life of a Pixel</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/">http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/chromium'>chromium</a></li>
+                
+                <li><a href='http://yrq110.me/tags/blink'>blink</a></li>
+                
+                <li><a href='http://yrq110.me/tags/rendering-pipeline'>rendering pipeline</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

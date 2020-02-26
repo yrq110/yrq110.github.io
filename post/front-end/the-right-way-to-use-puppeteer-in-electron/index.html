@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>配置electron中puppeteer executablePath的正确姿势 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="配置electron中puppeteer executablePath的正确姿势 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-01-06T19:52:34&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-01-06T19:52:34&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="配置electron中puppeteer executablePath的正确姿势">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">配置electron中puppeteer executablePath的正确姿势</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年1月6日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>TL; NR</p>
+<ul>
+<li>轻量, remote调用(使用本地chrome) =&gt; <code>puppeteer-core</code></li>
+<li>将chromium整合进安装包(需要asar打包时排除chromium), <strong>macOS下验证失败</strong> =&gt; <code>puppeteer</code></li>
+</ul>
+<p>这个问题在我想在electron应用中使用puppeteer爬虫时出现，具体问题是如何引用正确的chromium/chrome位置，尤其是在打包后的环境下。</p>
+<p>在开始之前，首先需要的是配置<code>puppeteer.launch()</code>函数启动时的<code>executablePath</code>参数，一般情况下使用<code>puppeteer.executablePath()</code>获取默认引用的可执行chrome位置即可:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;puppeteer&#39;</span>
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">PresetPage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span>() =&gt; {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>(Object.<span style="color:#a6e22e">assign</span>(<span style="color:#a6e22e">BrowserConfig</span>.<span style="color:#a6e22e">LaunchOption</span>, {
+        <span style="color:#a6e22e">executablePath</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">executablePath</span>()
+    }))
+    ...
+}
+</code></pre></div><p>其中:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">executablePath</span>())
+<span style="color:#75715e">// /Users/yrq/Desktop/project/sprite-garden/node_modules/puppeteer/.local-chromium/mac-599821/chrome-mac/Chromium.app/Contents/MacOS/Chromium
+</span></code></pre></div><p>可以看到会使用安装在本地依赖中的chromium。在开发环境下是没有问题，但在electron应用打包后无法获取到chromium的正确路径导致puppeteer无法运行。</p>
+<p>为了解决这个问题，尝试使用下面两种方法。</p>
+<h1 id="使用puppeteer-core远程调用chrome">使用puppeteer-core远程调用chrome</h1>
+<p><code>已验证</code></p>
+<p>在<a href="https://github.com/loukaspd/puppeteer-electron-quickstart/blob/621248a4f470dea4ffd9532746c16d12e3437cbf/src/lib/puppeteer-wrapper.js">loukaspd/puppeteer-electron-quickstart</a>中发现的方法。</p>
+<p><code>puppeteer</code>在<code>1.7.0</code>版本后发布了<code>puppeteer-core</code>，可看做是轻量版的<code>puppeteer</code>，可以用它远程调用一个已安装的浏览器。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">yarn add puppeteer-core
+</code></pre></div><p>它们之间的不同:</p>
+<ol>
+<li><code>puppeteer-core</code>在安装时不会自动下载<code>Chromium</code></li>
+<li><code>puppeteer-core</code>会忽略所有<code>PUPPETEER_*</code>环境变量</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;puppeteer-core&#39;</span>
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">PresetPage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span>() =&gt; {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>(Object.<span style="color:#a6e22e">assign</span>(<span style="color:#a6e22e">BrowserConfig</span>.<span style="color:#a6e22e">LaunchOption</span>, {
+        <span style="color:#a6e22e">executablePath</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">chromePath</span>
+    }))
+    ...
+}
+</code></pre></div><p>关于<code>chromePath</code>的值从下面的方法中获得: <code>配置文件</code> + <code>默认安装路径</code></p>
+<ol>
+<li>
+<p>在设置文件中寻找chrome路径</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#a6e22e">getSavedPath</span>() {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">settingsPath</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_filePaths</span>.<span style="color:#a6e22e">settingsPath</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">fs</span>.<span style="color:#a6e22e">existsSync</span>(<span style="color:#a6e22e">settingsPath</span>)) {
+            <span style="color:#a6e22e">resolve</span>(<span style="color:#66d9ef">undefined</span>);
+            <span style="color:#66d9ef">return</span>;
+        }
+        <span style="color:#a6e22e">fs</span>.<span style="color:#a6e22e">readFile</span>(<span style="color:#a6e22e">settingsPath</span>, <span style="color:#e6db74">&#34;utf8&#34;</span>, (<span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">fileContent</span>) =&gt; {
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">err</span>) {
+                <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">err</span>)
+                <span style="color:#a6e22e">reject</span>();
+                <span style="color:#66d9ef">return</span>;
+            }
+            <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">fileContent</span>);
+        });
+    })
+}
+
+<span style="color:#a6e22e">settingsPath</span>() {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">join</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">appFolderPath</span>(), <span style="color:#e6db74">&#39;settings.json&#39;</span>);
+}
+
+<span style="color:#a6e22e">appFolderPath</span>() {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">documentsPath</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">join</span>(<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">homedir</span>(), <span style="color:#e6db74">&#34;Documents&#34;</span>);
+
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">join</span>(<span style="color:#a6e22e">documentsPath</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">appFolderName</span>);
+}
+...
+</code></pre></div></li>
+<li>
+<p>在默认安装路径寻找chrome</p>
+<p>根据系统类型返回结果:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getDefaultOsPath</span> <span style="color:#f92672">=</span> () =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">platform</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;win32&#39;</span>) {
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe&#39;</span>
+    } <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;/Applications/Google Chrome.app/Contents/MacOS/Google Chrome&#39;</span>
+    }
+}
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">chromePath</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">getDefaultOsPath</span>()
+</code></pre></div></li>
+</ol>
+<p>若在两种途径中均未找到，则初始化会失败。</p>
+<h1 id="使用内置的chromium">使用内置的chromium</h1>
+<p>macOS下<code>验证失败</code>，可跳过</p>
+<ol>
+<li>
+<p>转换<code>puppeteer.executablePath()</code>得到的路径</p>
+<p>使用正则替换chromium的路径:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">getChromiumExecPath</span>() {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">executablePath</span>().<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">&#39;app.asar&#39;</span>, <span style="color:#e6db74">&#39;app.asar.unpacked&#39;</span>);
+}
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createBrowser</span>(<span style="color:#a6e22e">options</span> <span style="color:#f92672">=</span> {}) {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>({
+        ...<span style="color:#a6e22e">options</span>,
+        <span style="color:#a6e22e">executablePath</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">getChromiumExecPath</span>()
+    });
+}
+</code></pre></div></li>
+<li>
+<p>修改<code>package.json</code>中的构建配置</p>
+<p>不将puppeteer下载的chromium打包进asar包中:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#e6db74">&#34;build&#34;</span><span style="color:#f92672">:</span> {
+    <span style="color:#e6db74">&#34;asar&#34;</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+    <span style="color:#e6db74">&#34;asarUnpack&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;node_modules/puppeteer/.local-chromium/**/*&#34;</span>,
+    ...
+}
+...
+</code></pre></div></li>
+</ol>
+<p>这种方法在我的项目中(macOS系统)没有成功，在<code>puppeteer.launch()</code>时报了如下错误:</p>
+<pre><code>Failed to launch chrome!
+dlopen /Users/yrq/Desktop/project/sprite-garden/build/mac/sprite-garden.app/Contents/Resources/app.asar.unpacked/node_modules/puppeteer/.local-chromium/mac-609904/chrome-mac/Chromium.app/Contents/MacOS/../Versions/72.0.3617.0/Chromium Framework.framework/Chromium Framework: dlopen(/Users/yrq/Desktop/project/sprite-garden/build/mac/sprite-garden.app/Contents/Resources/app.asar.unpacked/node_modules/puppeteer/.local-chromium/mac-609904/chrome-mac/Chromium.app/Contents/MacOS/../Versions/72.0.3617.0/Chromium Framework.framework/Chromium Framework, 261): image not found
+
+TROUBLESHOOTING: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md
+</code></pre><p>类似的错误源于系统的差异性，目前无法解决</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://github.com/GoogleChrome/puppeteer/issues/2134#issuecomment-408221446">Run from Electron · Issue #2134 · GoogleChrome/puppeteer</a></li>
+<li><a href="https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteer-vs-puppeteer-core">puppeteer-vs-puppeteer-core</a></li>
+<li><a href="https://github.com/loukaspd/puppeteer-electron-quickstart/blob/621248a4f470dea4ffd9532746c16d12e3437cbf/src/lib/puppeteer-wrapper.js">loukaspd/puppeteer-electron-quickstart</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/">http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/puppeteer'>puppeteer</a></li>
+                
+                <li><a href='http://yrq110.me/tags/electron'>electron</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

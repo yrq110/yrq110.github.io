@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Web应用开发中的TypeScript最佳实践 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Web应用开发中的TypeScript最佳实践 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-02-19T01:44:17&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-02-19T01:44:17&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Web应用开发中的TypeScript最佳实践">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Web应用开发中的TypeScript最佳实践</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年2月19日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>TS的开发经验总结，主要包含以下几个方面的内容</p>
+<ul>
+<li>编译工具的特点与比较</li>
+<li>语言特性的选择与使用</li>
+<li>模块系统与自定义类型</li>
+<li>其他使用技巧</li>
+</ul>
+<p>译自：<a href="https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&amp;utm_campaign=db304f7430-Qiita_newsletter_399_02_12_2020&amp;utm_medium=email&amp;utm_term=0_e44feaa081-db304f7430-33396633">TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得</a> | <a href="https://qiita.com/jagaapple">@jagaapple</a></p>
+<h1 id="前言">前言</h1>
+<ul>
+<li>主要是有关Web应用开发的内容，也许与工具库开发的场景有所不同。</li>
+<li>所说的“规模”是一个比较模糊的词语，描述大量的开发人员/代码量/用户等</li>
+<li>由于笔者常用React/Redux，在多处示例中使用了它们，但内容本身并不依赖它们</li>
+<li>内容基于3.7.5版本的TypeScript所写</li>
+</ul>
+<h1 id="编译器的特性">编译器的特性</h1>
+<p>TypeScript(以下简称TS)是无法直接在浏览器上运行的，需要先将其编译成JavaScript。这一步所用到的编译器首先要说的是Microsoft的tsc工具，也可以使用webpack和Babel进行编译。</p>
+<table>
+<thead>
+<tr>
+<th>编译器</th>
+<th>优点</th>
+<th>缺点</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tsc</td>
+<td>Microsoft官方工具/对应最新TS版本/具有全部特性</td>
+<td>路径别名问题/与旧版ES兼容性较差</td>
+<td>可以使用&ndash;watch选项实现部分编译</td>
+</tr>
+<tr>
+<td>webpack（ts-loader）</td>
+<td>webpack loader/具有全部特性</td>
+<td>大型项目中执行较慢</td>
+<td>有性能优化的方法</td>
+</tr>
+<tr>
+<td>Babel</td>
+<td>擅长向旧版ES语法的转换</td>
+<td>不会进行类型检查/编译速度较快</td>
+<td>存在Re-exports问题</td>
+</tr>
+</tbody>
+</table>
+<p>虽然都是使用TS的场景，不过不同编译器对TS语言特性的使用有不同的限制，也可能产生其他麻烦。考虑到每种编译器的特点，来看看它们存在的一些问题。</p>
+<h2 id="tsc">tsc</h2>
+<p>tsc是Microsoft的TS官方编译器，包含在使用TS时所安装的typescript包中。</p>
+<p>由于它是官方的工具，因此其功能会对应最新版本的TS，可以使用语言的所有特性。但它不是打包工具，因此无法自定义minify与chunk等设置，并且存在未解决的路径别名(Path Alias)问题和较差的旧版ES语法兼容性问题。</p>
+<p>可以通过<code>tsconfig.json</code>中的<code>compilerOptions.target</code>选项来设置编译目标的ECMAScript语法版本，会生成类似使用Babel的向后兼容代码。不过编译成指定版本的准确性不如Babel，直到2.1才支持将Async/Await转换成ES5/ES3的语法；在撰写本文时的最新版本3.7中，甚至会将<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/globalThis">globalThis</a>原模原样的输出到文件中&hellip;诸如此类，感觉纯粹使用tsc来开发项目还是有一定难度的。</p>
+<p>由于这样的原因，大多数项目中都会选择使用webpack与Babel进行编译，而将tsc作为TS的<strong>类型检查工具</strong>或在<strong>开发工具库</strong>时使用。</p>
+<h3 id="路径别名与tsc的未解決问题">路径别名与tsc的未解決问题</h3>
+<p>在TS的ESM(ECMAScript Modules)语法中，除了导入node_modules等外部包外，必须使用相对路径来描述导入的模块。在从React开始的组件化UI开发方法成为主流的今天，开发中会遇到很多有大量层级嵌套很深的目录，如../../../../foo，在这样的目录下操作路径是很令人头秃的一件事。</p>
+<p><strong>路径别名</strong>是一种为项目中指定路径设置别名的功能，通过<code>tsconfig.json</code>的<code>compilerOptions.paths</code>来设置，它的目标路径会以<code>compilerOptions.baseUrl</code>属性的值为基础路径。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">tsconfig.json</span>
+{
+  <span style="color:#f92672">&#34;compilerOptions&#34;</span>: {
+    <span style="color:#f92672">&#34;baseUrl&#34;</span>: <span style="color:#e6db74">&#34;./src&#34;</span>,
+    <span style="color:#f92672">&#34;paths&#34;</span>: {
+      <span style="color:#f92672">&#34;@models/*&#34;</span>: [<span style="color:#e6db74">&#34;./models/*&#34;</span>]
+    }
+  }
+}
+</code></pre></div><p>如上在别名中使用通配符*，可以通过@models引用/src/models中的任何项目文件。我的个人习惯是<code>@</code>加上路径别名。如果别名与包名冲突时会很难通过import语法读取到该包，因此最好使用与包名不同的命名规则。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-tsx" data-lang="tsx"><span style="color:#75715e">// /src/components/home/header/account/navigation/list.component.tsx
+</span><span style="color:#75715e"></span><span style="color:#f92672">-</span> <span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserModel</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;../../../../../models/user.model&#34;</span>;
+<span style="color:#f92672">+</span> <span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserModel</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;@models/user.model&#34;</span>;
+</code></pre></div><p>它不会导致TypeScript语法错误或引用错误，并且在VS Code等编辑器中路径的代码跳转功能与使用常规路径时同样可用。但使用tsc编译包含路径别名的代码时会原封不动地输出别名，从而导致运行时错误。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// /src/components/home/header/account/navigation/list.component.js
+</span><span style="color:#75715e"></span><span style="color:#e6db74">&#34;use strict&#34;</span>;
+<span style="color:#a6e22e">exports</span>.<span style="color:#a6e22e">__esModule</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">user_model_1</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#34;@models/user.model&#34;</span>); <span style="color:#75715e">// `require`的文件不存在
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">user_model_1</span>.<span style="color:#a6e22e">UserModel</span>);
+</code></pre></div><p>很多开发者都怀疑作为官方编译器的tsc不会解决路径别名的这个问题，实际上在TS仓库中已经存在针对这个问题的Issue，并且进行了泛泛的讨论，最终因为「路径解析不是tsc所负责的功能」的理由而被关闭。</p>
+<p>因此，为了解决路径别名的解析问题，需要使用之后介绍的<strong>webpack</strong>等工具，或使用<strong>tsconfig-paths</strong>等库来实现。</p>
+<h2 id="webpackts-loader">webpack（ts-loader）</h2>
+<p><a href="https://github.com/TypeStrong/ts-loader">TypeStrong/ts-loader: TypeScript loader for webpack</a></p>
+<p>虽然人们对于webpack的评价褒贬不一，但毫无疑问的是在开发生产级别的Web前端项目方面是一个必需品，甚至说是<a href="https://baike.baidu.com/item/%E4%BA%8B%E5%AE%9E%E6%A0%87%E5%87%86/10755125?fr=aladdin">事实标准(de facto standard)</a>也不为过。webpack也开发了编译TS的loader，其中最具代表性的就是ts-loader。</p>
+<p>通过在ts-loader中将transpileOnly选项设为true来跳过类型检查，从而得到较高的执行性能。若使用的是webpack4，则将产生会在后面介绍的Re-exports问题，为了避免大量Warning警告信息需要进行一些必要的设置。</p>
+<h3 id="awesome-typescript-loader">awesome-typescript-loader</h3>
+<p>较早的ts-loader性能较差，编译TS非常耗时，因此出现了<a href="https://github.com/s-panferov/awesome-typescript-loader">awesome-typescript-loader</a>这个loader。不过目前这个库已经不再维护了，GitHub仓库已处于归档状态。。</p>
+<p>现在ts-loader的性能也有所改善了，并且依旧提供前述的<code>transpileOnly</code>选项，因此已经停止开发的awesome-typescript-loader应该没有什么优势了。不过包含Storybook在内的一些库仍然推荐使用awesome-typescript-loader。</p>
+<h3 id="类型检查方式与fork-ts-checker-webpack-plugin">类型检查方式与fork-ts-checker-webpack-plugin</h3>
+<p>如前所述，ts-loader中可以通过设置<code>transpileOnly</code>选项，不执行类型检查以此来提高性能。虽然VS Code等编辑器中会进行实时的类型检查，但还是推荐在构建时进行类型检查。</p>
+<p>在类型检查的方法中包括<strong>使用tsc</strong>。尽管tsc本质是个编译器，不过通过设置<code>--noEmit</code>选项可以阻止编译文件的生成，即仅执行类型检查。笔者在其项目中将该操作放在npm-run-scipts的lint命令中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">package.json</span>
+{
+  <span style="color:#f92672">&#34;scripts&#34;</span>: {
+    <span style="color:#f92672">&#34;lint&#34;</span>: <span style="color:#e6db74">&#34;tsc --noEmit&#34;</span>
+  }
+}
+</code></pre></div><p>另外一种方法就是在运行时阶段执行类型检查，比如webpack插件<a href="https://github.com/TypeStrong/fork-ts-checker-webpack-plugin">fork-ts-checker-webpack-plugin</a> 。由于检查是在独立的进程中执行的，因此不会影响ts-loader等的编译处理，在React框架Next.js的9版本中使用了这个插件。</p>
+<h2 id="babel">Babel</h2>
+<p><a href="https://babeljs.io/">Babel · The compiler for next generation JavaScript</a></p>
+<p>Babel在2018年夏天发布的版本7中支持TS编译，需要设置**@babel/preset-typescript**。</p>
+<p>遵循最新ES规范的JS项目中基本都使用了Babel，仅需要在preset设置中添加一个预设项即可使用TS。这仅仅是Babel的一个扩展功能，除了用在编译JS外没有其他作用。</p>
+<h3 id="typescript特性的使用限制">TypeScript特性的使用限制</h3>
+<p>Babel中的TS编译限制了一部分TS特性的使用，比如Const Enums(常量枚举)。无法使用这个特性，自然也无法编译使用这个特性的库。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// Babel无法编译Const-Enums
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Status</span> {
+       <span style="color:#f92672">^^^^^</span>
+  <span style="color:#75715e">// &#39;const&#39; enums are not supported.
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">Published</span>,
+  <span style="color:#a6e22e">Draft</span>,
+}
+</code></pre></div><p>笔者比较中意的ts-key-enum库中使用了TS的Enums来处理event.key值的引用，在版本3中变为了使用Const Enums来实现。由于笔记在其项目中使用了Babel来编译TS，因此无法使用利用了Const Enums的ts-key-enum，只能继续使用版本2。</p>
+<p>实际上@babel/preset-typescript所执行的仅仅是从TS文件中移除类型信息，不仅不会执行类型检查，还会产生之后所讲的Re-exports问题。</p>
+<h3 id="通过index文件简化模块引用">通过index文件简化模块引用</h3>
+<p>对于中等以上规模的应用，每个文件中的import语句和从其他文件中引用的模块数量会明显增多。因此，为了更方便地从外部引用某个目录内存在的文件，一般会创建一个index.ts的索引文件，在该文件中对模块进行再次导出，即执行Re-exports。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// /src/components/header/index.ts
+</span><span style="color:#75715e">// Re-exports每个组件
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> { <span style="color:#a6e22e">LogoComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./logo.component&#34;</span>;
+<span style="color:#66d9ef">export</span> { <span style="color:#a6e22e">NavigationComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./navigation.component&#34;</span>;
+</code></pre></div><p>在ESM与CommonJS中，当导入目标的路径以目录名为结尾时，会引用目标目录中的index.js或index.ts文件，可以像如下的方式根据索引文件中的描述清楚的引入模块。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// Before
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">LogoComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./components/header/logo.component&#34;</span>;
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">NavigationComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./components/header/navigation.component&#34;</span>;
+
+<span style="color:#75715e">// After
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">LogoComponent</span>, <span style="color:#a6e22e">NavigationComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./components/header&#34;</span>;
+</code></pre></div><p>不仅路径的描述更加简洁，还可以使用一个import语句来引入多个模块，从而减少了文件中模块描述的数量。此外，添加禁止引用未在index.ts中Re-exports的文件的规则，可以减少模块相互之间的依赖与影响。</p>
+<h3 id="re-exports问题">Re-exports问题</h3>
+<p><img src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fuser-images.githubusercontent.com%2F20621562%2F46913705-35a43780-cfcd-11e8-9f42-0915cd7a8fa1.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=1cd3562fb9fcdbd3b6588304ab3ff097" alt=""></p>
+<p>不管是设置webpack的transpileOnly选项还是使用Babel的@babel/preset-typescript，Re-exports总会产生大量的Warning警告信息。具体是在Type Alias(类型别名)与Interfaces(接口)等类型信息的Re-exports时会产生的。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// Babel等删除类型信息的例子
+</span><span style="color:#75715e"></span><span style="color:#f92672">-</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">num</span>: <span style="color:#66d9ef">number</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+<span style="color:#f92672">+</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">num</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+<span style="color:#f92672">-</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getUserName</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">user</span>: <span style="color:#66d9ef">userModel.UserModel</span>) <span style="color:#f92672">=&gt;</span> {
+<span style="color:#f92672">+</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getUserName</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">user</span>) <span style="color:#f92672">=&gt;</span> {
+</code></pre></div><p>编译操作仅仅从TS文件删除了类型信息，不会进行类型检查和类型解析。TS作为JS的超集，如果把类型信息都删了的话与JS无异，然而只有经过这种处理才能进行编译。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// /src/models/user.model.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#a6e22e">type</span> <span style="color:#a6e22e">UserModel</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">number</span>;
+};
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createUser</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">json</span>: <span style="color:#66d9ef">JSON</span>) <span style="color:#f92672">=&gt;</span> ({
+  <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">json.id</span>,
+});
+
+<span style="color:#75715e">// /src/models/index.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> { <span style="color:#a6e22e">UserModel</span>, <span style="color:#a6e22e">createUser</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./user.model&#34;</span>;
+</code></pre></div><p>考虑下上面这种情况：user.model.ts中使用类型别名来定义模块(UserModel)，并在同一级目录下的Index.ts中进行了Re-exports。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// /src/models/user.model.ts
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 类型信息会被删除
+</span><span style="color:#75715e">export type UserModel = {
+</span><span style="color:#75715e">  id: number;
+</span><span style="color:#75715e">};
+</span><span style="color:#75715e">*/</span>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createUser</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">json</span>: <span style="color:#66d9ef">JSON</span>) <span style="color:#f92672">=&gt;</span> ({
+  <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">json.id</span>,
+});
+
+<span style="color:#75715e">// /src/models/index.ts
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 由于已经删除了UserModel，因此无法执行Re-export */</span>
+<span style="color:#66d9ef">export</span> { <span style="color:#a6e22e">UserModel</span>, <span style="color:#a6e22e">createUser</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./user.model&#34;</span>;
+</code></pre></div><p>在仅会删除类型信息的Babel等编译器中，首先会删除user.model.ts的类型别名UserModel，这样一来，在index.ts中执行的Re-exports就会因引用了已经不存在的UerModel而发出警告。</p>
+<p>想要根本的解决这个问题，需要让Babel等工具执行严格的类型检查与类型解析，但考虑到Babel的职责与其性能，不太可能会采取这种方法。</p>
+<p>使用webpack-filter-warnings-plugin可以避免警告的产生，除此之外，无需任何设置即可解决的唯一方法是使用<code>import * as</code>来一次性导入所有模块。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// /src/models/index.ts
+</span><span style="color:#75715e">// 删除UserModel了后，由于未指明Re-exports的目标，因此不会产生警告
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">userModel</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./user.model&#34;</span>;
+
+<span style="color:#66d9ef">export</span> { <span style="color:#a6e22e">userModel</span> }; <span style="color:#75715e">// 可以引用`userModel.UserModel` `userModel.createUser`
+</span></code></pre></div><p>在tsc的类型检查与VS Code的编辑检查时为了避免这个Re-exports问题，需要将<strong>tsconfig.json</strong>中的<code>compilerOptions.isolatedModules</code>选项设为true。这样一来，当Re-exports类型对象时，会被当做类型错误处理。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// /src/models/index.ts
+</span><span style="color:#75715e">// compilerOptions.isolatedModules: true
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> { <span style="color:#a6e22e">UserModel</span>, <span style="color:#a6e22e">createUser</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./user.model&#34;</span>;
+         <span style="color:#f92672">^^^^^^^^^</span>
+<span style="color:#75715e">/* Cannot re-export a type when the &#39;--isolatedModules&#39; flag is provided.ts(1205) */</span>
+</code></pre></div><p>总结以下就是，使用Babel等不执行类型检查的工具编译TS时注意以下两点：</p>
+<ol>
+<li>不要显式地Re-exports(包括Name Exports)类型定义</li>
+<li>将compilerOptions.isolatedModules设置为true</li>
+</ol>
+<h1 id="使类型引用规范化">使类型引用规范化</h1>
+<p>由于TS中可以引用类型定义中的某些类型信息，因此在类型定义的上下文中，应尽可能的规范化使用类型引用。</p>
+<p>比如说，在笔者的项目中数据模型一般使用类型别名定义的，若要为这个模型的属性或函数提供类型信息，需要引用模型的属性类型来而不是通过标准类型名称。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// /src/models/user.model.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#a6e22e">type</span> <span style="color:#a6e22e">UserModel</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">number</span>;
+  <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>;
+  <span style="color:#a6e22e">email</span>: <span style="color:#66d9ef">string</span>;
+};
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-tsx" data-lang="tsx"><span style="color:#75715e">// /src/components/users/user.component.tsx
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">userModel</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;@models/index&#34;</span>;
+
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> {
+  <span style="color:#75715e">// 不用写`name: string;`
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">userModel.UserModel</span>[<span style="color:#e6db74">&#34;name&#34;</span>];
+}
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">UserComponent</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">Props</span>) <span style="color:#f92672">=&gt;</span> (
+  <span style="color:#f92672">&lt;</span><span style="color:#a6e22e">div</span><span style="color:#f92672">&gt;</span>
+    {<span style="color:#a6e22e">props</span>.<span style="color:#a6e22e">name</span>}
+  <span style="color:#f92672">&lt;</span><span style="color:#960050;background-color:#1e0010">/div&gt;</span>
+)
+</code></pre></div><p>这样做尽管需要写一些额外的import语句，不过有下面两个好处：</p>
+<ol>
+<li>当类型信息变化时，影响范围是清晰明了的，且得益于类型检查</li>
+<li>可以跳转到相关类型的代码</li>
+</ol>
+<p>项目越复杂越会受益于这两个点。</p>
+<p>如上面的例子所示，UserComponent是用于显示与UserModel相关的用户信息的函数(组件)，可以从中直接跳转到数据模型的定义中，在处理视图时方便所描述的数据。</p>
+<h1 id="不要使用enums">不要使用Enums</h1>
+<p>尽管TS中存在Enums枚举类型，但其用例较少。就算在2.4版本中添加了可以包含字符串类型值的String Enums，它的使用还是完全可以被对象来替代。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Status</span> {
+  <span style="color:#a6e22e">Published</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;published&#34;</span>,
+  <span style="color:#a6e22e">Draft</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;draft&#34;</span>,
+}
+
+<span style="color:#75715e">// 上面的String Enums可以使用Object来替代
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">status</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">Published</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;published&#34;</span>,
+  <span style="color:#a6e22e">Draft</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;draft&#34;</span>,
+};
+</code></pre></div><p>使用Object而非Enums的理由如下：</p>
+<ol>
+<li>如前所述，Babel等无法使用Const Enums</li>
+<li>可将任何值作为Enums值</li>
+<li>调用以Enums为参数的函数时，每次都需要用import引用该Enums</li>
+<li>轻松检查外部输入值是否为Enums成员值</li>
+</ol>
+<h2 id="可将任何值作为enums值">可将任何值作为Enums值</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Status</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">published</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;published&#34;</span>,
+  <span style="color:#a6e22e">invisible</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;draft&#34;</span> <span style="color:#f92672">|</span> <span style="color:#e6db74">&#34;deleted&#34;</span>,
+};
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">status</span>: <span style="color:#66d9ef">Status</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">published</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;published&#34;</span>,
+  <span style="color:#a6e22e">invisible</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;deleted&#34;</span>,
+};
+</code></pre></div><p>Enums中的值仅能使用数字和字符串类型，而Object则可以使用布尔值和通过Type Annotations组合出的联合类型。</p>
+<h2 id="调用以enums为参数的函数时每次都需要用import引用该enums">调用以Enums为参数的函数时，每次都需要用import引用该Enums</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 使用Enums的场景
+</span><span style="color:#75715e">// status.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Status</span> {
+  <span style="color:#a6e22e">Published</span>,
+  <span style="color:#a6e22e">Draft</span>,
+}
+
+<span style="color:#75715e">// func.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updateStatus</span>(<span style="color:#a6e22e">status</span>: <span style="color:#66d9ef">Status</span>) <span style="color:#f92672">=</span> () <span style="color:#f92672">=&gt;</span> ...;
+
+<span style="color:#75715e">// main.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Status</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./status&#34;</span>;
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">updateStatus</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./func&#34;</span>;
+
+<span style="color:#a6e22e">updateStatus</span>(<span style="color:#a6e22e">Status</span>.<span style="color:#a6e22e">Published</span>);
+</code></pre></div><p>当调用以Enums为参数的函数时，在输入实参时需要传入在Enums中指定的键，因此还必须引入该Enums。如果像Swift那样直接使用<code>.Published</code>这种描述的键名同时还具备类型推断的话，应该就更容易使用了吧(译者注：在Swift中，一旦变量的类型被推断或声明为某一枚举成员，就可以简单的使用一个点语法，将它设置为相同枚举类型的不同的值)。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 使用Object的场景
+</span><span style="color:#75715e">// status.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">status</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">published</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;published&#34;</span>,
+  <span style="color:#a6e22e">draft</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;draft&#34;</span>,
+};
+
+<span style="color:#75715e">// func.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updateStatus</span>(<span style="color:#a6e22e">status</span>: <span style="color:#66d9ef">keyof</span> <span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">status</span>) () <span style="color:#f92672">=&gt;</span> ...;
+
+<span style="color:#75715e">// main.ts
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">updateStatus</span>(<span style="color:#e6db74">&#34;published&#34;</span>); <span style="color:#75715e">// 看着像硬编码，但这里的类型检查是有效的
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">updateStatus</span>(<span style="color:#e6db74">&#34;foo&#34;</span>); 
+             <span style="color:#f92672">^^^^^</span>
+<span style="color:#75715e">/* Argument of type &#39;&#34;foo&#34;&#39; is not assignable to parameter of type &#39;&#34;published&#34; | &#34;draft&#34;&#39;.ts(2345) */</span>
+</code></pre></div><h2 id="轻松检查外部输入值是否为enums成员值">轻松检查外部输入值是否为Enums成员值</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 使用Enums的场景
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">checkValidStatus</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">value</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">Status</span> <span style="color:#f92672">=&gt;</span> {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">value</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">Status</span>.<span style="color:#a6e22e">Published</span>) <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">value</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">Status</span>.<span style="color:#a6e22e">Draft</span>) <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>;
+  ...
+
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>;
+};
+</code></pre></div><p>不管是传入的JSON对象还是用户输入的数据，使用Object都可以轻松的验证外部输入的值。</p>
+<p>由于无法在循环中依次引用每个Enums中的键值(无迭代器)，因此如果要判断Enums成员中是否包含某个值，只能一个一个地去比较。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 使用Object的场景
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">checkValidStatus</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">value</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">keyof</span> <span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">status</span> <span style="color:#f92672">=&gt;</span>
+  Object.<span style="color:#a6e22e">values</span>(<span style="color:#a6e22e">status</span>).<span style="color:#a6e22e">includes</span>(<span style="color:#a6e22e">value</span>);
+</code></pre></div><p>使用Object时可以利用键或值的循环实现，如果用<code>Array.prototype.includes</code>的话一行就可以搞定了。</p>
+<h1 id="利用typescript框架内置的标准类型">利用TypeScript/框架内置的标准类型</h1>
+<p>不管是TS语言还是React等框架，均提供了用于开发的标准类型。虽然自己也可以定义类型，不过最好还是使用经过充分测试并且作为开发者之间公共知识的标准类型。</p>
+<p>比如使用React时，@types/react提供了一些类型定义，可以使用其中的ComponentProps类型从组件中提取其Props类型。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 不使用ComponentProps类型的场景
+</span><span style="color:#75715e">// foo.comopnent.tsx
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> { ... };
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">FooComponent</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">Props</span>) <span style="color:#f92672">=&gt;</span> ...;
+
+<span style="color:#75715e">// other.component.tsx
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 类型名称有冲突需要重命名下 */</span>
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Props</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">FooComponentProps</span>, <span style="color:#a6e22e">FooComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./foo.component&#34;</span>;
+
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> { ... } <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">Pick</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">FooComponentProps</span>, <span style="color:#e6db74">&#34;xxx&#34;</span><span style="color:#f92672">&gt;</span>;
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">OtherComponent</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">Props</span>) <span style="color:#f92672">=&gt;</span> (
+  ...
+  <span style="color:#f92672">&lt;</span><span style="color:#a6e22e">FooComponent</span> <span style="color:#a6e22e">xxx</span><span style="color:#f92672">=</span>{<span style="color:#a6e22e">props</span>.<span style="color:#a6e22e">xxx</span>} <span style="color:#f92672">/&gt;</span>
+  ...
+);
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 使用ComponentProps类型的场景
+</span><span style="color:#75715e">// foo.comopnent.tsx
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> { ... };
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">FooComponent</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">Props</span>) <span style="color:#f92672">=&gt;</span> ...;
+
+<span style="color:#75715e">// other.component.tsx
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">FooComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./foo.component&#34;</span>;
+
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> { ... } <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">Pick</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">React</span>.<span style="color:#a6e22e">ComponentProps</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">FooComponent</span><span style="color:#f92672">&gt;</span>, <span style="color:#e6db74">&#34;xxx&#34;</span><span style="color:#f92672">&gt;</span>;
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">OtherComponent</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">Props</span>) <span style="color:#f92672">=&gt;</span> (
+  ...
+  <span style="color:#f92672">&lt;</span><span style="color:#a6e22e">FooComponent</span> <span style="color:#a6e22e">xxx</span><span style="color:#f92672">=</span>{<span style="color:#a6e22e">props</span>.<span style="color:#a6e22e">xxx</span>} <span style="color:#f92672">/&gt;</span>
+  ...
+);
+</code></pre></div><p>经常在React的项目中看到形如<code>export type Props</code>的代码，这里如果使用ComponentProps来提取Props的话会更加方便。</p>
+<h1 id="使用类型别名而不是interface">使用类型别名而不是Interface</h1>
+<p>对于刚接触TS的人来说Interface与类型别名看起来没什么区别，现在的应用开发中Interface的使用应该比较少了。</p>
+<p>两者均可以用于实现class的interface，并且与类型相关的错误信息也是一致的。在老版本的TS中Interface较易使用，而在目前的版本中类型别名则更为方便。</p>
+<p>类型别名中不仅可以使用联合类型(|)，使用交叉类型(&amp;)实现类型合并的场景也是很多的。</p>
+<p>下面是笔者在项目中的应用：在react与react-redux中定义Container Component的例子。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-tsx" data-lang="tsx"><span style="color:#75715e">// user-information.component.tsx
+</span><span style="color:#75715e">// 使用类型别名来定义Props
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">user</span>: <span style="color:#66d9ef">userModel.UserModel</span>;
+  <span style="color:#a6e22e">updateUser</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">userModel.UserModel</span>[<span style="color:#e6db74">&#34;name&#34;</span>]) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">void</span>;
+  <span style="color:#a6e22e">updateRequestStatus</span>: <span style="color:#66d9ef">RequestStatus</span>;
+};
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">UserInformationComponent</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">Props</span>) <span style="color:#f92672">=&gt;</span> ...;
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// user-information.container.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserInformationComponent</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./user-information.component&#34;</span>;
+
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">React</span>.<span style="color:#a6e22e">ComponentProps</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">UserInformationComponent</span><span style="color:#f92672">&gt;</span>;
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">StateProps</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Pick</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Props</span>, <span style="color:#e6db74">&#34;updateRequestStatus&#34;</span><span style="color:#f92672">&gt;</span>;
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">DispatchProps</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Pick</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Props</span>, <span style="color:#e6db74">&#34;updateUser&#34;</span><span style="color:#f92672">&gt;</span>;
+<span style="color:#a6e22e">type</span> <span style="color:#a6e22e">OwnProps</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Omit</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Props</span>, <span style="color:#a6e22e">keyof</span> (<span style="color:#a6e22e">StateProps</span> <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">DispatchProps</span>)<span style="color:#f92672">&gt;</span>;
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">UserInformationContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">connect</span>(
+  (<span style="color:#a6e22e">state</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">StateProps</span> <span style="color:#f92672">=&gt;</span> ({ ... }),
+  (<span style="color:#a6e22e">dispatch</span>, <span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">OwnProps</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">DispatchProps</span> <span style="color:#f92672">=</span> <span style="color:#f92672">&gt;</span> ({ ... }),
+)(<span style="color:#a6e22e">UserInformationComponent</span>);
+</code></pre></div><h1 id="不使用typescript独有的模块加载方式tsm">不使用TypeScript独有的模块加载方式（TSM）</h1>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// module.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+
+<span style="color:#75715e">// main.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#66d9ef">number</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#34;./module&#34;</span>);
+</code></pre></div><p>先说下结论：不要使用像上面那样的TS独有的模块加载方式。</p>
+<h2 id="esm与commonjs的default-exportsimports">ESM与CommonJS的Default Exports/Imports</h2>
+<p>不管是工具库还是服务端的Node.js，现在开发Web前端应用的话基本上都是使用ESM的模块方案。</p>
+<p>最初JS是没有自己的模块管理方案的，经过不断的发展产生了两种主流的模块方案：ESM（ECMAScript Modules）和CommonJS。CommonJS作为早期的模块管理方案诞生于Node.js中，被使用在服务端Node.js及工具库中，之后ECMAScript推出了ESM方案，未来ESM的使用应该会越来越广泛。</p>
+<p>ESM与CommonJS的模块系统间不互相兼容，此外，Node.js中使用的是严格遵循参考CommonJS规范的模块系统，而不是CommonJS本身。</p>
+<p>CommonJS中是这样定义的：导出的目标是具有属性的对象。它在进行Default Exports时习惯上设置一个default属性值。 而Node.js会将该值传递给module.exports本身，当Default Exports时会处理该值。据说相同的CommonJS平台Default Exports的处理方式也有所不同。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// Node.js的Default Exports
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">module</span><span style="color:#a6e22e">.exports</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+
+<span style="color:#75715e">// CommonJS的Default Exports
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">module</span><span style="color:#a6e22e">.exports.default</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+
+<span style="color:#75715e">// 在Node.js中实现Default Imports时，必须要显式地引用`module.exports.default`
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* `module.exports = 123` 的情况 */</span>
+<span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#34;./module&#34;</span>); <span style="color:#75715e">// 123
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">/* `module.exports.default = 123` 的情况 */</span>
+<span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#34;./module&#34;</span>); <span style="color:#75715e">// { default: 123 }
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#34;./module&#34;</span>).<span style="color:#66d9ef">default</span>; <span style="color:#75715e">// 123
+</span></code></pre></div><p>ESM的Default Exports今后或许会成为事实标准，其定义为<strong>使用<code>export default xxx</code>导出的值是具有default属性的对象</strong>，并且<strong>使用<code>import xxx from</code>导入的值是引用导出值的default属性</strong>。换句话说，与Node.js使用的<code>module.exports = xxx</code>等导出方法刚好是相反的（译者注：Node是默认导出时不带default属性，而导入时使用default）。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 以下两种方式均符合ESM的Default Exports规范
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#ae81ff">123</span>;
+<span style="color:#66d9ef">module</span><span style="color:#a6e22e">.exports.default</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+
+<span style="color:#75715e">// 遵循ESM的Default Imports规范，使用下面的方式读取上面导出的值
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#66d9ef">number</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;./xxx&#34;</span>; <span style="color:#75715e">// 123
+</span></code></pre></div><h2 id="typescript-modules">TypeScript Modules</h2>
+<p>不管是使用Node.js的<code>module.exports = xxx</code>写法，还是遵循ESM规范使用Default Exports，Babel从版本6开始会在Default Imports时引用导出值本身，自动判断是否引用default属性。</p>
+<p>但与Babel不同，TypeScript的Default Imports是遵循ESM规范的，并不支持Node.js的default Exports，而是准备了TS自己的模块系统TSM(TypeScript Modules，笔者自己的起名) 。以下是使用方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// module.ts
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 等价于`module.exports = 123` */</span>
+<span style="color:#66d9ef">export</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+
+<span style="color:#75715e">// main.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#66d9ef">number</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#34;./module&#34;</span>); <span style="color:#75715e">/* 不用通过`default`属性引用 */</span>
+</code></pre></div><p>对于这种写法，可以在使用了Node.js Default Exports的库中提供类型定义时使用，而在开发应用时不应该使用，应该使用ESM规范的写法。不过由于TSM的<code>export = xxx</code>与ESM不兼容，如果想在应用中使用利用了TSM的库的话，可以使用ESM的导入方法来引入吗？</p>
+<p>结论是可以的。在TS2.7及更高的版本中，可以使用ESM的导入语法来引入TSM形式的导出模块。TS2.7提供了<code>compilerOptions.esModuleInterop</code>选项，将其设置为true可以启用这个特性(默认为true)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// compilerOptions.esModuleInterop为true时
+</span><span style="color:#75715e">// 某库.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">FooClass</span>;
+
+<span style="color:#75715e">// 应用内
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">FooClass</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;某库&#34;</span>;
+</code></pre></div><p>在一些环境中，可以通过修改TS1.8版本添加的<code>compilerOptions.allowSyntheticDefaultImports</code>选项来实现使用ESM规范导入TSM的导出值，但与<strong>esModuleInterop</strong>不同的是<strong>allowSyntheticDefaultImports</strong>不会影响编译结果，仅仅让其通过TS的类型检查阶段而已。</p>
+<p>开启esModuleInterop后改变输出结果，因为它会在编译时将代码变为符合ESM规范的代码，但它不会像allowSyntheticDefaultImports仅仅是隐藏错误信息，因此无需担心会导致运行时错误。</p>
+<p>并且，当esModuleInterop可用时会自动开启allowSyntheticDefaultImports。</p>
+<h1 id="根据是否使用ts编写是否包含类型定义文件是否通过types提供类型定义的优先级来选择库">根据[是否使用TS编写&gt;是否包含类型定义文件&gt;是否通过@types提供类型定义]的优先级来选择库</h1>
+<p>库的选择是一个开发应用时的关键问题，在多个类似的库中如何选择往往取决于个人，一般都会参考GitHub的star数、npm下载量、社区活跃度、文档的丰富度等等。另外，使用TypeScript开发应用时，库是否是由TypeScript开发的也是重要的指标之一。</p>
+<p>如果在库的star数等指标差不多的情况下，笔者一般会按下列指标为优先级来选择：</p>
+<ol>
+<li>是使用TypeScript编写的库吗？</li>
+<li>库中是否包含类型定义文件？</li>
+<li>库是否通过@types/*提供类型定义？</li>
+</ol>
+<p>可能会有人认为“如果提供了所有类型定义的话就没问题了吧”，但如果不是用TS编写的库，库本身的类型和类型定义文件中的类型不一致的可能性还是很高的。</p>
+<h2 id="是使用typescript编写的库吗">是使用TypeScript编写的库吗？</h2>
+<p>当库本身是用TS编写的，则使用tsc工具会自动生成类型定义文件，提供最具有可信度的定义文件。除非代码中存在大量用<code>as</code>标注的类型断言，否则生成的类型定义与实际的API之间基本是一致的。</p>
+<h2 id="库中是否包含类型定义文件">库中是否包含类型定义文件？</h2>
+<p>即便当库本身是用JS写的，如果类型定义文件与库文件是放在一起的，那么在发布新版本时也会大概率的一起更新类型定义文件。那么就算出于疏忽类型定义和实际API之间存在偏差，“类型定义落后于实际API”的可能性也比较小。</p>
+<h2 id="库是否通过types提供类型定义">库是否通过@types/*提供类型定义？</h2>
+<p>通过@type/*提供类型定义的库中，类型定义文件与库本身是分开的两个仓库，基本类型定义文件的更新会晚于库本身。因此有可能在使用最新版本的库时，还是用的旧的API类型描述文件。</p>
+<p>并且由于**@types/***是作为一个独立的包提供，与库本身的版本也不会保持一致。如果一个名为foo的库最新版本为1.2.0，它@types/foo的最新版本可能是相差很远的2.3.1，因此必须知道库本身对应的类型定义文件的版本。</p>
+<p>要尽可能避免选择没有类型定义文件的库，并且还要避免使用使用**@types/***类型定义文件的库。</p>
+<p>实际上，React(react包)本来计划在16.7版本中提供最新的Hooks API，最后推迟到了16.8中发布，但其引用了在@types/react的16.7版本中定义的原本不存在的Hooks API类型，因此在使用时编译器和tsc都不会出现类型检查的错误，但在运行时会报错。</p>
+<h1 id="定义nullablet类型">定义Nullable<!-- raw HTML omitted -->类型</h1>
+<p>JS中有null与undefined两种表示空值的值，是区分使用这两个值，还是统一使用他们，根据项目的不同方案会有差异，甚至在大公司与工具库中的使用方式也是摇摆不定。</p>
+<p>两者的主要不同列举如下：</p>
+<ul>
+<li>null
+<ul>
+<li>除非开发者有意使用它否则不存在的值</li>
+<li>当给预设了参数默认值的函数传递参数时，传递null</li>
+<li>存在使用typeof运算符时会返回&quot;object&quot;的遗留问题</li>
+</ul>
+</li>
+<li>undefined
+<ul>
+<li>引用一个不存在属性时的返回值</li>
+<li>当给预设了参数默认值的函数传递参数时，使用undefined作为默认值</li>
+<li>undefined自身为全局对象undeinfed属性的引用，在ES5.0(非严格模式下)之前可以修改全局对象的undefined属性。</li>
+</ul>
+</li>
+</ul>
+<p>关于他们的使用大致分为两派：undefined统一派和区分使用派，不管哪种都各有优劣，不过开发过程中重要的不是好坏而是制定的规则。笔者个人的话常将null与undefined区分使用。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// `null` `undefined` 区别使用党
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Nullable</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">T</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>;
+
+<span style="color:#75715e">// `null` `undefined` 统一党
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Nullable</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">T</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>;
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getUserName</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">user</span>: <span style="color:#66d9ef">Nullable</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">userModel</span>.<span style="color:#a6e22e">UserModel</span><span style="color:#f92672">&gt;</span>) <span style="color:#f92672">=&gt;</span> ...;
+</code></pre></div><p>当变量和函数参数接受空值时，定义一个<strong>Nullable<!-- raw HTML omitted --></strong>类型是很方便的。TS中除了null和undeinfed外提供了<strong>NonNullable<!-- raw HTML omitted --></strong>标准类型，而没有提供<strong>Nullable<!-- raw HTML omitted --></strong>类型。原因的话如上所述，项目不同方案不同。</p>
+<h2 id="空值统一使用undefined--typescript开发团队">空值：统一使用undefined ─ TypeScript开发团队</h2>
+<p>TS开发团队的代码风格指南中写道“不区分null与undefined，空值必须使用undefined表示”。</p>
+<p>该风格指南仅仅是在开发TypeScript语言时的指南，不会强制/推荐给TS用户。也许是因为很多人误解了这个问题，<del>让TS开发团队很头大</del>，因此在文档页面的顶部写有大(也指字体)量的声明。</p>
+<p><img src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.ap-northeast-1.amazonaws.com%2F0%2F575808%2Fea2f038a-ec1c-5555-1e81-cb8c7cbbdf86.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=8e2537ee32afd015ab7feca7e13d2dea" alt=""></p>
+<p><a href="https://github.com/microsoft/TypeScript/wiki/Coding-guidelines">Coding guidelines · microsoft/TypeScript Wiki</a></p>
+<p>笔者看到了从「无声明-&gt;一行声明-&gt;如图所示的大量声明」的过程，深感其中的怨念。</p>
+<h2 id="空值区分null与undefined的使用--facebook">空值：区分null与undefined的使用 ─ Facebook</h2>
+<p>另一方面，在开发了React等库的Facebook开发团队中，明确的区分了null与undefined的使用。</p>
+<p>现在的React中，若定义一个不渲染任何DOM节点的组件时，必须返回null而不是undefined。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 不会渲染任何东西的React组件
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">NoRendering</span> <span style="color:#f92672">=</span> () <span style="color:#f92672">=&gt;</span> {
+  ...
+
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span>; <span style="color:#75715e">// `undefined`会发生错误
+</span><span style="color:#75715e"></span>};
+</code></pre></div><h1 id="区分使用可选参数与nullablet类型">区分使用可选参数与Nullable<!-- raw HTML omitted -->类型</h1>
+<p>与上面声明的<strong>Nullable<!-- raw HTML omitted --></strong>类型相关的还有TS的可选参数(Optional Parameters)，可以用于对象的属性与函数的参数。不过很多项目中都误解了可选参数的用法，它是<em>允许省略值</em>的语法而不是<em>接受空值</em>的语法。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 虽然这些函数的上下文及API均不一样，但形参b与c的类型都为`string | undefined`，可选参数会自动包含undefined
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">func1</span>(<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>, <span style="color:#a6e22e">c</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>) <span style="color:#f92672">=&gt;</span> ...;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">func2</span>(<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">b?</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">c?</span>: <span style="color:#66d9ef">string</span>) <span style="color:#f92672">=&gt;</span> ...;
+
+<span style="color:#75715e">// Nullable（ T | undefined ）允许「传入空值」
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">func1</span>(<span style="color:#e6db74">&#34;a&#34;</span>, <span style="color:#66d9ef">undefined</span>, <span style="color:#66d9ef">undefined</span>);
+<span style="color:#a6e22e">func1</span>(<span style="color:#e6db74">&#34;a&#34;</span>); <span style="color:#75715e">// Error
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// Optional Parameters允许「省略值」
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">func2</span>(<span style="color:#e6db74">&#34;a&#34;</span>, <span style="color:#66d9ef">undefined</span>, <span style="color:#66d9ef">undefined</span>);
+<span style="color:#a6e22e">func2</span>(<span style="color:#e6db74">&#34;a&#34;</span>); <span style="color:#75715e">// OK
+</span></code></pre></div><p>即使在JavaScript中，如果不显式传入指定的对象属性或函数参数的话，它的值也为undefined，若带有可选参数标记则其值的类型为<code>T | undefined</code>，不能传入null。</p>
+<p>从类型安全性的角度看推荐区分使用Nullable与可选参数，甚至可以说不要使用可选参数。因为在添加新的参数时，可选参数不会明确其影响范围，使引用其的其他模块或功能不可控。在定义React组件时，需要考虑考虑是否应该在Props中使用可选参数。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 定义React中Props类型的场景（with-JSDoc）
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> {
+  <span style="color:#75715e">/** 要显示的用户，若不存在则显示表示不存在的信息 */</span>
+  <span style="color:#a6e22e">account</span>: <span style="color:#66d9ef">Nullable</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">userModel</span>.<span style="color:#a6e22e">UserModel</span><span style="color:#f92672">&gt;</span>;
+  <span style="color:#75715e">/**
+</span><span style="color:#75715e">   *  是否禁用
+</span><span style="color:#75715e">   *  @default false
+</span><span style="color:#75715e">   */</span>
+  <span style="color:#a6e22e">isDisabled?</span>: <span style="color:#66d9ef">boolean</span>;
+};
+</code></pre></div><h1 id="不要使用除了any外不安全的类型">不要使用除了any外不安全的类型</h1>
+<p>TS是一门保证类型安全的语言，因此在面向TS初学者的文章与书中经常写到:「尽量不要使用<em>any</em>来标记变量类型」，应该没有什么反对的人，不过除了<em>any</em>之外还存在其他不安全的类型。</p>
+<p>比如新手很容易遇到的{}类型，{}类型不仅与空对象是同种类型，同时也是与空值外的任何类型一致的低安全性类型。</p>
+<p>TS中有允许将描述的值作为类型的字面量类型(Literal Types)，可以灵活的定义类型。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 字面量类型
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">A</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;sample&#34;</span>;
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">A</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;foo&#34;</span>;
+     <span style="color:#f92672">^^^</span>
+<span style="color:#75715e">// Type &#39;&#34;foo&#34;&#39; is not assignable to type &#39;&#34;sample&#34;&#39;.ts(2322)
+</span></code></pre></div><p>不过需要注意对象类型的定义。TS的类型系统是基于结构性子类型的，再加上JS具有的「对象式操作」特性，这两个因素的存在使得在操作对象时有时会很反直觉。</p>
+<h2 id="js对象式操作的特性">JS「对象式操作」的特性</h2>
+<p>与Ruby等语言不同，JS不是仅包含对象的语言，还存在number与string等原始值类型(基本类型)。与此同时，这些原始值中可以引用对应的标准对象的属性，在这个过程中，原始值会暂时转换成对应的标准对象，当评估(evaluated)结束后返回原始值。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">num1</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;         <span style="color:#75715e">// number类型的原始值
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">num2</span> <span style="color:#f92672">=</span> Number(<span style="color:#ae81ff">123</span>); <span style="color:#75715e">// number类型的标准对象
+</span><span style="color:#75715e"></span>
+<span style="color:#a6e22e">num2</span>.<span style="color:#a6e22e">toString</span>(); <span style="color:#75715e">// &#34;123&#34; -- 引用标准对象的属性(对应的函数) 
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">num1</span>.<span style="color:#a6e22e">toString</span>(); <span style="color:#75715e">// &#34;123&#34; -- 原始值-&gt;转换为标准对象-&gt;引用属性-&gt;评估后返回原始值
+</span></code></pre></div><p>换言之，由于这种原始值可以调用对应标准对象属性的特性，因此被称为「对象式操作」的语言。不过，也有不存在标准对象的原始值，即空值undefined与null，因此可以加个前缀<em>几乎</em>，即「JS中几乎都可以像对象般操作」。</p>
+<h2 id="typescript结构子类型带来的坑">TypeScript结构子类型带来的坑</h2>
+<p>由于TS的类型具有结构子类型的特性，因此当子结构一致时则认为是同种类型。比如不管是String对象还是Number对象，他们的原型中都包含toString属性，因此下面的对象会被认为是同种类型。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 若对象具有相同的属性，则会被当做同种类型
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">StringConvertible</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">toString</span><span style="color:#f92672">:</span> () <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">void</span>;
+};
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">StringConvertible</span> <span style="color:#f92672">=</span> Number(<span style="color:#ae81ff">123</span>);
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">StringConvertible</span> <span style="color:#f92672">=</span> String(<span style="color:#e6db74">&#34;123&#34;</span>);
+</code></pre></div><p>由于之前说到的「除个别情况，原始值均可如对象般操作」的特性，因此上面的类型与他们的原始值也是同一类型。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 即便换成原始值，其对应的对象也满足子结构的一致
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">StringConvertible</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">toString</span><span style="color:#f92672">:</span> () <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">void</span>;
+};
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">StringConvertible</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">StringConvertible</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;123&#34;</span>;
+</code></pre></div><p>看到这里大概就明白了，{}类型看起来是与空对象同类型，它可以像对象一样操作所有值，而「像对象一样操作所有值=除空值以外的所有值」，因此两者也是同一类型，这样看来与any类型基本没什么区别。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">EmptyObject</span> <span style="color:#f92672">=</span> {};
+
+<span style="color:#75715e">// 以下写法均不会报错
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;123&#34;</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">c</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">d</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> [];
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">e</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> {};
+
+<span style="color:#75715e">// 以下写法均会报错
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">f</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">g</span>: <span style="color:#66d9ef">EmptyObject</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>;
+</code></pre></div><p>一般不会直接使用*{}*像<code>type XXX = {}</code>这样定义类型，需要与泛型结合。根据笔者经验，经常在<code>Foo&lt;{}&gt;</code>等这样的地方传入使用。</p>
+<h1 id="活用编辑器的重命名功能">活用编辑器的重命名功能</h1>
+<p><img src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.ap-northeast-1.amazonaws.com%2F0%2F575808%2F2c03eda1-592c-c7b7-bbe8-715245e01dee.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=be832726bd6a833d47371b1ccc84148d" alt=""></p>
+<p>TypeScript中的<a href="https://github.com/microsoft/TypeScript/wiki/Using-the-Language-Service-API">Language Service</a>可以让不同的编辑器实现类似的代码解析与代码跳转功能（通过提供的ServiceHost）。(Language Service的具体情况笔者不太了解)Language Service是个很棒的功能，基本没见到有什么bug。</p>
+<p>若想在VS Code等IDE型编辑器中利用这个服务，可以使用重命名功能，VS Code中使用F2快捷键调出重命名功能，使用频率较高但键位太远，笔者将其改为了Ctrl+R快捷键。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 重命名对象类型的属性
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#a6e22e">type</span> <span style="color:#a6e22e">UserModel</span> <span style="color:#f92672">=</span> {
+<span style="color:#f92672">-</span>   <span style="color:#a6e22e">email</span>: <span style="color:#66d9ef">string</span>;
+<span style="color:#f92672">+</span>   <span style="color:#a6e22e">emailAddress</span>: <span style="color:#66d9ef">string</span>;
+};
+
+<span style="color:#75715e">// 在规范化类型引用的地方也会自动被重命名
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">type</span> <span style="color:#a6e22e">Props</span> <span style="color:#f92672">=</span> {
+<span style="color:#f92672">-</span>   <span style="color:#a6e22e">email</span>: <span style="color:#66d9ef">userModel.UserModel</span>[<span style="color:#e6db74">&#34;email&#34;</span>];
+<span style="color:#f92672">+</span>   <span style="color:#a6e22e">email</span>: <span style="color:#66d9ef">userModel.UserModel</span>[<span style="color:#e6db74">&#34;emailAddress&#34;</span>];
+};
+</code></pre></div><p>TS的重命名功能，会分析文件内所有引用该变量的模块(ESM/CommonJS)，并重命名所有目标变量，因此无需使用grep来查看受影响的部分。并且它不仅会检查参数和函数名，类型别名、对象属性名与枚举键名等也会被重命名，非常方便重构。</p>
+<h1 id="参考">参考</h1>
+<ol>
+<li><a href="http://wiki.commonjs.org/wiki/Modules/Meta">Modules/Meta - CommonJS Spec Wiki</a></li>
+<li><a href="https://www.ecma-international.org/ecma-262/6.0">ECMAScript 2015 Language Specification – ECMA-262 6th Edition</a></li>
+<li><a href="https://github.com/Microsoft/TypeScript/issues/23477#issuecomment-382098253">Nullable types on TypeScript - aka Maybe Types from Flow · Issue #23477 · microsoft/TypeScript</a></li>
+<li><a href="https://github.com/microsoft/TypeScript/wiki/Coding-guidelines#null-and-undefined">Coding guidelines · microsoft/TypeScript Wiki</a></li>
+</ol>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/">http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/typescript'>typescript</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

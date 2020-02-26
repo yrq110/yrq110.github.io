@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dom on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/dom/</link>
+    <description>Recent content in dom on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 30 Sep 2019 14:48:28 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/dom/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>从交互示例体验两类坐标相关DOM API</title>
+      <link>http://yrq110.me/post/front-end/position-used-api-introduction/</link>
+      <pubDate>Mon, 30 Sep 2019 14:48:28 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/position-used-api-introduction/</guid>
+      <description>&lt;p&gt;通常坐标多数是用来处理交互时的鼠标位置，其实使用坐标还可以进行&lt;strong&gt;元素选择&lt;/strong&gt;与&lt;strong&gt;获取内容偏移量&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;介绍与坐标相关的几个冷门API: elementFromPoint()、caretPositionFromPoint()等。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>incremental-dom简析</title>
+      <link>http://yrq110.me/post/front-end/brief-of-incremental-dom/</link>
+      <pubDate>Tue, 15 Jan 2019 15:18:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/brief-of-incremental-dom/</guid>
+      <description>&lt;p&gt;想必对于virtual-dom(以下简称vdom)已经耳熟能详了，react和vue均使用了vdom，在更新与DOM时具有效率高、速度快的特点(相比于直接操作dom)。那么incremental-dom又是什么呢？&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

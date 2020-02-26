@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>微信小程序WebSocket实践 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="微信小程序WebSocket实践 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-04-04T11:36:35&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-04-04T11:36:35&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="微信小程序WebSocket实践">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/wxapp-ws-practice/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">微信小程序WebSocket实践</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年4月4日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>微信基础库1.7.0之后的版本提供了新版的WebSocket API，考虑到兼容性问题，尝试整合新旧两种版本的API，进行简单的封装。</p>
+<p>从以下几个角度对微信小程序中所提供的WebSocket API封装</p>
+<ul>
+<li>API兼容性</li>
+<li>重连机制</li>
+</ul>
+<h2 id="小程序websocket-api">小程序WebSocket API</h2>
+<h3 id="旧版websocket-api的使用">旧版WebSocket API的使用</h3>
+<ul>
+<li>创建 - wx.connectSocket</li>
+<li>发送消息 - sendSocketMessage</li>
+<li>监听事件 - onSocketOpen</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">socketMsgQueue</span> <span style="color:#f92672">=</span> []
+<span style="color:#75715e">// 连接socket
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">connectSocket</span>({
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;test.php&#39;</span>
+})
+<span style="color:#75715e">// 监听打开事件
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketOpen</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">res</span>) {
+  <span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">socketMsgQueue</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>){
+    <span style="color:#a6e22e">sendSocketMessage</span>(<span style="color:#a6e22e">socketMsgQueue</span>[<span style="color:#a6e22e">i</span>])
+  }
+  <span style="color:#a6e22e">socketMsgQueue</span> <span style="color:#f92672">=</span> []
+})
+<span style="color:#75715e">// 发送消息
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">sendSocketMessage</span>(<span style="color:#a6e22e">msg</span>) {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">socketOpen</span>) {
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">sendSocketMessage</span>({
+      <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span><span style="color:#a6e22e">msg</span>
+    })
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">socketMsgQueue</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">msg</span>)
+  }
+}
+</code></pre></div><h3 id="新版websocket-api的使用">新版WebSocket API的使用</h3>
+<p>支持1.7.0+，连接后会返回一个SocketTask对象，在该对象上监听该连接的各种事件与执行发送消息等操作。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">socketTask</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">connectSocket</span>({
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;test.php&#39;</span>
+})
+<span style="color:#75715e">// 监听打开事件
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">socketTask</span>.<span style="color:#a6e22e">onOpen</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">res</span>) {
+  <span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+  <span style="color:#75715e">// 发送信息
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">socketTask</span>.<span style="color:#a6e22e">send</span>({<span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;hello world&#34;</span>})
+})
+</code></pre></div><h3 id="并发数">并发数</h3>
+<ul>
+<li><code>1.7.0</code> 及以上版本，最多可以同时存在 <code>5</code> 个 <code>WebSocket</code> 连接。</li>
+<li><code>1.7.0</code> 以下版本，一个小程序同时只能有一个 <code>WebSocket</code> 连接，如果当前已存在一个 WebSocket 连接，会自动关闭该连接，并重新创建一个 <code>WebSocket</code> 连接。</li>
+</ul>
+<h2 id="模块封装">模块封装</h2>
+<p>简单封装封装一个兼容新旧socketAPI的模块，仅考虑存在单个socket连接的情况</p>
+<h3 id="创建与事件监听">创建与事件监听</h3>
+<ul>
+<li>新版: 在socket连接时会返回一个socketTask对象，监听事件是在该对象的基础上进行</li>
+<li>旧版: 直接使用wx放进行创建与监听方法</li>
+</ul>
+<p>统一创建与添加监听函数</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">init</span>() {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">st</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">connect</span>()
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">st</span>)
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">manualClose</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+}
+</code></pre></div><p>创建连接</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">connect</span>() {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">st</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">connectSocket</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">server</span>)
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">st</span>
+}
+</code></pre></div><p>添加事件监听函数</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">st</span>) {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">st</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">undefined</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">st</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onOpen</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">openHandle</span>())
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onError</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">errorHandle</span>())
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onClose</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">closeHandle</span>())
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onMessage</span>(<span style="color:#a6e22e">res</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageHandle</span>(<span style="color:#a6e22e">res</span>))
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketOpen</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">openHandle</span>())
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketError</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">errorHandle</span>())
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketClose</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">closeHandle</span>())
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketMessage</span>(<span style="color:#a6e22e">res</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageHandle</span>(<span style="color:#a6e22e">res</span>))
+  }
+}
+</code></pre></div><h3 id="重连机制">重连机制</h3>
+<p>预设标记位</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>; <span style="color:#75715e">// 避免多次同时重连
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>; <span style="color:#75715e">// 连接状态
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">manualClose</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>; <span style="color:#75715e">// 主动断开标记
+</span></code></pre></div><p>在连接关闭监听函数中执行重连</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">closeHandle</span>() {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#39;WebSocket closed&#39;</span>)
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+  <span style="color:#75715e">// 不论是error还是close都会触发close事件，统一在这里进行重连
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// 初次连接失败不进行重连(失败不会进入到onOpen的监听事件中，那时未声明retryTimes变量)
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">undefined</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">reconnect</span>()
+}
+</code></pre></div><p>判断重连锁与是否主动断开进行重连</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">reconnect</span>() {
+  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span>) <span style="color:#66d9ef">return</span>
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+  <span style="color:#75715e">// 若manualClose为true，表明不是主动断开
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">manualClose</span>) {
+    <span style="color:#75715e">// 开始重连
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retry</span>()
+    }, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryInterval</span>)
+  }
+}
+</code></pre></div><p>重连函数，包含重连次数的限制</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">retry</span>() {
+  <span style="color:#66d9ef">if</span> (
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">||</span>
+    (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryCount</span> <span style="color:#f92672">&lt;=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span>)
+  ) {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">warn</span>(<span style="color:#e6db74">`reconnect ending. reconnect </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> times`</span>)
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span>) {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">closeCallback</span>()
+    }
+    <span style="color:#66d9ef">return</span>
+  }
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">warn</span>(<span style="color:#e6db74">`[ </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> ]th reconnect WebSocket...`</span>)
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">init</span>()
+}
+</code></pre></div><h3 id="消息队列">消息队列</h3>
+<p>添加消息队列，当重连后自动发送缓存消息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">openHandle</span>() {
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageQueue</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">e</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">e</span>))
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageQueue</span> <span style="color:#f92672">=</span> []
+}
+</code></pre></div><p>若发送时断开则先将消息缓存到消息队列中</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">value</span>) {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgWrapper</span>(<span style="color:#a6e22e">value</span>)
+  <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">data</span>)
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageQueue</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">data</span>)
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>) {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">send</span>({ <span style="color:#a6e22e">data</span> })
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">sendSocketMessage</span>({ <span style="color:#a6e22e">data</span> })
+    }
+  }
+}
+</code></pre></div><h3 id="辅助函数">辅助函数</h3>
+<p>添加一些包裹消息格式的工具函数</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">messageIndex</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="color:#a6e22e">helper</span> <span style="color:#f92672">=</span> {
+  <span style="color:#a6e22e">isPlainObject</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">val</span> =&gt;
+    Object.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">val</span>) <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;[object Object]&#39;</span>,
+  <span style="color:#a6e22e">nextId</span><span style="color:#f92672">:</span> () =&gt; {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageIndex</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageIndex</span>
+  },
+  <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> () =&gt; Date.<span style="color:#a6e22e">now</span>() <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;.&#39;</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">nextId</span>()
+};
+<span style="color:#a6e22e">msgWrapper</span>(<span style="color:#a6e22e">data</span>) {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">msg</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>
+  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">isPlainObject</span>(<span style="color:#a6e22e">msg</span>)) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">type</span>) {
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">msg</span>
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgWrapper</span>({ <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">id</span>() })
+    }
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgWrapper</span>({ <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">id</span>() })
+  }
+}
+</code></pre></div><h3 id="完整代码">完整代码</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">WXWebSocket</span> {
+  <span style="color:#a6e22e">messageQueue</span> <span style="color:#f92672">=</span> []; <span style="color:#75715e">// 消息队列
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>; <span style="color:#75715e">// 避免多次同时重连
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+  <span style="color:#a6e22e">manualClose</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>; <span style="color:#75715e">// 主动断开标记
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">constructor</span>(<span style="color:#a6e22e">config</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">config</span> <span style="color:#f92672">||</span> {}
+    <span style="color:#75715e">// 重连间隔
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryInterval</span> <span style="color:#f92672">=</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">retryInterval</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">retryInterval</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">100</span>
+        <span style="color:#f92672">?</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">retryInterval</span>
+        <span style="color:#f92672">:</span> <span style="color:#ae81ff">3000</span>
+    <span style="color:#75715e">// 重连次数
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryCount</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">retryCount</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">5</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">init</span>()
+  }
+  <span style="color:#a6e22e">init</span>() {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">st</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">connect</span>()
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">st</span>)
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">manualClose</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+  }
+  <span style="color:#a6e22e">connect</span>() {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">st</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">connectSocket</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">server</span>)
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;current socket: &#39;</span>, <span style="color:#a6e22e">st</span>)
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">st</span>
+  }
+  <span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">st</span>) {
+    <span style="color:#75715e">// 添加监听事件
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">st</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">undefined</span>) {
+      <span style="color:#75715e">// 若存在SocketTask，则要通过readyState判断状态
+</span><span style="color:#75715e"></span>      <span style="color:#75715e">// CONNECTING: 0
+</span><span style="color:#75715e"></span>      <span style="color:#75715e">// OPEN: 1
+</span><span style="color:#75715e"></span>      <span style="color:#75715e">// CLOSING: 2
+</span><span style="color:#75715e"></span>      <span style="color:#75715e">// CLOSE: 3
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">st</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onOpen</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">openHandle</span>())
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onError</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">errorHandle</span>())
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onClose</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">closeHandle</span>())
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onMessage</span>(<span style="color:#a6e22e">res</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageHandle</span>(<span style="color:#a6e22e">res</span>))
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketOpen</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">openHandle</span>())
+      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketError</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">errorHandle</span>())
+      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketClose</span>(() =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">closeHandle</span>())
+      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">onSocketMessage</span>(<span style="color:#a6e22e">res</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageHandle</span>(<span style="color:#a6e22e">res</span>))
+    }
+  }
+  <span style="color:#a6e22e">close</span>() {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">manualClose</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>) {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">close</span>()
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">closeSocket</span>()
+    }
+  }
+  <span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">value</span>) {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;send value: &#39;</span>, <span style="color:#a6e22e">value</span>)
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgWrapper</span>(<span style="color:#a6e22e">value</span>)
+    <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">data</span>)
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span>) {
+      <span style="color:#75715e">// add new message to queue
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageQueue</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">data</span>)
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">send</span>({ <span style="color:#a6e22e">data</span> })
+      } <span style="color:#66d9ef">else</span> {
+        <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">sendSocketMessage</span>({ <span style="color:#a6e22e">data</span> })
+      }
+    }
+  }
+  <span style="color:#a6e22e">openHandle</span>() {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#39;WebSocket connected&#39;</span>)
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageQueue</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">e</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">e</span>))
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageQueue</span> <span style="color:#f92672">=</span> []
+  }
+  <span style="color:#a6e22e">errorHandle</span>() {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">error</span>(<span style="color:#e6db74">&#39;WebSocket error&#39;</span>)
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+  }
+  <span style="color:#a6e22e">closeHandle</span>() {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#39;WebSocket closed&#39;</span>)
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+    <span style="color:#75715e">// 不论是error还是close都会触发close事件，统一在这里进行重连
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 初次连接失败不进行重连(失败不会进入到onOpen的监听事件中，那时未声明retryTimes变量)
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">undefined</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">reconnect</span>()
+  }
+  <span style="color:#a6e22e">reconnect</span>() {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span>) <span style="color:#66d9ef">return</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryLock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    <span style="color:#75715e">// 若manualClose为true，表明不是主动断开
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">manualClose</span>) {
+      <span style="color:#75715e">// 开始重连
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retry</span>()
+      }, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryInterval</span>)
+    }
+  }
+  <span style="color:#a6e22e">retry</span>() {
+    <span style="color:#66d9ef">if</span> (
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span> <span style="color:#f92672">||</span>
+      (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryCount</span> <span style="color:#f92672">&lt;=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span>)
+    ) {
+      <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">warn</span>(<span style="color:#e6db74">`end reconnect. reconnect </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> times`</span>)
+      <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketOpen</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">closeCallback</span>()
+      }
+      <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">warn</span>(<span style="color:#e6db74">`[ </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">retryTimes</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> ]th reconnect WebSocket...`</span>)
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">init</span>()
+  }
+  <span style="color:#a6e22e">messageHandle</span>(<span style="color:#a6e22e">res</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">responseCallback</span>(<span style="color:#a6e22e">res</span>)
+  }
+  <span style="color:#a6e22e">msgWrapper</span>(<span style="color:#a6e22e">data</span>) {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">msg</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">isPlainObject</span>(<span style="color:#a6e22e">msg</span>)) {
+      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">type</span>) {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">msg</span>
+      } <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgWrapper</span>({ <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">id</span>() })
+      }
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgWrapper</span>({ <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">id</span>() })
+    }
+  }
+  <span style="color:#a6e22e">messageIndex</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  <span style="color:#a6e22e">helper</span> <span style="color:#f92672">=</span> {
+    <span style="color:#a6e22e">isPlainObject</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">val</span> =&gt;
+      Object.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">val</span>) <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;[object Object]&#39;</span>,
+    <span style="color:#a6e22e">nextId</span><span style="color:#f92672">:</span> () =&gt; {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageIndex</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">messageIndex</span>
+    },
+    <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> () =&gt; Date.<span style="color:#a6e22e">now</span>() <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;.&#39;</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">helper</span>.<span style="color:#a6e22e">nextId</span>()
+  };
+}
+
+</code></pre></div><h3 id="使用">使用</h3>
+<p><strong>创建连接</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">socketTask</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">WXWebSocket</span>({
+  <span style="color:#a6e22e">server</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">wsServerOption</span>,
+  <span style="color:#a6e22e">responseCallback</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span> =&gt; {
+    <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">data</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>
+    <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">msg</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">parse</span>(<span style="color:#a6e22e">data</span>)
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgStack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">msg</span>)
+  },
+  <span style="color:#a6e22e">closeCallback</span><span style="color:#f92672">:</span> () =&gt; {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>
+  }
+})
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">socketTask</span>
+</code></pre></div><p><strong>发送消息</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">sendWSMessage</span>(<span style="color:#a6e22e">msg</span>) {
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">msgStack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">msg</span>)
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">msg</span>)
+},
+</code></pre></div><p><strong>关闭连接</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">closeWS</span>() {
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span>) <span style="color:#66d9ef">return</span>
+  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span>.<span style="color:#a6e22e">socketOpen</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span>.<span style="color:#a6e22e">close</span>()
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">socketTask</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>
+  }
+}
+</code></pre></div>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/wxapp-ws-practice/">http://yrq110.me/post/front-end/wxapp-ws-practice/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/code-snippets-of-wxapp/">微信小程序开发中的代码片段总结</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/wxapp'>wxapp</a></li>
+                
+                <li><a href='http://yrq110.me/tags/websocket'>websocket</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

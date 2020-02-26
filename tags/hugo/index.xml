@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hugo on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/hugo/</link>
+    <description>Recent content in hugo on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Thu, 27 Dec 2018 17:24:55 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>使用Hugo构建博客</title>
+      <link>http://yrq110.me/post/go/build-blog-by-using-hugo/</link>
+      <pubDate>Thu, 27 Dec 2018 17:24:55 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/go/build-blog-by-using-hugo/</guid>
+      <description>&lt;p&gt;尝试用&lt;a href=&#34;https://gohugo.io/&#34;&gt;hugo&lt;/a&gt;构建博客，替代之前的hexo，主要原因：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;静态文件生成，当文章数量变多时，hexo(node)的生成速度明显变慢，而hugo(go)依旧像飞毛腿一样。&lt;/li&gt;
+&lt;li&gt;功能，从文档上来看，在&lt;a href=&#34;https://gohugo.io/content-management/&#34;&gt;内容管理&lt;/a&gt;与&lt;a href=&#34;https://gohugo.io/templates/&#34;&gt;模板功能&lt;/a&gt;方面，hugo所提供的更加丰富和灵活。&lt;/li&gt;
+&lt;li&gt;主题，不像之前喜欢比较花里胡哨的了，hugo的主题就满足了。&lt;/li&gt;
+&lt;li&gt;个人需求较少，hexo其实也没有深入使用。&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

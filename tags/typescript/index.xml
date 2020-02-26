@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>typescript on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/typescript/</link>
+    <description>Recent content in typescript on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 19 Feb 2020 01:44:17 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/typescript/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Web应用开发中的TypeScript最佳实践</title>
+      <link>http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/</link>
+      <pubDate>Wed, 19 Feb 2020 01:44:17 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/</guid>
+      <description>&lt;p&gt;TS的开发经验总结，主要包含以下几个方面的内容&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;编译工具的特点与比较&lt;/li&gt;
+&lt;li&gt;语言特性的选择与使用&lt;/li&gt;
+&lt;li&gt;模块系统与自定义类型&lt;/li&gt;
+&lt;li&gt;其他使用技巧&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;译自：&lt;a href=&#34;https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&amp;amp;utm_campaign=db304f7430-Qiita_newsletter_399_02_12_2020&amp;amp;utm_medium=email&amp;amp;utm_term=0_e44feaa081-db304f7430-33396633&#34;&gt;TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得&lt;/a&gt; | &lt;a href=&#34;https://qiita.com/jagaapple&#34;&gt;@jagaapple&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

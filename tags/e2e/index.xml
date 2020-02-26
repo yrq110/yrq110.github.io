@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>e2e on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/e2e/</link>
+    <description>Recent content in e2e on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Tue, 17 Dec 2019 14:14:30 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/e2e/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>puppeteer&#43;canvas的e2e测试实践</title>
+      <link>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</link>
+      <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</guid>
+      <description>&lt;p&gt;针对具有复杂canvas交互操作的e2e测试，尝试使用puppeteer模拟复杂canvas交互，自动执行相关测试用例，利于减少重复的人工验证和回归测试。&lt;/p&gt;
+&lt;p&gt;主要做了&lt;strong&gt;封装通用操作&lt;/strong&gt;，&lt;strong&gt;添加操作辅助类&lt;/strong&gt;，&lt;strong&gt;与测试工具集成&lt;/strong&gt;，&lt;strong&gt;结果验证&lt;/strong&gt;等工作。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

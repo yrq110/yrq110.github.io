@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>node on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/node/</link>
+    <description>Recent content in node on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 19 Apr 2019 13:12:34 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/node/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>puppeteer常用API浅析</title>
+      <link>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</link>
+      <pubDate>Fri, 19 Apr 2019 13:12:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</guid>
+      <description>&lt;p&gt;从CDP与源码的角度简单分析下pptr中的常用API&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>可爱的puppeteer使用小技巧</title>
+      <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
+      <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</guid>
+      <description>&lt;p&gt;总结一些使用puppetter的小技巧，从下面几个角度：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;浏览器的启动与请求&lt;/li&gt;
+&lt;li&gt;页面的加载与渲染&lt;/li&gt;
+&lt;li&gt;执行优化与状态管理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>当我们在说事件循环时，我们在说什么</title>
+      <link>http://yrq110.me/post/front-end/under-the-hood-at-event-loop/</link>
+      <pubDate>Thu, 10 Jan 2019 16:01:58 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/under-the-hood-at-event-loop/</guid>
+      <description>&lt;p&gt;梳理一下浏览器与Node中的事件循环，它们的一些特征:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;浏览器: 不同的实现, browser context&lt;/li&gt;
+&lt;li&gt;Node: 多个阶段, process.nextTick()&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>微信小程序开发中的代码片段总结 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="微信小程序开发中的代码片段总结 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-03-15T13:36:32&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-03-15T13:36:32&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="微信小程序开发中的代码片段总结">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/code-snippets-of-wxapp/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">微信小程序开发中的代码片段总结</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年3月15日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>经过一段时间的微信小程序开发，总结了一些代码片段，主要是以下几个方面：</p>
+<ul>
+<li>小程序（授权、网络、录音、图像）</li>
+<li>mpvue（分包、全局变量、svg组件、组件class绑定）</li>
+</ul>
+<h2 id="授权逻辑">授权逻辑</h2>
+<ol>
+<li>初次请求 -&gt; 请求用户授权 -&gt; 同意授权(-&gt; 不同意授权 -&gt; 结束) -&gt; 使用对应功能</li>
+<li>二次请求 -&gt; 跳转小程序设置页面modal -&gt; 设置页面 -&gt; 开启scope -&gt; 使用对应功能</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">checkPermission</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">scope</span> =&gt;
+  <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getSetting</span>({
+      <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span> =&gt; {
+        <span style="color:#75715e">// 是否存在认证配置
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">hasAuthorized</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">authSetting</span>.<span style="color:#a6e22e">hasOwnProperty</span>(<span style="color:#a6e22e">scope</span>)
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hasAuthorized</span>) {
+          <span style="color:#75715e">// 已授权
+</span><span style="color:#75715e"></span>          <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">authSetting</span>[<span style="color:#a6e22e">scope</span>]) {
+            <span style="color:#a6e22e">resolve</span>(<span style="color:#e6db74">&#39;已授权&#39;</span>)
+            <span style="color:#66d9ef">return</span>
+          }
+          <span style="color:#75715e">// 未授权，提示进入小程序设置页面，wx限制:需要主动点击才能执行openSetting()，因此使用modal
+</span><span style="color:#75715e"></span>          <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">showModal</span>({
+            <span style="color:#a6e22e">title</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;没有权限&#39;</span>,
+            <span style="color:#a6e22e">content</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;体验该功能需要您授权功能权限，现在前往设置开启&#39;</span>,
+            <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span> =&gt; {
+              <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">confirm</span>) {
+                <span style="color:#a6e22e">reject</span>(<span style="color:#e6db74">&#39;设置页面&#39;</span>)
+                <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">openSetting</span>()
+              } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">cancel</span>) {
+                <span style="color:#a6e22e">reject</span>(<span style="color:#e6db74">&#39;不进入设置&#39;</span>)
+              }
+            }
+          })
+        }
+      },
+      <span style="color:#a6e22e">fail</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">err</span> =&gt; { <span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">err</span>.<span style="color:#a6e22e">errMsg</span>) }
+    })
+  })
+</code></pre></div><h2 id="网络">网络</h2>
+<p>微信小程序不同环境下网络请求的不同之处：</p>
+<ul>
+<li>预览及体验模式下会<code>校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书</code>，需要在后台设置允许的request,upload等域名</li>
+<li>真机调试与测试环境模式下，可以在详情里勾选不校验选项跳过校验</li>
+</ul>
+<h3 id="网络请求与拦截器">网络请求与拦截器</h3>
+<p>可以使用<a href="https://github.com/wendux/fly">fly.js</a>作为小程序的网络请求库，在使用拦截器等功能时也较为方便。</p>
+<p>小程序中一个特殊的地方是: <code>content-type</code>为<code>multipart/formdata</code>类型的POST请求不能通过自定义请求的方式发出，需要使用小程序的<a href="https://developers.weixin.qq.com/miniprogram/dev/api/wx.uploadFile.html"><code>wx.uploadFile</code></a>方法，可以如下简单封装下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">formDataRequest</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">filePath</span>, <span style="color:#a6e22e">params</span> <span style="color:#f92672">=</span> {}) =&gt;
+  <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">token</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getStorageSync</span>(<span style="color:#e6db74">&#34;token&#34;</span>)
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">uploadFile</span>({
+      <span style="color:#a6e22e">url</span>,
+      <span style="color:#a6e22e">filePath</span>,
+      <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;file&#34;</span>,
+      <span style="color:#a6e22e">header</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">token</span> },
+      <span style="color:#a6e22e">formData</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">params</span>,
+      <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">res</span> =&gt; {
+        <span style="color:#75715e">// 一些对响应数据的处理...
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>)
+      },
+      <span style="color:#a6e22e">fail</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">err</span> =&gt; {
+        <span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">err</span>)
+      }
+    });
+  });
+</code></pre></div><h3 id="判断是否在线">判断是否在线</h3>
+<p>使用<a href="https://developers.weixin.qq.com/miniprogram/dev/api/wx.getNetworkType.html"><code>getNetworkType</code></a>方法即可</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">isOnline</span> <span style="color:#f92672">=</span> () =&gt;
+  <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getNetworkType</span>({
+      <span style="color:#a6e22e">success</span>(<span style="color:#a6e22e">res</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">networkType</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">networkType</span>
+        <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">networkType</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;none&#39;</span>)
+      },
+      <span style="color:#a6e22e">failed</span>(<span style="color:#a6e22e">res</span>) {
+        <span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">res</span>)
+      }
+    })
+  })
+</code></pre></div><h2 id="录音处理">录音处理</h2>
+<p>主要是录音时的API检测、状态控制与事件监听器的处理。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 1. 检测录音管理器是否可用
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getRecorderManager</span>) {
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recorder</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getRecorderManager</span>()
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">addRecorderListener</span>()
+} <span style="color:#66d9ef">else</span> {
+  <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">showModal</span>({
+    <span style="color:#a6e22e">title</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;提示&#39;</span>,
+    <span style="color:#a6e22e">showCancel</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+    <span style="color:#a6e22e">content</span><span style="color:#f92672">:</span>
+      <span style="color:#e6db74">&#39;当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。&#39;</span>
+  })
+}
+<span style="color:#75715e">// 2. 录音前检测scope.record授权情况
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">startRecordHandle</span>() {
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recorder</span>) <span style="color:#66d9ef">return</span>
+  <span style="color:#66d9ef">try</span> { <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">checkPermission</span>(<span style="color:#e6db74">&#39;scope.record&#39;</span>) }  
+  <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">err</span>) { <span style="color:#66d9ef">return</span> }
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recorder</span>.<span style="color:#a6e22e">start</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">audioOption</span>)
+},
+<span style="color:#75715e">// 3. 添加事件监听器
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">addRecorderListener</span>() {
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recorder</span>) <span style="color:#66d9ef">return</span>
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recorder</span>.<span style="color:#a6e22e">onStart</span>(() =&gt; {
+    ...
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recording</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+  })
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recorder</span>.<span style="color:#a6e22e">onStop</span>(<span style="color:#a6e22e">path</span> =&gt; {
+    ...
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recording</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">audioPath</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">tempFilePath</span>
+  })
+}
+</code></pre></div><p>若需实现长按录音的场景，可以结合<code>lonepress</code>事件与<code>setTimeout</code>来实现。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">template</span>&gt;
+  &lt;<span style="color:#f92672">g-button</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;primary&#34;</span>
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">long-press</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;longPressHandle&#34;</span>
+  /&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;
+&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> {
+  <span style="color:#a6e22e">methods</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">longPressHandle</span>() {
+      <span style="color:#75715e">// longpress事件会在350ms后出发
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canRecordStart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    },
+    <span style="color:#a6e22e">touchStartHandle</span>() {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canRecordStart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+      <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">delay</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">400</span> <span style="color:#75715e">// 设置400ms延迟
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canRecordStart</span>) {
+          <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">startRecordHandle</span>()
+        }
+      }, <span style="color:#a6e22e">delay</span>)
+    },
+    <span style="color:#a6e22e">touchEndHandle</span>() {
+      <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canRecordStart</span>) <span style="color:#66d9ef">return</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canRecordStart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">stopRecordHandle</span>()
+    },
+  }
+}
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><h2 id="图像处理">图像处理</h2>
+<h3 id="获取图片信息">获取图片信息</h3>
+<p><code>wx.getImageInfo</code></p>
+<p>不管是CDN的图片还是本地选择的图片都需要先使用<code>getImageInfo</code>获取图片的基本信息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">getImageInfo</span>(<span style="color:#a6e22e">img</span>) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getImageInfo</span>({
+      <span style="color:#a6e22e">src</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">img</span>,
+      <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span> =&gt; { <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">res</span>) },
+      <span style="color:#a6e22e">fail</span><span style="color:#f92672">:</span> () =&gt; { <span style="color:#a6e22e">reject</span>(<span style="color:#e6db74">&#39;获取图片信息失败&#39;</span>) }
+    })
+  })
+}
+</code></pre></div><h3 id="选择图片">选择图片</h3>
+<p><code>wx.chooseImage</code></p>
+<p>让用户选择本地相册中或拍摄的图片，以选择单张图片为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">MB</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1024</span>
+<span style="color:#a6e22e">chooseSingleImage</span>() {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">chooseImage</span>({
+      <span style="color:#a6e22e">count</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>, <span style="color:#75715e">// 默认9，为1获取单张图片
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">sizeType</span><span style="color:#f92672">:</span> [<span style="color:#e6db74">&#39;original&#39;</span>, <span style="color:#e6db74">&#39;compressed&#39;</span>], <span style="color:#75715e">// 指定是原图还是压缩图，默认二者都有
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">sourceType</span><span style="color:#f92672">:</span> [<span style="color:#e6db74">&#39;album&#39;</span>, <span style="color:#e6db74">&#39;camera&#39;</span>], <span style="color:#75715e">// 指定来源是相册还是相机，默认二者都有
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span> =&gt; {
+        <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">file</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">tempFiles</span>[<span style="color:#ae81ff">0</span>]
+        <span style="color:#75715e">// 可以对所选图片尺寸或其他属性做一些限制
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// let { size } = file
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// if (size &gt; 20 * MB) { reject(&#39;图片大小应小于20MB&#39;) }
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">file</span>)
+      },
+      <span style="color:#a6e22e">fail</span><span style="color:#f92672">:</span> () =&gt; { <span style="color:#a6e22e">reject</span>(<span style="color:#e6db74">&#39;图片选取失败&#39;</span>) }
+    })
+  })
+}
+</code></pre></div><h3 id="读取图片">读取图片</h3>
+<p><code>wx.getFileSystemManager()</code></p>
+<p>使用小程序的FS相关API读取文件内容</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">readFileInBase64</span>(<span style="color:#a6e22e">filePath</span>) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getFileSystemManager</span>) {
+      <span style="color:#75715e">// 以base64编码读取图片
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">getFileSystemManager</span>().<span style="color:#a6e22e">readFile</span>({
+        <span style="color:#a6e22e">filePath</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">filePath</span>,
+        <span style="color:#a6e22e">encoding</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;base64&#39;</span>,
+        <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span> =&gt; { <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">res</span>) },
+        <span style="color:#a6e22e">file</span><span style="color:#f92672">:</span> () =&gt; { <span style="color:#a6e22e">reject</span>(<span style="color:#e6db74">&#39;读取文件失败&#39;</span>) }
+      })
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#75715e">// 兼容处理，若不支持则提示更新
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">wx</span>.<span style="color:#a6e22e">showModal</span>({
+        <span style="color:#a6e22e">title</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;提示&#39;</span>,
+        <span style="color:#a6e22e">showCancel</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+        <span style="color:#a6e22e">content</span><span style="color:#f92672">:</span>
+          <span style="color:#e6db74">&#39;当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。&#39;</span>
+      })
+    }
+  })
+}
+</code></pre></div><h3 id="canvas绘制图像">Canvas绘制图像</h3>
+<p>小程序中使用CanvasContext API与H5的形式基本相同。需要注意的是，在小程序中绘制canvas时尺寸的单位是<code>px</code>，而不是响应式的<code>rpx</code>。</p>
+<p>需要注意的是从基础库<code>1.9.90</code>开始<code>CanvasContext</code>的API变化了很多，在使用时需要注意兼容性，比如下面两个函数：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">drawPoint</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>) =&gt; {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">pointColor</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;#2ba5ff&#39;</span>
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">beginPath</span>()
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">arc</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>, <span style="color:#66d9ef">true</span>)
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">closePath</span>()
+  <span style="color:#75715e">// 兼容画布填充色方法
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillStyle</span>) {
+    <span style="color:#75715e">// 1.9.90+
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillStyle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">pointColor</span>
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">setFillStyle</span>(<span style="color:#a6e22e">pointColor</span>)
+  }
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fill</span>()
+}
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">drawRect</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">height</span>) =&gt; {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">marginColor</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;#ff0000&#39;</span>
+  <span style="color:#75715e">// 兼容笔触色彩方法
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">strokeStyle</span>) {
+    <span style="color:#75715e">// 1.9.90+
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">strokeStyle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">marginColor</span>
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">setStrokeStyle</span>(<span style="color:#a6e22e">marginColor</span>)
+  }
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">lineWidth</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">strokeRect</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">height</span>)
+}
+</code></pre></div><h1 id="mpvue">mpvue</h1>
+<h2 id="分包及分包预加载">分包及分包预加载</h2>
+<blockquote>
+<p>mpvue-loader: ^1.1.2</p>
+</blockquote>
+<p>直接在<code>app.json</code>中配置<code>subPackages</code>即可:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#960050;background-color:#1e0010">...</span>
+  <span style="color:#f92672">&#34;subPackages&#34;</span>: [
+    {
+      <span style="color:#f92672">&#34;root&#34;</span>: <span style="color:#e6db74">&#34;pages/module-bob/&#34;</span>,
+      <span style="color:#f92672">&#34;pages&#34;</span>: [<span style="color:#e6db74">&#34;subpage-a/main&#34;</span>, <span style="color:#e6db74">&#34;subpage-b/main&#34;</span>, <span style="color:#e6db74">&#34;subpage-c/main&#34;</span>]
+    },
+    {
+      <span style="color:#f92672">&#34;root&#34;</span>: <span style="color:#e6db74">&#34;pages/module-alice/&#34;</span>,
+      <span style="color:#f92672">&#34;pages&#34;</span>: [<span style="color:#e6db74">&#34;subpage-d/main&#34;</span>, <span style="color:#e6db74">&#34;subpage-e/main&#34;</span>, <span style="color:#e6db74">&#34;subpage-f/main&#34;</span>]
+    }
+  ],
+  <span style="color:#f92672">&#34;preloadRule&#34;</span>: {
+    <span style="color:#f92672">&#34;pages/index/main&#34;</span>: {
+      <span style="color:#f92672">&#34;network&#34;</span>: <span style="color:#e6db74">&#34;wifi&#34;</span>,
+      <span style="color:#f92672">&#34;packages&#34;</span>: [<span style="color:#e6db74">&#34;pages/module-bob&#34;</span>]
+    }
+  }
+  <span style="color:#960050;background-color:#1e0010">...</span>
+}
+</code></pre></div><p>其中<code>preloadRule</code>为预加载配置，上面的设置意为进入index页面时当为wifi网络时预加载module-bob子包。</p>
+<ul>
+<li><a href="https://segmentfault.com/a/1190000017064732">https://segmentfault.com/a/1190000017064732</a></li>
+</ul>
+<h2 id="使用globaldata全局变量">使用globalData全局变量</h2>
+<p>在小程序中将自带的<a href=""><code>globalData</code></a>挂载到vue的原型方法上。</p>
+<p>在src中的<code>main.js</code>最后添加如下代码:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">Vue</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;vue&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">App</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./App&#39;</span>
+...
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vue</span>(<span style="color:#a6e22e">App</span>)
+<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">$mount</span>()
+<span style="color:#a6e22e">Vue</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">$globalData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">getApp</span>().<span style="color:#a6e22e">globalData</span> <span style="color:#75715e">// 添加该行
+</span></code></pre></div><p>然后就可以在其他页面使用该命令操作全局变量了</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// page A
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$globalData</span>.<span style="color:#a6e22e">userInfo</span> <span style="color:#f92672">=</span> {<span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;yrq110&#39;</span>}
+<span style="color:#75715e">// page B
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$globalData</span>.<span style="color:#a6e22e">userInfo</span>)
+<span style="color:#75715e">// page C
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$globalData</span>.<span style="color:#a6e22e">userInfo</span>.<span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;yrq110&#39;</span>
+</code></pre></div><p>注意，在子页面中使用globalData时，将变量赋值的操作放在data中是无效的，如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> {
+  <span style="color:#a6e22e">data</span>() {
+    <span style="color:#75715e">// 无效
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// isIPX: this.$globalData.isIPX
+</span><span style="color:#75715e"></span>  },
+  <span style="color:#a6e22e">computed</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">isIPX</span>() {
+      <span style="color:#75715e">// 有效
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$globalData</span>.<span style="color:#a6e22e">isIPX</span>
+    }
+  },
+}
+</code></pre></div><h2 id="svg图标组件的默认尺寸与预设尺寸">SVG图标组件的默认尺寸与预设尺寸</h2>
+<p>在图标组件中加载svg时使用父标签上的尺寸作为默认尺寸，并在传入特定props参数时使用预设尺寸。</p>
+<p>业务中碰到了这个问题，使用如下的方法进行了解决：在image组件的load事件处理器中将加载的原始尺寸绑定到style上。</p>
+<p>实现了：</p>
+<ol>
+<li>默认使用svg标签自带尺寸</li>
+<li>当传入size属性则使用预设尺寸</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">template</span>&gt;
+  &lt;<span style="color:#f92672">image</span>
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">load</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;loadHandle&#34;</span>
+    <span style="color:#a6e22e">:style</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{ width: !size ? iconWidth + &#39;rpx&#39; : &#39;100%&#39;, height: !size ? iconHeight + &#39;rpx&#39; : &#39;100%&#39;}&#34;</span>
+    <span style="color:#960050;background-color:#1e0010">...</span>
+  /&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;
+
+&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> {
+  ...
+  <span style="color:#a6e22e">data</span>() {
+    <span style="color:#66d9ef">return</span> {
+      <span style="color:#a6e22e">iconWidth</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+      <span style="color:#a6e22e">iconHeight</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+      <span style="color:#a6e22e">loaded</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span> <span style="color:#75715e">// 是否加载完毕
+</span><span style="color:#75715e"></span>    }
+  },
+  <span style="color:#a6e22e">props</span><span style="color:#f92672">:</span> {
+    ...
+    <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> String
+  },
+  <span style="color:#a6e22e">computed</span><span style="color:#f92672">:</span> {
+    ...
+    <span style="color:#a6e22e">getSizeClass</span>() {
+      <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">size</span> } <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">size</span> <span style="color:#f92672">||</span> <span style="color:#e6db74">&#39;&#39;</span>
+    },
+    <span style="color:#a6e22e">setSizeStyle</span>() {
+      <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">loaded</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">size</span>) <span style="color:#66d9ef">return</span> {}
+      <span style="color:#66d9ef">return</span> {
+        <span style="color:#a6e22e">width</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">iconWidth</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;rpx&#39;</span>,
+        <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">iconHeight</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;rpx&#39;</span>
+      }
+    }
+  },
+  <span style="color:#a6e22e">methods</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">loadHandle</span>(<span style="color:#a6e22e">e</span>) {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">loaded</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+      <span style="color:#75715e">// 使用加载后的默认尺寸
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">detail</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">mp</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">iconWidth</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">detail</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">iconHeight</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">detail</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>
+    }
+  }
+  ...
+}
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><h2 id="解决无法在组件上绑定class的trick">解决无法在组件上绑定class的trick</h2>
+<p>将keyword作为prop属性传入组件并通过Computed属性绑定到class上，这样在外部引用时就可以根据keyword设置自定义的样式了。</p>
+<p>组件中的关键代码如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">template</span>&gt;
+  &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">:class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;customClass&#34;</span>&gt;
+    &lt;<span style="color:#f92672">slot</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
+  &lt;/<span style="color:#f92672">div</span>&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;
+
+&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> {
+  ...
+  <span style="color:#a6e22e">props</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> String,
+    ...
+  },
+  <span style="color:#a6e22e">computed</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">customClass</span>() {
+      <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">type</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">||</span> <span style="color:#e6db74">&#39;&#39;</span>
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">type</span>
+    }
+  }
+  ...
+}
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><p>在外部引用时就可以使用自定义class来在外部使用样式了:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">template</span>&gt;
+  ...
+  &lt;<span style="color:#f92672">g-button</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;custom-button&#34;</span>&gt;&lt;/<span style="color:#f92672">g-button</span>&gt;
+  ...
+&lt;/<span style="color:#f92672">template</span>&gt;
+...
+&lt;<span style="color:#f92672">style</span> <span style="color:#a6e22e">lang</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scss&#34;</span>&gt;
+<span style="color:#f92672">...</span>
+.<span style="color:#a6e22e">custom-button</span> {
+  <span style="color:#960050;background-color:#1e0010">.text</span> <span style="color:#960050;background-color:#1e0010">{</span>
+    <span style="color:#66d9ef">margin-left</span>: <span style="color:#ae81ff">10</span><span style="color:#66d9ef">px</span>;
+  }
+<span style="color:#f92672">...</span>
+<span style="color:#960050;background-color:#1e0010">}</span>
+&lt;/<span style="color:#f92672">style</span>&gt;
+</code></pre></div>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/code-snippets-of-wxapp/">http://yrq110.me/post/front-end/code-snippets-of-wxapp/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/wxapp'>wxapp</a></li>
+                
+                <li><a href='http://yrq110.me/tags/mpvue'>mpvue</a></li>
+                
+                <li><a href='http://yrq110.me/tags/vue'>vue</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

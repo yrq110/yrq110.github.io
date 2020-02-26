@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>skia on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/skia/</link>
+    <description>Recent content in skia on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 16 Sep 2019 09:51:34 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/skia/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Canvas从小试牛刀到庖丁解牛</title>
+      <link>http://yrq110.me/post/front-end/canvas-travel/</link>
+      <pubDate>Mon, 16 Sep 2019 09:51:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/canvas-travel/</guid>
+      <description>&lt;p&gt;关于canvas的使用经验及深入学习总结，主要有以下几个方面：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;基础绘图、平滑曲线和交互变换&lt;/li&gt;
+&lt;li&gt;状态管理及图像处理&lt;/li&gt;
+&lt;li&gt;性能优化与绘制原理&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>鸟瞰Docker | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="鸟瞰Docker - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-02-25T00:46:02&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-02-25T00:46:02&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="鸟瞰Docker">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/devops/overview-of-docker/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">鸟瞰Docker</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年2月25日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/devops'>devops</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>原文是来自<a href="https://qiita.com/kotaro-dr/items/b1024c7d200a75b992fc">qiita</a>的<a href="https://qiita.com/kotaro-dr">etaro</a>所写的系列文章。</p>
+<p>从镜像和容器到docker-compose、docker-machine、docker swarm等将docker相关的概念一网打尽，理解docker的组成与结构。</p>
+<p><em>相关配图没空P了&gt;_&lt;</em></p>
+<h1 id="docker是什么">docker是什么</h1>
+<p><code>docker</code>是Docker公司提供的实现了<code>容器型虚拟化技术</code>的产品。</p>
+<h2 id="虚拟化">虚拟化？</h2>
+<p>指的是在PC或服务器所安装的OS（主机OS）上，虚拟化出了其他的机器。</p>
+<p>简单的说虚拟化就是<code>在一台笔电上启动了另一台虚拟化的笔电</code>。</p>
+<p>以前的虚拟化(主机型虚拟化，即虚拟机)是像下图这样。在主机OS上使用虚拟化的软件/Hypervisor，创建虚拟机/访客OS，在其中构建应用执行环境后再执行应用程序。</p>
+<p><img src="https://camo.qiitausercontent.com/52d5734228a167dc7da5b4036d9e9c9eec8dbb1b/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f34643437333334362d373034352d653936392d373635662d3334383963353664343134352e706e67" alt=""></p>
+<h2 id="容器型虚拟化">容器型虚拟化？</h2>
+<p>除此之外，就是Docker所提供的容器型虚拟化了。</p>
+<p>容器型虚拟化的构成由下图所示。</p>
+<p><img src="https://camo.qiitausercontent.com/e1829a8f27e2a0656d1d7bdfea06fc98b0b565b8/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f39393631326331312d343262302d393438352d376261342d3230336231313862393534352e706e67" alt=""></p>
+<p>与以前的主机型虚拟化不同，不用启动访客OS，而是使用在主机OS上运行的Docker Engine，构建被称作容器的中间件环境，并在其中进行应用的各种操作。</p>
+<p>这样一来，与之前的主机型虚拟化相比，容器型虚拟化具有非常显著的轻量化特征。</p>
+<h2 id="使用docker的好处">使用Docker的好处</h2>
+<p>现在的各种软件一般都不是凭一己之力开发出来的，均是由多个开发者协力完成的，那么如果协调多人的应用/系统开发工作呢?</p>
+<p>最重要的是程序代码的共享。目前一般都是使用Git来进行版本管理，笔者所在团队使用的代码共享服务有Github、Bitbucket和Gitlab等等。不过，就算解决了代码的共享问题，还存在着不能共享代码执行环境的问题，这样一来代码可能就无法正常的跑起来。</p>
+<p>共享执行环境并不简单，开发者使用的可能是Mac OSX、Windows等不同的系统，并且安装的软件也因人而异。因此，可以利用虚拟化创建扁平化的虚拟机，通过共享这个虚拟机的生成配置来共享执行环境。但在这之前由于主机型虚拟机的操作较为繁琐，并且共享的文件也较大，有着明显不轻量的问题。</p>
+<p>另一方面，Docker的容器型虚拟化就可以实现轻量化的操作与环境文件的共享。Docker在管理程序执行环境应用的同时，也有一些像DockerHub等用于管理共享文件的服务。使用Docker的一个主要优点是: 不论是多么复杂的结构，都可以使用Docker轻松共享与管理任何机器上的软件执行环境。</p>
+<p>下面，来看看Docker中的常见概念吧。</p>
+<h1 id="docker-engine">Docker Engine</h1>
+<p>使用Docker必须启动的程序。</p>
+<p>在PC上安装Docker for mac、Docker for Windows或Docker Toolbox等软件，启动Docker Engine后便可使用Docker了。</p>
+<h1 id="镜像-image">镜像 image</h1>
+<p>启动容器(=应用的执行环境)时所需要的配置文件，可以理解为[镜像是容器的源，从镜像启动容器]。</p>
+<p>通过在Docker中共享这个镜像，可以在不同的机器上运行相同的容器(执行环境)。</p>
+<h2 id="标签-tag">标签 Tag</h2>
+<p>Docker的镜像具有标签的概念，指的是镜像的版本。</p>
+<p>比如说，在下面的这个nginx镜像中有着<code>1.14-perl</code>和<code>alpine</code>等不同标签，可以根据情况选择使用的版本。</p>
+<p><img src="https://camo.qiitausercontent.com/f0349dc5e96905da38aa586ba1005357072c2ddf/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f63646165653035342d356138372d316566642d646461302d3931663236353938336433332e706e67" alt=""></p>
+<p>若不指定标签，则默认使用<code>latest</code>标签。</p>
+<p>镜像名称与标签名称使用<code>:</code>分隔，如下所示：</p>
+<pre><code>nginx:latest
+nginx:1.14-perl
+</code></pre><h2 id="镜像的组成">镜像的组成</h2>
+<p>镜像有以下两个特点:</p>
+<ol>
+<li>分层的结构</li>
+<li>生成镜像后无法再次编辑(只读)</li>
+</ol>
+<p><img src="https://camo.qiitausercontent.com/30b8872915b4437a88860d666329b2f7ebf21549/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37666266626538392d383162352d393165382d316566612d3331616134386163346531632e706e67" alt=""></p>
+<p>镜像是由不同层级组成的，每次安装一个中间件时都会叠加一层(一个安装命令会累积一层)。</p>
+<p>并且镜像的层是只读不能编辑的，只有从镜像启动容器后的容器层是可以编辑的。</p>
+<p>从镜像启动容器后，在容器内安装任何中间件的改动均会保存到容器层中，可以再次从容器中生成(commit)镜像。</p>
+<h2 id="准备镜像">准备镜像</h2>
+<p>使用如下命令确定本地主机中的镜像:</p>
+<pre><code>$ docker images
+</code></pre><p>接下来为了执行容器，需要准备作为容器源的镜像。</p>
+<p>镜像的获得方法:</p>
+<ol>
+<li>获取别人制作的镜像(主要从Docker Hub中获取)</li>
+<li>自己制作(修改他人镜像)</li>
+</ol>
+<h3 id="1-从docker-hub获取镜像">1. 从Docker Hub获取镜像</h3>
+<p>Docker Hub上公开了各种安装不同中间件的镜像，根据自己的需要使用如下命令获取镜像。</p>
+<pre><code>$ docker pull 镜像名     # 从docker hub(docker的托管服务器)获取镜像
+</code></pre><h3 id="2-通过dockerfile生成镜像">2. 通过Dockerfile生成镜像</h3>
+<p>创建名为<code>Dockerfiile</code>的文本文件，在其中记录有关构建镜像的配置，就通过Dockerfile可以自己生成镜像了。</p>
+<p>可以进行各种操作，下面仅介绍最基础的部分:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> 镜像名:标签名　　　　　　　# 引用的镜像</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> 安装package等的命令     <span style="color:#75715e"># 这里记录的命令会在安装中间件时执行，叠加镜像层</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">CMD</span> 指定命令　　　　　　　　<span style="color:#75715e"># 生成容器后执行命令</span><span style="color:#960050;background-color:#1e0010">
+</span></code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker build -t 构建后的镜像名称 .
+</code></pre></div><p><code>-t</code>选项用来命名生成的镜像。并且在生成image时传给docker daemon的文件区域称作构建上下文，在镜像名之后进行设置(例子中的<code>.</code>表示当前路径下)。</p>
+<p>由于在build命令执行时需要在构建上下文中加载作为设置的Dockerfile，因此必须将Dockerfile放在构建上下文中。</p>
+<p>在不更改Dockerfile的情况下进行构建会使用构建缓存，将看到之前构建的信息，需要注意的是就算在平时构建中的RUN指令后使用update命令也是不起作用的。</p>
+<p>不使用缓存进行构建:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker build —no-cache -t docker-whale
+</code></pre></div><h1 id="容器-container">容器 container</h1>
+<p>准备好了镜像，就可以使用镜像来启动容器(应用的执行环境)了。</p>
+<h2 id="从image启动容器">从image启动容器</h2>
+<p>通过镜像创建容器</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker create --name 起的容器名 镜像名
+</code></pre></div><p>启动容器</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker start 容器名
+</code></pre></div><p>到目前已经看到了如何从DockerHub获取想要的镜像，创建容器，与启动命令。有一个命令同时具有这些命令的效果:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run 镜像名
+</code></pre></div><p><code>docker run</code>包含了以下步骤:</p>
+<ul>
+<li>docker pull : 从DockerHub取得镜像</li>
+<li>docker create ：使用取得的镜像创建容器</li>
+<li>docker start ：启动创建的容器</li>
+</ul>
+<p>可以使用<code>docker run</code>命令简化操作，相当于依次执行了上述命令。</p>
+<h2 id="容器的操作命令">容器的操作命令</h2>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令</th>
+<th>其他</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看容器</td>
+<td><code>docker ps (-a)</code></td>
+<td>默认显示运行中的容器，<code>-a</code>表示查看存在的所有容器</td>
+</tr>
+<tr>
+<td>容器详情</td>
+<td><code>docker inspect 容器名</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>创建容器</td>
+<td><code>docker create —name 自定义的容器名 -it 镜像名 /bin/bash</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>启动容器</td>
+<td><code>docker start 容器名</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>暂停容器</td>
+<td><code>docker pause 容器名</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>重启容器</td>
+<td><code>docker restart 容器名</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>停止容器</td>
+<td><code>docker stop 容器名</code></td>
+<td>停止容器后仍会留存在本地磁盘中，变为Exit状态。若不删除未使用的容器会对硬盘产生压力。</td>
+</tr>
+<tr>
+<td>删除容器</td>
+<td><code>docker rm (-f) 容器名</code></td>
+<td><code>-f</code>表示强制删除</td>
+</tr>
+<tr>
+<td>连接运行中容器shell（方法一）</td>
+<td><code>docker attach 运行中的容器名</code></td>
+<td>可以通过exit命令停止容器</td>
+</tr>
+<tr>
+<td>连接运行中容器shell（方法二）</td>
+<td><code>docker exec -it 运行中的容器名 /bin/bash</code></td>
+<td>使用了<code>-it</code>后无法使用<code>control + p, control + q</code>终止容器</td>
+</tr>
+<tr>
+<td>从容器生成镜像</td>
+<td><code>docker commit 容器名 镜像名:标签名</code></td>
+<td>将容器当前状态保存到指定的[镜像名:标签名]的镜像中</td>
+</tr>
+<tr>
+<td>查看镜像历史</td>
+<td><code>docker history 镜像名</code></td>
+<td>使用<code>docker commit</code>生成镜像后，在容器内部不会保存任何变更记录。因此应该在Dockerfile中添加对应image的更改记录来生成镜像</td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://camo.qiitausercontent.com/7de62ce86f2eba6862f8ca689603741a57d5bfc6/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37646130636238362d653330352d376663302d316665312d6437626534643836666662612e706e67" alt=""></p>
+<h1 id="docker-hub">Docker Hub</h1>
+<h2 id="在docker-hub共享镜像">在Docker Hub共享镜像</h2>
+<p>与Github类似，需要有Dockerhub的账号。</p>
+<p>操作步骤:</p>
+<ol>
+<li>
+<p>在Docker hub上创建仓库</p>
+</li>
+<li>
+<p>在本地生成image</p>
+</li>
+<li>
+<p>在本地CLI中登入docker hub</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker login
+</code></pre></div></li>
+<li>
+<p>给想要push的image加上标签</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker tag &lt;要push的image名&gt; &lt;docker hub ID&gt;/&lt;新的image名&gt;:&lt;标签名&gt;
+</code></pre></div></li>
+<li>
+<p>将本地镜像push到远程仓库</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker push ＜docker hub ID＞ / ＜image名＞：＜标签名＞
+</code></pre></div></li>
+</ol>
+<h1 id="docker数据管理">Docker数据管理</h1>
+<p>在操作运行中容器的数据时，可以进行读写的是最上一层(容器层)的数据。</p>
+<p>这样操作的一些不足之处:</p>
+<ul>
+<li>删除容器也会删除容器内的数据</li>
+<li>容器间不能共享数据</li>
+<li>在容器层写入数据时，使用的是联合文件系统(Union File System)，与一般的文件系统不同，写入速度较慢。</li>
+</ul>
+<p>因此，想要用Docker管理主机上的数据，需要在容器上挂载主机的存储空间。这样的方法有三种，下面来具体介绍。</p>
+<h2 id="卷-volume">卷 volume</h2>
+<p>是一种在主机上将自动生成的指定路径(/var/lib/docker/volumes)挂载到容器上的方法。</p>
+<p>主机上执行如下命令来创建卷(路径为<code>/var/lib/docker/volumes</code>)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker volume create 卷名
+</code></pre></div><p>在容器启动时设置挂载选项</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -itd --name 生成的容器名 --mount source<span style="color:#f92672">=[</span>挂载的卷名<span style="color:#f92672">]</span>,target<span style="color:#f92672">=[</span>容器上挂载的目标路径<span style="color:#f92672">]</span> 镜像名
+
+示例：
+$ docker run -itd --name mount-test --mount source<span style="color:#f92672">=</span>volume1,target<span style="color:#f92672">=</span>/app nginx
+</code></pre></div><p><code>--mount</code>(也可以使用-v选项)选项用来设置所挂载的卷。需要注意的是对于所挂载的卷路径，不应该直接在主机上的源路径进行操作。</p>
+<p>并且在同一主机内的不同容器，也可以通过分别挂载同一个卷来共享文件。</p>
+<p>除此之外，在多个容器共享卷的情况下，可以设置不同容器对卷的编辑权限。像如下这样指定容器的编辑权限:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -itd —name mount-c4 —mount source<span style="color:#f92672">=</span>copy-vol, destination<span style="color:#f92672">=</span>/etc/nginx,readonly nginx
+</code></pre></div><h3 id="卷的操作命令">卷的操作命令</h3>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令</th>
+<th>其他</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看卷</td>
+<td><code>docker volume ls</code></td>
+<td></td>
+</tr>
+<tr>
+<td>卷详情</td>
+<td><code>docker volume inspect volume名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>删除卷</td>
+<td><code>docker volume rm volume名</code></td>
+<td>删除容器后默认会保留卷，需要执行这个命令来手动删除卷</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bind-mount">bind mount</h2>
+<p><code>bind mount</code>可以挂载主机上的任意路径，与卷的挂载方式不同的是可以直接操作主机端的路径。</p>
+<p>没必要像卷一样事先设置，在容器启动时使用如下命令指定挂载目录即可。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -itd --name <span style="color:#f92672">[</span>容器名<span style="color:#f92672">]</span> --mount type<span style="color:#f92672">=</span>bind,source<span style="color:#f92672">=[</span>挂载源路径<span style="color:#f92672">]</span>,target<span style="color:#f92672">=[</span>挂载目标路径<span style="color:#f92672">]</span> 镜像名
+
+示例:
+$ docker run -itd —-name bind-mount-test —-mount type<span style="color:#f92672">=</span>bind,source<span style="color:#f92672">=</span>“<span style="color:#66d9ef">$(</span>pwd<span style="color:#66d9ef">)</span>”/mount,target<span style="color:#f92672">=</span>/app nginx
+</code></pre></div><p>在源路径不存在的情况下会报错，需要事先创建好(使用-v选项会自动生成)。</p>
+<p>使用bind mount时需要注意，若将主机上的空路径挂载到容器的/user等的情况下，容器上的数据就会消失，导致容器无法正常运行。</p>
+<p>除此之外，与卷一样也可以设置容器的编辑权限。</p>
+<h2 id="tmpfs临时fs">tmpfs(临时fs)</h2>
+<p><code>tmpfs</code>是将主机的内存区域挂载到容器上的方法。</p>
+<p>关闭主机时容器也会关闭，会释放所保存的数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -itd --name <span style="color:#f92672">[</span>容器名<span style="color:#f92672">]</span> --mount type<span style="color:#f92672">=</span>tmpfs,destination<span style="color:#f92672">=[</span>挂载目标路径<span style="color:#f92672">]</span> 镜像名
+
+具体例:
+$ docker run -itd --name tmpfs-test --mount type<span style="color:#f92672">=</span>tmpfs,destination<span style="color:#f92672">=</span>/app nginx
+</code></pre></div><p>在启动时，将&ndash;mount选项的type改为tmpfs即可挂载。</p>
+<p>为了不让容器无限制的使用主机上的内存，需要做一些限制:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -itd --name tmpfs-test --mount type<span style="color:#f92672">=</span>tmpfs,destination<span style="color:#f92672">=</span>/app,tmpfs-size<span style="color:#f92672">=</span>800000000,tmpfs-mode<span style="color:#f92672">=</span><span style="color:#ae81ff">800</span> nginx
+</code></pre></div><p>在选项中可以设置所使用的内存大小。</p>
+<h1 id="docker-network">Docker Network</h1>
+<p>至此为止，已经了解到了Docker可以使用多种镜像启动名为容器的应用执行环境，来方便的构建应用环境。</p>
+<p>接下来介绍如何在建立的多个容器间进行通信的方法。比如在Web页面的场景中，创建Wordpress和MySQL容器后，Wordpress容器需要与MySQL容器进行通信。这里所说的容器间通信方式，指的就是连接多个容器进行通信的Docker网络。</p>
+<p>Docker网络包含默认的三个网络(bridge, host, none)与自定义的独立网络。</p>
+<h2 id="bridge网络">bridge网络</h2>
+<p><code>bridge网络</code>是默认存在的网络，在容器生成时会默认连接该网络，使用的是bridge driver。</p>
+<p>在bridge网络中，可以指定同一网络内容器的IP地址进行通信。不过bridge网络中如果不定义DNS的话，就无法使用容器名与其它容器进行通信。也就是说，不指定网络启动的容器，可以使用IP地址进行通信，而不能使用容器名进行通信。</p>
+<p>默认状态下网络是非对外公开，使用<code>-p</code>选项可以指定开放到外部的能访问容器的端口。</p>
+<h2 id="host网络">host网络</h2>
+<p><code>host网络</code>是使用host driver的默认网络。</p>
+<p>连接的容器将具有与docker host相同的网络设置。比如说，在连接到host网络的容器上执行nginx容器时，监听host主机IP的80端口与监听nginx容器的80端口效果是一样的。</p>
+<p>因此，与bridge网络必须在容器启动时使用<code>-p</code>选项设置才能暴露外部端口不同，只要启动了容器，连接到Docker host IP的80端口就相当于连接了那个容器。</p>
+<h2 id="none网络">none网络</h2>
+<p><code>none网络</code>是默认存在的网路，连接该网络的容器将没有任何网络接口。</p>
+<p>需要注意的是，在连接none网络时，必须将其他网络全部断开。</p>
+<h2 id="独立网络">独立网络</h2>
+<p>创建<code>独立网络</code>的话就可以使用容器名称进行容器间的通信了。</p>
+<p>使用如下命令创建新的网络(默认的driver是bridge)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker network create 网络名
+</code></pre></div><p>连接指定网络中的指定容器</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker network connect 连接的网络名 容器名
+</code></pre></div><p>在用户自定义的独立网络中，Docker Daemon内置的DNS会解析容器名称并与IP绑定，因此可以使用容器名与其他容器建立连接。</p>
+<h2 id="网络管理命令">网络管理命令</h2>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令</th>
+<th>其他</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看网络</td>
+<td><code>docker network ls</code></td>
+<td>在主机上执行该命令会看到所有主机上的网络</td>
+</tr>
+<tr>
+<td>网络详情</td>
+<td><code>docker network inspect 网络名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>创建网络</td>
+<td><code>docker network create 网络名</code></td>
+<td>默认使用bridge driver</td>
+</tr>
+<tr>
+<td>连接容器网络</td>
+<td><code>docker network connect 连接的网络名 容器名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>中断容器网络</td>
+<td><code>docker network disconnect 网络名　容器名</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="docker-compose">Docker Compose</h1>
+<p><code>Docker Compose</code>是个用于预配置和运行多容器Docker应用的工具。</p>
+<p>若要在一个容器启动的同时，还要设置卷的挂载和所属的网络的话，需要使用如下这样的命令</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run -itd —name mount-test —mount source<span style="color:#f92672">=</span>volume-test, destination<span style="color:#f92672">=</span>/etc/nginx,readonly nginx
+</code></pre></div><p>可以看出，必须要在命令后面使用复杂的选项进行设置才行。</p>
+<p>这种操作比较麻烦，而且容易出错，无法便捷的共享执行环境。</p>
+<p>因此，可以进行自动化配置的<code>Docker Compose</code>油然而生。</p>
+<p>在使用Docker构建Web服务的执行环境时，只要使用一个<code>docker-compose.yml</code>文件来定义Web服务，DB服务，缓存服务等的配置，根据这个文件就可以启动与设置所有需要的容器了。</p>
+<p>操作流程如下:</p>
+<ol>
+<li>准备Dockerfile，并且准备好在Docker Hub等的镜像</li>
+<li>定义docker-compose.yml</li>
+<li>在yml文件的所在路径下，执行<code>$ docker-compose up</code></li>
+</ol>
+<h2 id="不使用docker-compose时">不使用Docker Compose时</h2>
+<p><img src="https://camo.qiitausercontent.com/f9d9c76ca2220972a216b2a9e55300b74a7d6835/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36376365303638312d376562352d363435312d633836312d6132646333313237656335372e706e67" alt=""></p>
+<p>必须要一个一个的设置各个容器的选项才能正常启动。</p>
+<h2 id="使用docker-compose时">使用Docker Compose时</h2>
+<p><img src="https://camo.qiitausercontent.com/bb16ede939c3772533715a916b0be87588d18b2c/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37626433323263352d336632332d393762352d653936372d6161663831343237633962312e706e67" alt=""></p>
+<p>定义<code>docker-compose.yml</code>后，使用<code>docker-compose up</code>命令就可以一次启动多个容器了。</p>
+<h2 id="docker-compose管理命令">docker-compose管理命令</h2>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令</th>
+<th>其他</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看使用docker-compose启动的容器</td>
+<td><code>docker-compose ps</code></td>
+<td></td>
+</tr>
+<tr>
+<td>根据docker-compose.yml配置启动容器</td>
+<td><code>docker-compose up</code></td>
+<td>已启动的容器会重启</td>
+</tr>
+<tr>
+<td>删除docker-compose创建的容器与网络</td>
+<td><code>docker-compose down (-v)</code></td>
+<td><code>-v</code>选项表示连同卷也一起删除</td>
+</tr>
+<tr>
+<td>在指定的服务容器内执行命令</td>
+<td><code>docker-compose run [容器名]　[命令]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>停止所有容器</td>
+<td><code>docker-compose stop</code></td>
+<td></td>
+</tr>
+<tr>
+<td>启动所有容器</td>
+<td><code>docker-compose start</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="docker-compose构建应用环境实例">docker-compose构建应用环境实例</h2>
+<p>以使用Python的Django构建Web应用的环境为例，介绍具体的流程:</p>
+<h3 id="1-准备镜像">1. 准备镜像</h3>
+<p>在创建的工作目录下创建Dockerfile。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> python:3  # 使用python3的执行环境镜像</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> PYTHONUNBUFFERED <span style="color:#ae81ff">1</span> <span style="color:#75715e"># 设置无缓冲的python标准输出环境变量</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> mkdir /service  <span style="color:#75715e"># 创建service目录</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /service # 移动到service目录</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> requirements.txt /service/  <span style="color:#75715e"># 将requirements.txt(事先创建)放在service目录</span> <span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> . /service/ <span style="color:#75715e"># 将构建所需文件全部放在`/service`目录下</span><span style="color:#960050;background-color:#1e0010">
+</span></code></pre></div><h3 id="2-创建docker-composeyml">2. 创建docker-compose.yml</h3>
+<p>创建如下的<code>docker-compose.yml</code>文件:</p>
+<p><code>docker-compose.yml</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml"><span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#39;3&#39;</span> <span style="color:#75715e"># 指定docker-compose的版本</span>
+<span style="color:#66d9ef">services</span>: <span style="color:#75715e"># 配置要启动服务的容器</span>
+  <span style="color:#66d9ef">db</span>: <span style="color:#75715e"># 启动db服务的容器</span>
+   <span style="color:#66d9ef">image</span>: postgres <span style="color:#75715e"># 使用dockerhub上的postgres:latest镜像</span>
+  <span style="color:#66d9ef">web</span>: <span style="color:#75715e"># 启动web服务的容器</span>
+   <span style="color:#66d9ef">build</span>: . <span style="color:#75715e"># 使用当前目录下的dockerfile创建镜像</span>
+   <span style="color:#66d9ef">command</span>: python3 manage.py runserver <span style="color:#ae81ff">0.0.0.0</span>:<span style="color:#ae81ff">8000</span>  ＃ 指定容器启动时执行的命令
+   <span style="color:#66d9ef">volumes</span>:
+    - .:/app <span style="color:#75715e"># 将当前路径通过bind mount的方式挂载到/app目录</span>
+   <span style="color:#66d9ef">posts</span>:
+    - <span style="color:#e6db74">&#34;8000:8000&#34;</span> <span style="color:#75715e"># 映射主机的8000端口到容器的8000端口</span>
+   <span style="color:#66d9ef">depends_on</span>: <span style="color:#75715e"># 启动web服务容器前优先启动db服务容器</span>
+    - db
+</code></pre></div><h3 id="3-执行docker-compose">3. 执行docker-compose</h3>
+<p>使用如下命令在启动使用<code>docker-compose.yml</code>定义的web服务容器同时，创建django项目。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose run web django-admin.py startproject test .
+</code></pre></div><p>使用<code>-d</code>选项可以在detached模式下(在后台)启动一系列容器。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose up -d
+</code></pre></div><p>共享这个<code>docker-compose.yml</code>文件，就可以在其他机器上通过<code>$ docker-compose up</code>命令来执行一系列容器了。</p>
+<h1 id="docker-machine">Docker Machine</h1>
+<p><code>Docker Machine</code>是一个可以通过CLI的方式管理(创建、启动、停止、重启)Docker Engine上虚拟机的工具。</p>
+<p>在macOS上Docker Machine使用虚拟机软件(Virtual Box)作为驱动来管理Docker Engine上搭载的虚拟机。</p>
+<p>如下图所示，可以在PC机内启动多个docker-machine并在其中使用docker的功能，比如执行容器等。</p>
+<p><img src="https://camo.qiitausercontent.com/493bb153c036cc3bb5203744007460f02a38c1ba/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f39323331626632662d626665612d323638392d626163372d3431323736666165656433642e706e67" alt=""></p>
+<p>此外，将由docker-machine启动的运行Docker Engine的虚拟机称为<code>Docker主机</code>。</p>
+<h2 id="docker-machine管理命令">Docker Machine管理命令</h2>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令</th>
+<th>其他</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看docker主机</td>
+<td><code>docker-machine ls</code></td>
+<td></td>
+</tr>
+<tr>
+<td>创建docker主机</td>
+<td><code>docker-machine create —driver virtualbox 所起的主机名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>启动docker主机</td>
+<td><code>docker-machine start 主机名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>停止docker主机</td>
+<td><code>docker-machine stop 主机名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>显示指定docker主机的环境变量</td>
+<td><code>docker-machine env 主机名</code></td>
+<td>通过修改环境变量可以改变所操作的docker主机</td>
+</tr>
+<tr>
+<td>激活指定docker主机</td>
+<td><code>eval $(docker-machine env 虚拟主机名)</code></td>
+<td>设置指定Docker主机的环境变量，激活指定的虚拟主机。反之，要解除docker主机的active状态需要先删除所设置的环境变量。</td>
+</tr>
+<tr>
+<td>ssh连接docker主机</td>
+<td><code>docker-machine ssh 主机名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>查看docker主机IP</td>
+<td><code>docker-machine ip 主机名</code></td>
+<td></td>
+</tr>
+<tr>
+<td>在docker主机上启动容器</td>
+<td><code>docker run 镜像名</code></td>
+<td>在激活状态下的Docker主机启动容器的话会在Active的Docker主机上执行容器。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="云平台上的docker主机">云平台上的docker主机</h2>
+<p>可以通过CLI使用Docker Machine来创建·管理AWS或GCE上搭载Docker Engine的虚拟机。</p>
+<p>下面是在AWS EC2上使用Docker Machine搭建Docker主机的流程。</p>
+<ol>
+<li>
+<p>从AWS的IAM得到一个命名比如为docker-test的访问凭证</p>
+<pre><code>访问ID : -----------------
+访问密钥： ----------------------
+</code></pre></li>
+<li>
+<p>将身份验证密钥写入主目录下<code>~/.aws</code>目录中创建的credential文件中</p>
+<p>设置amazonec2 driver，启动指定名称的虚拟机</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-machine create --driver amazonec2 --amazonec2-open-port <span style="color:#ae81ff">8000</span> --amazonec2-region ap-northeast-1 虚拟机名
+</code></pre></div></li>
+<li>
+<p>激活虚拟机</p>
+<p>激活AWS上创建虚拟机(docker主机)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-machine env 在AWS上启动的虚拟机名
+$ eval <span style="color:#66d9ef">$(</span>docker-machine env AWS虚拟机名<span style="color:#66d9ef">)</span>
+</code></pre></div></li>
+<li>
+<p>启动容器</p>
+<p>通过镜像启动容器</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run 镜像名
+</code></pre></div></li>
+<li>
+<p>其他基本操作</p>
+<p>查看虚拟机IP</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-machine ip Docker主机名
+</code></pre></div><p>停止虚拟机</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-machine stop Docker主机名
+</code></pre></div><p>删除虚拟机</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-machine rm Docker主机名
+</code></pre></div></li>
+</ol>
+<h1 id="docker-swarm">Docker Swarm</h1>
+<p><strong>Docker Swarm</strong>是用于自动化配置与管理多台Docker主机间或主机内容器间通信的一种方法(容器编排引擎, Container orchestration engine)。</p>
+<p>除了Docker Swarm外，容器编排引擎还有Kubernetes和DC/OS等等，这里主要介绍Docker Swarm。</p>
+<p><code>Swarm Mode</code>是Docker Engine的一种操作模式，它具有的功能如下：</p>
+<ul>
+<li>集群管理功能：使用网络连接多台机器将其作为一个聚合的系统管理的功能</li>
+<li>编排功能： 自动化管理多台机器的功能(负载均衡，容器启动等)</li>
+</ul>
+<p>更通俗的讲就是：</p>
+<ol>
+<li>用于连接Docker主机之间的网络</li>
+<li>在此基础上，提供了管理与操作<code>多台主机</code>与其<code>内部容器</code>的功能。</li>
+</ol>
+<p>之前介绍的<strong>Docker Network</strong>是连接<code>单个Docker主机内容器</code>的网络。</p>
+<h2 id="docker主机间的网络连接">Docker主机间的网络连接</h2>
+<p>一开始使用<code>Docker Swarm</code>的话，需要做的是<strong>使用网络连接多台Docker主机，使其成为一个名为Swarm的聚合系统</strong>。</p>
+<p>具体的来说，Docker主机从属于创建的Swarm，成为Swarm中节点的Docker主机是通过ingress overlay网络相互连接的。</p>
+<p>节点的种类分为：</p>
+<ol>
+<li>worker节点：执行容器</li>
+<li>manager节点： 执行容器 + 管理其他节点</li>
+</ol>
+<p><img src="https://camo.qiitausercontent.com/df993fe61ea872c4b0b9f57c00ab007823901503/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37366535363561302d656264642d373938622d616534372d3863663636643566626161332e706e67" alt=""></p>
+<h3 id="swarm管理命令">Swarm管理命令</h3>
+<ul>
+<li>
+<p>创建swarm集群</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-machine ip <span style="color:#f92672">[</span>Docker主机名<span style="color:#f92672">]</span>
+$ docker swarm init --advertise-addr 与其他节点通信所用IP<span style="color:#f92672">(</span>前面命令所显示的IP<span style="color:#f92672">)</span>
+</code></pre></div><p>执行在Active状态下的manager节点主机就可以创建Swarm集群了。</p>
+</li>
+<li>
+<p>查看swarm集群中的节点</p>
+<p>在manager节点上执行</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker node ls
+</code></pre></div></li>
+<li>
+<p>添加swarm集群中的worker节点</p>
+<p>在Active状态下的manager节点上执行</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker swarm join-token worker
+</code></pre></div><p>接着执行提示中的命令</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker swarm join --token <span style="color:#f92672">[</span>TOKEN<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span>
+</code></pre></div><p>激活成为worker节点的Docker主机，并执行</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ eval <span style="color:#66d9ef">$(</span>docker-machine env <span style="color:#f92672">[</span>成为worker节点的docker主机名<span style="color:#f92672">]</span><span style="color:#66d9ef">)</span>
+</code></pre></div></li>
+<li>
+<p>添加swarm集群中的manager节点</p>
+<p>将上面添加worker节点的第一条命令变为</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker swarm join-token manager
+</code></pre></div><p>其他步骤是一样的</p>
+</li>
+</ul>
+<p><strong>※注意点</strong></p>
+<p>Swarm使用的端口号：</p>
+<ul>
+<li>集群管理通信：TCP 2377</li>
+<li>节点间通信：TCP/UDP 7946</li>
+<li>overlay网络通信：UDP 4789</li>
+</ul>
+<p>需要注意下加入Swarm的Docker主机(节点)必须要<strong>暴露这些端口</strong>。</p>
+<h2 id="各种管理功能">各种管理功能</h2>
+<p>可以通过各种各样的管理功能，使用网络将Docker主机像蜂群(Swarm)一样聚合在一起。</p>
+<p>一般情况下，Web系统本地环境的服务是不止一台机器的，通常会将多台机器组合起来，将用户通过internet重定向到对应服务。</p>
+<p>对于这个<strong>多台机器</strong>使用<code>Docker machine</code>进行启动与管理，至于Docker主机间的相互连接、将其作为一个整体的管理、在系统的本地环境对外部的重定向进行负载均衡与提供其他多种功能，这些都是Docker Swarm所做的工作。</p>
+<p><img src="https://camo.qiitausercontent.com/4b879e1b2031256aa64ded28343369070293e221/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37383933623537322d356335352d303230392d343061612d3831613463656164303431642e706e67" alt=""></p>
+<h3 id="使用service与task跨docker主机启动容器">使用Service与Task跨Docker主机启动容器</h3>
+<p>首先，使用Docker Swarm的Service与Task功能可以跨Docker主机的启动与管理容器。</p>
+<p>Service是用来<strong>定义在什么节点上使用什么镜像启动几个容器</strong>，Task是用来<strong>将Service在容器上分别执行</strong>。</p>
+<p>Service是由manager节点创建的。</p>
+<p>举个栗子：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service create --replicas <span style="color:#ae81ff">3</span> nginx
+</code></pre></div><p>在上述命令中，使用manager节点生成了<code>从nginx镜像启动三个容器</code>的Service，那么会产生三个<code>从nginx镜像启动容器</code>的Task。</p>
+<p>使用Service时并不需要在每个Docker主机上启动容器，一次启动后由哪个节点启动哪个容器(任务的分配)是自动决定的。这种将通过服务生成的任务分配给节点的功能称为调度(schedule)。</p>
+<p>在没有特别指定的情况下，会根据CPU与内存的空闲资源状态进行调度，用户无需去管理docker主机配置等。</p>
+<p><img src="https://camo.qiitausercontent.com/10793cb07634c45f5f22c1a4ca754a8265ce6f0a/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f38323966643765382d656261312d656534662d386634652d6364366162343062346530392e706e67" alt=""></p>
+<p><strong>节点的可用性</strong></p>
+<p>查看Swarm集群中的所有节点：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker node ls
+</code></pre></div><p>每个节点都具有<code>Availability</code>状态，<code>Availability</code>状态包含<code>Active</code>, <code>Pause</code>, <code>Drain</code>三种。</p>
+<ul>
+<li>Active表示<strong>调度时可以将任务分配给节点的状态</strong></li>
+<li>Pause表示<strong>调度时不能将任务分配给节点，并继续执行当前任务的状态</strong></li>
+<li>Drain表示<strong>调度时不能将任务分配给节点，并中断已有任务的状态</strong>，这种状态决定是否可以将任务分配给调度程序</li>
+</ul>
+<p>可以通过以下命令修改指定节点的Availability状态:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker node update --availability <span style="color:#f92672">[</span>修改的状态<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>节点名<span style="color:#f92672">]</span>
+</code></pre></div><p><strong>global mode 和 replica mode</strong></p>
+<p><code>replica mode</code>之前已经见过了，在创建服务时使用<code>--replicas 3</code>这样的tag来指定任务数。</p>
+<p>另一方面，在<code>global mode</code>中必须在每个节点上都执行一个任务，不能指定复制的任务数。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service create --name web3 --mode global nginx
+</code></pre></div><p>如上述命令那样，<code>global mode</code>不能指定复制数量，会在所有节点上都执行一个任务。</p>
+<p>默认使用的是<code>replica mode</code>。</p>
+<p><strong>Service管理命令</strong></p>
+<ul>
+<li>
+<p>创建服务</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service create --name <span style="color:#f92672">[</span>创建的服务名<span style="color:#f92672">]</span> --replicas <span style="color:#f92672">[</span>复制数量<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>镜像名<span style="color:#f92672">]</span>
+$ docker service create --name <span style="color:#f92672">[</span>创建的服务名<span style="color:#f92672">]</span> --constraint <span style="color:#e6db74">&#39;node.role==[manager或worker]&#39;</span> --replicas <span style="color:#f92672">[</span>复制数量<span style="color:#f92672">]</span> --detach<span style="color:#f92672">=</span>true <span style="color:#f92672">[</span>镜像名<span style="color:#f92672">]</span>
+</code></pre></div><p>在命令中使用<code>—constraint</code>可以指定在服务创建和启动时任务分配的节点。</p>
+</li>
+<li>
+<p>查看所有服务</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service ls
+</code></pre></div></li>
+<li>
+<p>查看服务详情</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service inspect <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]</span>
+
+$ docker service inspect —pretty <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]</span>
+</code></pre></div><p>使用<code>pretty</code>会让输出内容以易读的方式展示</p>
+</li>
+<li>
+<p>修改已创建服务的设置</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service update —publish-add 8000:80 —detach<span style="color:#f92672">=</span>true <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]</span>
+</code></pre></div></li>
+<li>
+<p>将指定服务滚动到之前的状态</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service rollback <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]</span>
+</code></pre></div></li>
+<li>
+<p>显示指定服务内的进程</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service ps <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]</span>
+</code></pre></div></li>
+<li>
+<p>删除服务</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service remove <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]</span>
+</code></pre></div></li>
+</ul>
+<h3 id="rolling-update">Rolling Update</h3>
+<p>在维护Web系统时，不能跳过的一项工作就是对系统所用软件版本的升级更新。</p>
+<p>在维护一个管理多个Docker主机的Swarm系统时，不用去一下子更新所有服务的任务，只需设置更新每个任务的延迟时间即可，会逐个更新对应任务的容器，这就是滚动更新的功能。</p>
+<p>这个功能会先排除执行中的容器，当执行中的容器接收到请求时，会按顺序更新其他容器。</p>
+<p>下面以更新redis为例。</p>
+<p>在创建服务时使用<code>update-delay</code>设置更新的时间间隔:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service create --replicas <span style="color:#ae81ff">3</span> --name redis --update-delay 10s redis:3.0.6
+</code></pre></div><p>除以之外，也有可以设置更新任务最大数量的参数选项。</p>
+<p>更新时使用如下命令就可以开始滚动更新了:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service update —image redis:3.0.7 redis 
+</code></pre></div><h3 id="service-scale--resource-management--auto-scaling">Service scale / Resource management / Auto Scaling</h3>
+<p>当Swarm系统的整体负荷较大时，可以通过伸缩启动服务的容器数量来缓解。</p>
+<p>修改指定服务的复制数量:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker service scale <span style="color:#f92672">[</span>服务名<span style="color:#f92672">]=[</span>复制数量<span style="color:#f92672">]</span>
+</code></pre></div><p>当然也可以设置自动伸缩(auto scaling)功能。</p>
+<p>当机器本身资源不足的情况下，可以启动额外的机器(AWS实例)来解决。</p>
+<h3 id="auto-healing">Auto Healing</h3>
+<p>当Swarm中的节点出现由于大量请求导致负载过大等问题而down机时，该机器所启动的容器可以由其他机器上启动的容器替代，这就是自动修复(Auto Healing)功能。</p>
+<p>对于manager节点down掉的情况，可以准备多个manager节点，未雨绸缪。</p>
+<p><img src="https://camo.qiitausercontent.com/529d1beb7ec906d255117d173cda26bbea3468cf/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36316465623962302d396163302d343164612d323932322d3637386439303233633338352e706e67" alt=""></p>
+<h1 id="使用docker-compose创建service">使用Docker compose创建Service</h1>
+<p>服务的创建可以使用<code>$ docker service create</code>命令，也可以通过<code>docker-compose.yml</code>文件中描述的定义来自动创建多个服务。</p>
+<p><img src="https://camo.qiitausercontent.com/ce5b94ef5c86803357c488509d45b6687b684d95/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f31633530376133642d306361312d393431612d663033302d3237373936333834333763322e706e67" alt=""></p>
+<p><code>docker-compose.yml</code>的文件内容如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#39;3.4&#39;</span>
+
+<span style="color:#66d9ef">services</span>: <span style="color:#75715e"># 记录要执行的容器</span>
+  <span style="color:#66d9ef">wordpress</span>: <span style="color:#75715e"># wordpress容器</span>
+   <span style="color:#66d9ef">image</span>: wordpress <span style="color:#75715e"># 使用wordpress:latest镜像</span>
+   <span style="color:#66d9ef">ports</span>:
+    - <span style="color:#ae81ff">8080</span>:<span style="color:#ae81ff">80</span> <span style="color:#75715e"># 映射主机8080端口到容器的80端口</span>
+   <span style="color:#66d9ef">environment</span>:
+    <span style="color:#66d9ef">WORDPRESS_DB_PASSWORD</span>: ----- <span style="color:#75715e"># 与mysql容器的密码一致</span>
+   <span style="color:#66d9ef">deploy</span>: <span style="color:#75715e"># 在这里设置Docker Swarm的Service</span>
+    <span style="color:#66d9ef">replicas</span>: <span style="color:#ae81ff">2</span> <span style="color:#75715e"># 复制数量</span>
+    <span style="color:#66d9ef">placement</span>:
+      <span style="color:#66d9ef">constraints</span>: 
+       - node.role == worker <span style="color:#75715e"># 只在worker节点上执行</span>
+   <span style="color:#66d9ef">depends_on</span>:
+     - mysql <span style="color:#75715e"># 启动依赖于mysql容器</span>
+
+  <span style="color:#66d9ef">mysql</span>: <span style="color:#75715e"># mysql容器</span>
+   <span style="color:#66d9ef">image</span>: mysql:<span style="color:#ae81ff">5.7</span> <span style="color:#75715e"># 指定镜像版本</span>
+   <span style="color:#66d9ef">environment</span>:
+    <span style="color:#66d9ef">MYSQL_ROOT_PASSWORD</span>: ----- <span style="color:#75715e"># 设置密码</span>
+   <span style="color:#66d9ef">volumes</span>:
+    - mysql_vol:/var/lib/mysql <span style="color:#75715e"># 生成名为mysql_vol的卷，挂载到容器的指定目录上</span>
+   <span style="color:#66d9ef">deploy</span>: <span style="color:#75715e">#　在这里设置Docker Swarm的Service</span>
+    <span style="color:#66d9ef">replicas</span>: <span style="color:#ae81ff">1</span>
+    <span style="color:#66d9ef">placement</span>:
+     <span style="color:#66d9ef">constraints</span>:
+      - node.role == manager <span style="color:#75715e"># 在manager节点上执行</span>
+
+<span style="color:#66d9ef">volumes</span>:
+  <span style="color:#66d9ef">mysql_vol</span>: ＃定义卷
+</code></pre></div><p>之后使用下面的<code>$ docker stack deploy</code>命令，来根据<code>docker-compose.yml</code>文件生成Swarm中的服务。stack的名称会作为所生成服务名的前缀。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker stack deploy --compose-file docker-compose.yml<span style="color:#f92672">(</span>指定的compose文件<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>生成的stack名<span style="color:#f92672">]</span>
+</code></pre></div><p><code>stack</code>是构成特定环境中的service集合, 它是自动部署多个相互关联的服务的简便方法，而无需单独定义每个服务。</p>
+<h2 id="stack的管理命令">stack的管理命令</h2>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>创建stack</td>
+<td><code>docker stack deploy --compose-file [compose文件名] [生成的stack名]</code></td>
+</tr>
+<tr>
+<td>查看所有stack</td>
+<td><code>docker stack ls</code></td>
+</tr>
+<tr>
+<td>删除stack</td>
+<td><code>docker stack remove stack名</code></td>
+</tr>
+</tbody>
+</table>
+<h1 id="最终效果图">最终效果图</h1>
+<p><img src="https://camo.qiitausercontent.com/561d7bcb981db075ed94a319e718ab030ef7cc2c/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36376439633036342d343832362d623938622d326333332d3463336264653839636363362e706e67" alt=""></p>
+<h1 id="原文信息">原文信息</h1>
+<hr>
+<ul>
+<li>原文链接 : <a href="https://qiita.com/kotaro-dr/items/b1024c7d200a75b992fc#_reference-fe4e26271a18ef5d1b25">【図解】Dockerの全体像を理解する</a></li>
+<li>原文作者 : <a href="https://qiita.com/kotaro-dr">kotaro-dr</a></li>
+<li>已获原作者授权</li>
+</ul>
+<hr>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/devops/overview-of-docker/">http://yrq110.me/post/devops/overview-of-docker/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/docker'>docker</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

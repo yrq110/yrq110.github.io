@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>fabric on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/fabric/</link>
+    <description>Recent content in fabric on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 23 Dec 2019 09:15:56 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/fabric/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Canvas2D渲染库简析:（一）Fabric</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</link>
+      <pubDate>Mon, 23 Dec 2019 09:15:56 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</guid>
+      <description>&lt;p&gt;了解Canvas2D渲染功能实现与设计，在使用时知其所以然，在创造时有所借鉴。从以下这四个方面来分析Fabric.js&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对象模型处理(使用及设计实现)&lt;/li&gt;
+&lt;li&gt;图形变换处理(&lt;strong&gt;canvas与object变换&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;光标交互处理(&lt;strong&gt;目标检测&lt;/strong&gt;与&lt;strong&gt;事件处理&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;画布与对象渲染处理(&lt;strong&gt;多层结构&lt;/strong&gt;与&lt;strong&gt;多阶段绘制&lt;/strong&gt;)&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

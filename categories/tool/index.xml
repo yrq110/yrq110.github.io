@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tool on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/categories/tool/</link>
+    <description>Recent content in tool on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 02 Dec 2019 11:29:23 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/categories/tool/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Lerna的依赖管理及hoisting浅析</title>
+      <link>http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/</link>
+      <pubDate>Mon, 02 Dec 2019 11:29:23 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/</guid>
+      <description>&lt;p&gt;简单分析下lerna中依赖管理的部分&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在使用lerna时，若使用yarn作为npmClient并开启workspace功能，则bootstrap命令会代理给yarn执行&lt;/li&gt;
+&lt;li&gt;相同的依赖通过提升(hoist)安装在根路径下，本地包之间的依赖通过软链接实现&lt;/li&gt;
+&lt;li&gt;虽然在依赖处理部分yarn的底层具有较好的实现，但lerna提供的上层指令则方便了开发者的使用&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>git rebase/submodule/flow介绍</title>
+      <link>http://yrq110.me/post/tool/git-rebase-submodule-and-flow/</link>
+      <pubDate>Sat, 29 Dec 2018 10:23:52 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/tool/git-rebase-submodule-and-flow/</guid>
+      <description>&lt;p&gt;整理并学习几个git中的工具:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://git-scm.com/docs/git-rebase&#34;&gt;rebase&lt;/a&gt; - 用于合并提交，重写历史，较&lt;code&gt;merge&lt;/code&gt;更复杂&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://git-scm.com/docs/git-submodule&#34;&gt;submodule&lt;/a&gt; - 子模块功能，用于管理项目中包含的独立子模块&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/petervanderdoes/gitflow-avh&#34;&gt;git-flow&lt;/a&gt; - 一个工具，提供flow命令来简化符合&lt;a href=&#34;https://nvie.com/posts/a-successful-git-branching-model/&#34;&gt;&lt;code&gt;git branching model&lt;/code&gt;&lt;/a&gt;中规范的操作&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Lerna初探</title>
+      <link>http://yrq110.me/post/tool/study-on-lerna/</link>
+      <pubDate>Thu, 27 Dec 2018 14:39:37 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/tool/study-on-lerna/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/lerna/lerna&#34;&gt;lerna&lt;/a&gt;是一个用于管理包含多个package结构的代码仓库的工具，优化工作流。新版的&lt;a href=&#34;https://github.com/vuejs/vue-cli&#34;&gt;&lt;strong&gt;vue-cli&lt;/strong&gt;&lt;/a&gt;、&lt;a href=&#34;https://github.com/nuxt/nuxt.js&#34;&gt;&lt;strong&gt;nuxt&lt;/strong&gt;&lt;/a&gt;与&lt;a href=&#34;https://github.com/babel/babel&#34;&gt;&lt;strong&gt;babel&lt;/strong&gt;&lt;/a&gt;均使用lerna进行自身的package管理。&lt;/p&gt;
+&lt;p&gt;package可理解为功能模块或子项目。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>配置SSH访问GitHub</title>
+      <link>http://yrq110.me/post/tool/github-ssh-config/</link>
+      <pubDate>Thu, 18 Aug 2016 22:25:39 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/tool/github-ssh-config/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://help.github.com/categories/ssh&#34;&gt;GitHub_SSH帮助文件&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

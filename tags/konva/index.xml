@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>konva on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/konva/</link>
+    <description>Recent content in konva on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Tue, 24 Dec 2019 15:29:59 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/konva/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Canvas2D渲染库简析:（二）Konva</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/</link>
+      <pubDate>Tue, 24 Dec 2019 15:29:59 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/</guid>
+      <description>&lt;p&gt;与古老的Fabric相比，Konva的使用更为便捷，性能更加优益，这些得益于其内部的种种设计，本次通过以下几个方面来对其进行分析：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;基础元素及上下文的扩展&lt;/li&gt;
+&lt;li&gt;图形变换处理(&lt;strong&gt;变换计算及独立的图形控制器&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;光标交互处理(&lt;strong&gt;基于像素的目标检测&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;层级渲染处理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

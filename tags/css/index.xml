@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>css on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/css/</link>
+    <description>Recent content in css on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Thu, 18 Apr 2019 18:08:25 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/css/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>了解一下CSS Houdini API</title>
+      <link>http://yrq110.me/post/front-end/try-houdini-api/</link>
+      <pubDate>Thu, 18 Apr 2019 18:08:25 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/try-houdini-api/</guid>
+      <description>&lt;p&gt;Houdini, in essence, gives developers lower level access to CSS itself.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Worklets, TypedOM, Custom Properties&lt;/li&gt;
+&lt;li&gt;Paint API, Animation API, Layout API&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>前端水果篮</title>
+      <link>http://yrq110.me/post/practice/calathus/</link>
+      <pubDate>Tue, 25 Apr 2017 19:31:28 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/practice/calathus/</guid>
+      <description>&lt;p&gt;网络就像一颗果树，摘一些五彩缤纷的水果到篮子里。&lt;/p&gt;
+&lt;p&gt;本项目&lt;a href=&#34;https://github.com/yrq110/fe-daily-piece&#34;&gt;GitHub&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>《CSS揭秘》示例练习</title>
+      <link>http://yrq110.me/post/practice/css-secret-note/</link>
+      <pubDate>Sun, 01 Jan 2017 17:02:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/practice/css-secret-note/</guid>
+      <description>&lt;p&gt;按钮、背景与边框、形状、视觉效果&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

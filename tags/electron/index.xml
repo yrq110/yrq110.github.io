@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>electron on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/electron/</link>
+    <description>Recent content in electron on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Sun, 06 Jan 2019 19:52:34 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/electron/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>配置electron中puppeteer executablePath的正确姿势</title>
+      <link>http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</link>
+      <pubDate>Sun, 06 Jan 2019 19:52:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</guid>
+      <description>&lt;p&gt;TL; NR&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;轻量, remote调用(使用本地chrome) =&amp;gt; &lt;code&gt;puppeteer-core&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;将chromium整合进安装包(需要asar打包时排除chromium), &lt;strong&gt;macOS下验证失败&lt;/strong&gt; =&amp;gt; &lt;code&gt;puppeteer&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

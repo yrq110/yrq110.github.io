@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>front-end on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/categories/front-end/</link>
+    <description>Recent content in front-end on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 19 Feb 2020 01:44:17 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/categories/front-end/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Web应用开发中的TypeScript最佳实践</title>
+      <link>http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/</link>
+      <pubDate>Wed, 19 Feb 2020 01:44:17 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/</guid>
+      <description>&lt;p&gt;TS的开发经验总结，主要包含以下几个方面的内容&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;编译工具的特点与比较&lt;/li&gt;
+&lt;li&gt;语言特性的选择与使用&lt;/li&gt;
+&lt;li&gt;模块系统与自定义类型&lt;/li&gt;
+&lt;li&gt;其他使用技巧&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;译自：&lt;a href=&#34;https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&amp;amp;utm_campaign=db304f7430-Qiita_newsletter_399_02_12_2020&amp;amp;utm_medium=email&amp;amp;utm_term=0_e44feaa081-db304f7430-33396633&#34;&gt;TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得&lt;/a&gt; | &lt;a href=&#34;https://qiita.com/jagaapple&#34;&gt;@jagaapple&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas2D渲染库简析:（三）Pixi</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/</link>
+      <pubDate>Mon, 30 Dec 2019 16:59:36 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/</guid>
+      <description>&lt;p&gt;fabric和konva主要是用于实现编辑器的场景，而Pixi则是一个高性能2D动画渲染库，通常用于一些H5的小游戏或可交互页面。&lt;/p&gt;
+&lt;p&gt;本次通过以下几个方面来对其进行分析：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;WebGL与Canvas渲染器&lt;/li&gt;
+&lt;li&gt;资源加载器与纹理&lt;/li&gt;
+&lt;li&gt;场景、精灵与图形对象&lt;/li&gt;
+&lt;li&gt;变换、交互及动画处理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas2D渲染库简析:（二）Konva</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/</link>
+      <pubDate>Tue, 24 Dec 2019 15:29:59 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/</guid>
+      <description>&lt;p&gt;与古老的Fabric相比，Konva的使用更为便捷，性能更加优益，这些得益于其内部的种种设计，本次通过以下几个方面来对其进行分析：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;基础元素及上下文的扩展&lt;/li&gt;
+&lt;li&gt;图形变换处理(&lt;strong&gt;变换计算及独立的图形控制器&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;光标交互处理(&lt;strong&gt;基于像素的目标检测&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;层级渲染处理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas2D渲染库简析:（一）Fabric</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</link>
+      <pubDate>Mon, 23 Dec 2019 09:15:56 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</guid>
+      <description>&lt;p&gt;了解Canvas2D渲染功能实现与设计，在使用时知其所以然，在创造时有所借鉴。从以下这四个方面来分析Fabric.js&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对象模型处理(使用及设计实现)&lt;/li&gt;
+&lt;li&gt;图形变换处理(&lt;strong&gt;canvas与object变换&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;光标交互处理(&lt;strong&gt;目标检测&lt;/strong&gt;与&lt;strong&gt;事件处理&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;画布与对象渲染处理(&lt;strong&gt;多层结构&lt;/strong&gt;与&lt;strong&gt;多阶段绘制&lt;/strong&gt;)&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>puppeteer&#43;canvas的e2e测试实践</title>
+      <link>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</link>
+      <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</guid>
+      <description>&lt;p&gt;针对具有复杂canvas交互操作的e2e测试，尝试使用puppeteer模拟复杂canvas交互，自动执行相关测试用例，利于减少重复的人工验证和回归测试。&lt;/p&gt;
+&lt;p&gt;主要做了&lt;strong&gt;封装通用操作&lt;/strong&gt;，&lt;strong&gt;添加操作辅助类&lt;/strong&gt;，&lt;strong&gt;与测试工具集成&lt;/strong&gt;，&lt;strong&gt;结果验证&lt;/strong&gt;等工作。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Web也要在GPU并行计算中分一杯羹？</title>
+      <link>http://yrq110.me/post/front-end/try-gpu-operations-in-web/</link>
+      <pubDate>Mon, 28 Oct 2019 20:44:07 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/try-gpu-operations-in-web/</guid>
+      <description>&lt;p&gt;目前Web中主要有两种方式可以显式的调用GPU来执行计算任务：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;GPU.js - 第三方工具。使用JS编写计算任务，内部转换成GLSL交由GPU(OpenGL ES)处理&lt;/li&gt;
+&lt;li&gt;WebGPU - w3c规范(19-11-12时处于Editor’s Draft阶段)，提供通用的GPU API，抹平不同底层图形API之间的差异(Vulkan, D3D, Metal)&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+    <item>
+      <title>Worker中的OffscreenCanvas渲染实践与浅析</title>
+      <link>http://yrq110.me/post/front-end/offscreen-canvas-practice/</link>
+      <pubDate>Fri, 18 Oct 2019 09:49:05 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/offscreen-canvas-practice/</guid>
+      <description>&lt;p&gt;Tl;DR：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;OffscreenCanvas&lt;/strong&gt;可以让你在Worker线程中渲染图形，支持多种&lt;strong&gt;RenderingContext&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;两种使用方式：同步的&lt;strong&gt;Transfer模式&lt;/strong&gt;与异步的&lt;strong&gt;Control模式&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;将Canvas的&lt;strong&gt;逻辑计算与渲染分离&lt;/strong&gt;，避免UI线程阻塞&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas从小试牛刀到庖丁解牛</title>
+      <link>http://yrq110.me/post/front-end/canvas-travel/</link>
+      <pubDate>Mon, 16 Sep 2019 09:51:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/canvas-travel/</guid>
+      <description>&lt;p&gt;关于canvas的使用经验及深入学习总结，主要有以下几个方面：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;基础绘图、平滑曲线和交互变换&lt;/li&gt;
+&lt;li&gt;状态管理及图像处理&lt;/li&gt;
+&lt;li&gt;性能优化与绘制原理&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas效果片段</title>
+      <link>http://yrq110.me/post/front-end/canvas-effect-snippets/</link>
+      <pubDate>Tue, 04 Jun 2019 11:17:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/canvas-effect-snippets/</guid>
+      <description>&lt;p&gt;总结在使用canvas时遇到的一些通用效果实现与相关示例。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>puppeteer常用API浅析</title>
+      <link>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</link>
+      <pubDate>Fri, 19 Apr 2019 13:12:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</guid>
+      <description>&lt;p&gt;从CDP与源码的角度简单分析下pptr中的常用API&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>了解一下CSS Houdini API</title>
+      <link>http://yrq110.me/post/front-end/try-houdini-api/</link>
+      <pubDate>Thu, 18 Apr 2019 18:08:25 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/try-houdini-api/</guid>
+      <description>&lt;p&gt;Houdini, in essence, gives developers lower level access to CSS itself.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Worklets, TypedOM, Custom Properties&lt;/li&gt;
+&lt;li&gt;Paint API, Animation API, Layout API&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>微信小程序WebSocket实践</title>
+      <link>http://yrq110.me/post/front-end/wxapp-ws-practice/</link>
+      <pubDate>Thu, 04 Apr 2019 11:36:35 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/wxapp-ws-practice/</guid>
+      <description>&lt;p&gt;微信基础库1.7.0之后的版本提供了新版的WebSocket API，考虑到兼容性问题，尝试整合新旧两种版本的API，进行简单的封装。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>微信小程序开发中的代码片段总结</title>
+      <link>http://yrq110.me/post/front-end/code-snippets-of-wxapp/</link>
+      <pubDate>Fri, 15 Mar 2019 13:36:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/code-snippets-of-wxapp/</guid>
+      <description>&lt;p&gt;经过一段时间的微信小程序开发，总结了一些代码片段，主要是以下几个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;小程序（授权、网络、录音、图像）&lt;/li&gt;
+&lt;li&gt;mpvue（分包、全局变量、svg组件、组件class绑定）&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Web Worker融会贯通</title>
+      <link>http://yrq110.me/post/front-end/introduction-to-web-worker/</link>
+      <pubDate>Tue, 12 Mar 2019 16:24:19 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/introduction-to-web-worker/</guid>
+      <description>&lt;p&gt;介绍与web worker有关的:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;概况: 支持情况, 类型, 特点等&lt;/li&gt;
+&lt;li&gt;使用场景: 轮询, 复杂数据解析, JS库的代理等&lt;/li&gt;
+&lt;li&gt;相关工具: workerize, comlink等&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>可爱的puppeteer使用小技巧</title>
+      <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
+      <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</guid>
+      <description>&lt;p&gt;总结一些使用puppetter的小技巧，从下面几个角度：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;浏览器的启动与请求&lt;/li&gt;
+&lt;li&gt;页面的加载与渲染&lt;/li&gt;
+&lt;li&gt;执行优化与状态管理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>incremental-dom简析</title>
+      <link>http://yrq110.me/post/front-end/brief-of-incremental-dom/</link>
+      <pubDate>Tue, 15 Jan 2019 15:18:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/brief-of-incremental-dom/</guid>
+      <description>&lt;p&gt;想必对于virtual-dom(以下简称vdom)已经耳熟能详了，react和vue均使用了vdom，在更新与DOM时具有效率高、速度快的特点(相比于直接操作dom)。那么incremental-dom又是什么呢？&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>当我们在说事件循环时，我们在说什么</title>
+      <link>http://yrq110.me/post/front-end/under-the-hood-at-event-loop/</link>
+      <pubDate>Thu, 10 Jan 2019 16:01:58 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/under-the-hood-at-event-loop/</guid>
+      <description>&lt;p&gt;梳理一下浏览器与Node中的事件循环，它们的一些特征:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;浏览器: 不同的实现, browser context&lt;/li&gt;
+&lt;li&gt;Node: 多个阶段, process.nextTick()&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>配置electron中puppeteer executablePath的正确姿势</title>
+      <link>http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</link>
+      <pubDate>Sun, 06 Jan 2019 19:52:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</guid>
+      <description>&lt;p&gt;TL; NR&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;轻量, remote调用(使用本地chrome) =&amp;gt; &lt;code&gt;puppeteer-core&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;将chromium整合进安装包(需要asar打包时排除chromium), &lt;strong&gt;macOS下验证失败&lt;/strong&gt; =&amp;gt; &lt;code&gt;puppeteer&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

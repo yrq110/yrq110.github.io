@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Canvas从小试牛刀到庖丁解牛 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Canvas从小试牛刀到庖丁解牛 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-09-16T09:51:34&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-09-16T09:51:34&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Canvas从小试牛刀到庖丁解牛">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/canvas-travel/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Canvas从小试牛刀到庖丁解牛</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年9月16日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>关于canvas的使用经验及深入学习总结，主要有以下几个方面：</p>
+<ol>
+<li>基础绘图、平滑曲线和交互变换</li>
+<li>状态管理及图像处理</li>
+<li>性能优化与绘制原理</li>
+</ol>
+<p>如果不小心点开了不想看什么啰嗦的基础和认为无用的原理，只想<del>搞钱</del>看一些实现效果的话，可以看看<a href="https://yrq110.me/post/front-end/canvas-effect-snippets/">这一篇</a>。</p>
+<h1 id="基础绘图">基础绘图</h1>
+<p>如果要在canvas中画一个如下这样的小房子，对于多数开发者来说不在话下：</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>在画房子的过程中，主要使用了三类<strong>Canvas API</strong>：</p>
+<ol>
+<li>
+<p>图形绘制</p>
+<p>fillRect, strokeRect, arc, drawImage…</p>
+</li>
+<li>
+<p>样式属性</p>
+<p>fillStyle, strokeStyle, lineWidth, lineCap…</p>
+</li>
+<li>
+<p>路径相关</p>
+<p>moveTo, lineTo, arcTo, ellipse, closePath…</p>
+</li>
+</ol>
+<p>使用这些API可以完成大部分简单的canvas绘制任务，比如海报中的元素绘制，基础图形和线条绘制等等。</p>
+<h2 id="曲线绘制">曲线绘制</h2>
+<p>canvas提供了两种绘制曲线的API：<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/quadraticCurveTo">quadraticCurveTo</a>和<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/bezierCurveTo">bezierCurveTo</a>。</p>
+<ul>
+<li><code>quadraticCurveTo</code>: 用于绘制二次贝塞尔曲线，需要四个参数：一个控制点与终点的坐标</li>
+<li><code>bezierCurveTo</code>: 用于绘制三次贝塞尔曲线，需要六个参数：两个控制点与终点的坐标</li>
+</ul>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>在上面的例子中，<strong>蓝色</strong>表示曲线的<strong>起始与终止点</strong>，<strong>红色</strong>表示<strong>控制点</strong>。</p>
+<p>若使用原生的曲线API，需要每次传入特定的控制点坐标。在已知一个曲线<strong>所经过的关键点</strong>的情况下，想画一条<strong>平滑曲线</strong>就比较困难了，需要手动计算上面的控制点，或使用其他曲线插值方法。</p>
+<h3 id="经过关键点的平滑曲线">经过关键点的平滑曲线</h3>
+<p>笔者查阅了一些平滑曲线的插值与绘制算法，并结合canvas所提供的API，封装了一个用于绘制平滑曲线的迷你库：<a href="https://github.com/yrq110/canvas-fun/tree/master/packages/curve">@cvsfun/curve</a>。</p>
+<p>通过调用该库的<a href="https://github.com/yrq110/canvas-fun/tree/master/packages/curve#drawcontext-points-option">draw()</a>函数，<strong>仅需传入需要经过的关键点坐标即可绘制出一条平滑曲线</strong>，在库的内部会自动计算控制点数据，绘制调用的API即为上述两种曲线API，无其他依赖。</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>在上面的例子中，<strong>蓝色</strong>表示曲线经过的<strong>关键点</strong>，<strong>红色</strong>表示内部计算得到的<strong>控制点</strong>。</p>
+<p>除此之外，该函数还提供了可以设置<strong>闭合曲线</strong>，<strong>关键点的曲线类型切换</strong>的属性，并且有可以返回计算所得到控制点数据的API，可作其他用途。</p>
+<p>一般来说，更加复杂的canvas项目通常都离不开使用键鼠进行元素操作的相关功能，即增强用户体验的交互部分。并且这些功能也多多少少常常涉及一些画布元素的变换。</p>
+<h1 id="交互与变换">交互与变换</h1>
+<h2 id="添加鼠标交互">添加鼠标交互</h2>
+<p>以鼠标交互为例，若要添加这种交互，仅需要监听一些鼠标事件，并对事件数据进行处理与绘制即可。</p>
+<p><strong>数据获取</strong>和<strong>画布绘制</strong>这两个部分有不同的处理方法，下面以笔刷绘制为例。</p>
+<h3 id="在鼠标事件中获取数据并进行绘制">在鼠标事件中获取数据并进行绘制</h3>
+<p>在鼠标事件中取得坐标数据，经过一些处理与逻辑判断后，使用绘制API在canvas上进行实时绘制。</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>可以看到，<code>fabric.js</code>中使用的即为这种方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// fabric.js/src/brushes/pencil_brush.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">onMouseMove</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">pointer</span>, <span style="color:#a6e22e">options</span>) {
+  ...
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">points</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_points</span>, <span style="color:#a6e22e">length</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span>, <span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">contextTop</span>;
+  <span style="color:#75715e">// draw the curve update
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_saveAndTransform</span>(<span style="color:#a6e22e">ctx</span>);
+  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span>) {
+    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">beginPath</span>();
+    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">moveTo</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span>.<span style="color:#a6e22e">x</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span>.<span style="color:#a6e22e">y</span>);
+  }
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_drawSegment</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>], <span style="color:#66d9ef">true</span>);
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">stroke</span>();
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">restore</span>();
+  ...
+},
+</code></pre></div><h3 id="在鼠标事件中获取数据在帧动画函数中绘制">在鼠标事件中获取数据，在帧动画函数中绘制</h3>
+<p>分离了<strong>数据操作</strong>与<strong>画布绘制</strong>两个操作。在鼠标事件中取得坐标数据，经过一些处理后保存在全局变量中，在requestAnimationFrame所执行的帧动画函数中执行绘制操作。</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>这里需要提一点的是，浏览器在处理mousemove事件时，它的具体触发频率并没有在<a href="https://www.w3.org/TR/uievents/#event-type-mousemove">规范</a>中写明，原因是：</p>
+<blockquote>
+<p>The frequency rate of events while the pointing device is moved is implementation-, device-, and platform-specific, but multiple consecutive mousemove events SHOULD be fired for sustained pointer-device movement, rather than a single event for each instance of mouse movement. Implementations are encouraged to determine the optimal frequency rate to balance responsiveness with performance.</p>
+</blockquote>
+<p>通过在devtools中的观察，PC端Chrome中的实现是<strong>每一帧触发一次</strong>。</p>
+<p>在上述的例子中，如果查看每一帧内的Task，是这个样子：</p>
+<p><img src="/images/blog/front-end/canvas-travel/frame1.jpg" alt=""></p>
+<p>可以看到，先处理了mosuemove事件计算坐标，接着执行帧动画函数执行了渲染函数。</p>
+<h2 id="变换">变换</h2>
+<h3 id="context变换">context变换</h3>
+<p>在canvas中使用变换主要有两种方式：</p>
+<ol>
+<li>
+<p>使用<code>translate</code>, <code>scale</code>和<code>rotate</code>三种变换API</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#ae81ff">100</span>,<span style="color:#ae81ff">0</span> );
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">scale</span>(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">1</span>);
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">rotate</span>(<span style="color:#ae81ff">45</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>);
+</code></pre></div></li>
+<li>
+<p>使用自定义的变换矩阵，传入<code>setTransform</code>中应用变换</p>
+<p>基础变换API中没有斜切变换(skew)，可以通过自定义矩阵来实现</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">setTransform</span>(<span style="color:#a6e22e">a</span>,<span style="color:#a6e22e">b</span>,<span style="color:#a6e22e">c</span>,<span style="color:#a6e22e">d</span>,<span style="color:#a6e22e">e</span>,<span style="color:#a6e22e">f</span>);
+</code></pre></div><p>对应的变换矩阵为：
+$$
+\begin {bmatrix}
+a &amp; c &amp; e \newline
+b &amp; d &amp; f \newline
+0 &amp; 0 &amp; 1 \newline
+\end {bmatrix}
+$$</p>
+</li>
+</ol>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<h3 id="坐标变换">坐标变换</h3>
+<p>在canvas上实际使用变换时，发现存在一些问题：</p>
+<ol>
+<li>使用缩放变换方法会出现图案失真，有时在手动绘制图案时不希望发生失真，想使用成比例的关键点的位置，类似SVG中的原理</li>
+<li>当需要联动多个层和多个图案时的复合变换会出现不符合预期的不协调现象，需要管理好变换的状态栈</li>
+</ol>
+<p>因此，如果想自己控制绘制<strong>关键点</strong>的变换，需要达成以下目标：</p>
+<ol>
+<li>可以通过基础变换的特征数值计算出复合变换矩阵</li>
+<li>可以将变换矩阵应用到坐标点上计算变换后的位置</li>
+<li>同时可以将变换矩阵直接用于原生的变换API</li>
+</ol>
+<p><a href="https://github.com/yrq110/canvas-fun/blob/master/packages/transform/README.md">@cvsfun/transform</a>是一个对变换操作提供矩阵数据支持的库，包含基础变换及坐标变换的API，内部使用<a href="https://github.com/josdejong/mathjs">mathjs</a>进行矩阵运算。</p>
+<p>使用方法如下面的例子所示：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">T</span>, <span style="color:#a6e22e">S</span>, <span style="color:#a6e22e">R</span>, <span style="color:#a6e22e">getTransformCoordinate</span>, <span style="color:#a6e22e">getTransformMatrix</span>, <span style="color:#a6e22e">matToCvsMat</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;@cvsfun/transform&#34;</span>;
+<span style="color:#66d9ef">let</span> [<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>] <span style="color:#f92672">=</span> [<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">20</span>];
+<span style="color:#75715e">// 基础变换列表
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">transforms</span> <span style="color:#f92672">=</span> [ 
+  <span style="color:#a6e22e">T</span>(<span style="color:#ae81ff">100</span>, <span style="color:#ae81ff">20</span>),
+  <span style="color:#a6e22e">S</span>(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">1</span>),
+  <span style="color:#a6e22e">R</span>(<span style="color:#ae81ff">30</span>)
+]
+<span style="color:#75715e">// 计算复合变换矩阵
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">transformMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">getTransformMatrix</span>(<span style="color:#a6e22e">transforms</span>); <span style="color:#75715e">// 返回结果为一个二维数组，若第二参数传true，则为求解逆阵
+</span><span style="color:#75715e">// 计算原始点经过变换后点的坐标
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> [<span style="color:#a6e22e">newX</span>, <span style="color:#a6e22e">newY</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">getTransformCoordinate</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">transformMatrix</span>)
+<span style="color:#75715e">// 将变换矩阵转换成setTransform所需的参数
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">setTransform</span>(...<span style="color:#a6e22e">matToCvsMat</span>(<span style="color:#a6e22e">transformMatrix</span>));
+</code></pre></div><h1 id="状态管理">状态管理</h1>
+<h2 id="canvas-context中的状态">canvas context中的状态</h2>
+<p>在使用canvas的过程中，canvas context中会保持一些<a href="https://www.w3.org/TR/2dcontext/#the-canvas-state">状态信息</a>，这些信息主要分为三类：</p>
+<ol>
+<li>变换矩阵 - 当前的变换矩阵</li>
+<li>裁剪相关 - 当前clip操作的裁剪区域(dirty zone)</li>
+<li>样式属性 - 当前一些属性：笔触宽度、颜色、线段连接方式、全局透明度等</li>
+</ol>
+<p>而以下两类数据不会保存到context中：</p>
+<ol>
+<li>路径相关 - 当前路径为持久化数据，仅能通过<code>beginPath()</code>方法重置</li>
+<li>bitmap - 为绑定在canvas上的属性</li>
+</ol>
+<h2 id="状态控制-save-和-restore">状态控制: save() 和 restore()</h2>
+<p>每个context都会使用一个栈结构来保存绘制状态信息，通过使用如下两种API对状态信息栈进行操作：</p>
+<ul>
+<li>save(): 将当前上下文的状态信息压入栈中</li>
+<li>restore(): 将栈顶的状态信息推出，恢复该状态的context</li>
+</ul>
+<p>下面是一个状态控制例子：</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>从左向右一次画了5个样式不同的矩形，可以通过样式变化看出对状态栈的操作。</p>
+<h2 id="path2d">Path2D</h2>
+<p>刚才说到，context中<strong>不会保存路径相关的状态信息</strong>，那么有木有其他法子来获取路径数据呢？</p>
+<p>除了自己手动记录相关数据的笨办法外，canvas提供了一个<a href="https://developer.mozilla.org/en-US/docs/Web/API/Path2D">Path2D</a>接口，在它的对象上可以执行与context相同的路径相关API。</p>
+<p>下面的这两段线条是分别使用context和Path2D这两种方式绘制的:</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>看完使用再来看看它的兼容性</p>
+<!-- raw HTML omitted -->
+<p>除了IE以外基本上是全部支持的，如果不需要兼容老版本可以放心使用。</p>
+<p>那么用了Path2D对象有什么好处吗？主要有以下几点：</p>
+<ol>
+<li>可以<strong>保存路径信息</strong>，用于后续的其他处理，如绘制了多个多段曲线或路径。</li>
+<li>可以在isPointInPath等接口中使用，用于<strong>碰撞检测</strong>等场景。</li>
+<li>当交互或操作复杂时，可以简化代码，增强路径操作部分的<strong>可读性</strong>。</li>
+</ol>
+<h3 id="碰撞检测">碰撞检测</h3>
+<p>context上提供了两个用于判断<strong>一个点是否位于一段路径的包围区域(nozero模式)中或笔触轨迹上</strong>的API：<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInPath">isPointInPath()</a>和<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInStroke">isPointInStroke()</a>。</p>
+<p>它们均有两种用法：</p>
+<ol>
+<li>检测一点是否在当前路径的相关区域上
+f(x, y)，结合(x,y)与当前context上的路径进行判断</li>
+<li>检测一点是否在指定路径的相关区域上
+f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
+</ol>
+<p>以<strong>isPointInStroke</strong>为例，看看下面这个例子：</p>
+<!-- raw HTML omitted -->
+<p><!-- raw HTML omitted --></p>
+<p>当光标悬浮在直线上就会绘制红色小圆。</p>
+<h1 id="图像处理">图像处理</h1>
+<p>主要是一些实现效果，可以看看<a href="https://yrq110.me/post/front-end/canvas-effect-snippets/">这篇</a>介绍，包含但不限于如下：</p>
+<ul>
+<li>mask遮罩合成</li>
+<li>橡皮擦效果</li>
+<li>SVG路径绘制</li>
+<li>不受层叠加深影响的统一透明度</li>
+</ul>
+<h1 id="性能优化">性能优化</h1>
+<h2 id="多层与offscreen-canvas">多层与offscreen canvas</h2>
+<p>当一个canvas上：</p>
+<ol>
+<li>元素众多，种类繁多时</li>
+<li>功能需求不同时，有的要求不失真，有的需要有交互，有的需要全局透明度等</li>
+</ol>
+<p>可以考虑使用<strong>多层canvas</strong>的结构。并且对于多层canvas的内容，可以分为<strong>onscreen</strong>和<strong>offscreen</strong>，前者指的是在屏幕上的canvas元素，在html中存在对应标签，后者为使用createElement创建的DOM元素（不是<a href="https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas">OffscreenCanvas接口</a>），不会渲染在屏幕上。</p>
+<p>看看下面这个透明度的例子：</p>
+<!-- raw HTML omitted -->
+<p>其中先在offscreen的canvas中绘制了不透明的多个图形，接着将它的内容绘制在了onscreen的canvas上，并应用了全局透明度属性。</p>
+<p>当元素与层数增多时，在每次重绘时只需要修改指定层上指定元素的内容，提高canvas绘制的性能。而且对于分层内容也较易管理，可以把同一类的元素放在同一层上进行渲染与操作。</p>
+<h2 id="部分重绘">部分重绘</h2>
+<ul>
+<li>
+<p>复用尽可能多的内容</p>
+<p>比如在需要更新部分内容的时候使用clearRect(x, y, w, h)擦除指定区域像素进行重绘，而不是清空所有内容</p>
+</li>
+<li>
+<p>有利于提高执行动画时的性能</p>
+</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Re-render full content
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">fillRect</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">height</span>);
+<span style="color:#75715e">// Re-render area which need updated
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">fillRect</span>(<span style="color:#a6e22e">last</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">last</span>.<span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">height</span>);
+</code></pre></div><p>清空canvas的三种方法: <strong>clearRect()</strong>、<strong>fillRect()</strong>、<strong>重设尺寸</strong></p>
+<h2 id="gpu计算">GPU计算</h2>
+<p>当JS中有大量的数学运算任务时，除了使用<a href="https://yrq110.me/post/front-end/introduction-to-web-worker/">WebWorker多线程</a>等优化性能的方法外，还可以将它们交给GPU去跑。</p>
+<p>使用<a href="https://github.com/gpujs/gpu.js">GPU.js</a>，可以将一些&quot;简单&quot;的js函数转换成GLSL语言并在着色器中使用GPU执行。</p>
+<p>以alpha通道融合的例子为例，下面为原始的JS代码</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">mask</span> <span style="color:#f92672">=</span> [<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">230</span>, <span style="color:#ae81ff">200</span>, ...]; <span style="color:#75715e">// alpha channel data
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">pixelData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">getImageData</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">maskWidth</span>, <span style="color:#a6e22e">maskHeight</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">size</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">maskWidth</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">maskHeight</span>;
+<span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">size</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">mask</span>[<span style="color:#a6e22e">i</span>] <span style="color:#f92672">!==</span> <span style="color:#ae81ff">255</span>) {
+    <span style="color:#a6e22e">pixelData</span>.<span style="color:#a6e22e">data</span>[(<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">mask</span>[<span style="color:#a6e22e">i</span>];
+  }
+}
+<span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">putImageData</span>(<span style="color:#a6e22e">pixelData</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+</code></pre></div><p>将这个任务转换成GPU.js的形式：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">GPU</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;gpu.js&#34;</span>
+...
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">compositeMaskWithGPU</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">src</span>, <span style="color:#a6e22e">mask</span>) =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">size</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">src</span>.<span style="color:#a6e22e">length</span>;
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">gpu</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">GPU</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">mainGPU</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">gpu</span>
+    .<span style="color:#a6e22e">createKernel</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">src</span>, <span style="color:#a6e22e">mask</span>) {
+      <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">src</span>[<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">thread</span>.<span style="color:#a6e22e">x</span>];
+      <span style="color:#66d9ef">if</span> ((<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">thread</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span>) <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mask</span>[(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">thread</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>];
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">data</span>;
+    })
+    .<span style="color:#a6e22e">setOutput</span>([<span style="color:#a6e22e">size</span>])
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mainGPU</span>(<span style="color:#a6e22e">src</span>, <span style="color:#a6e22e">mask</span>);
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Uint8ClampedArray</span>.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">result</span>); <span style="color:#75715e">// 这里转换成Uint8ClampedArray是由于ImageData的数据格式要求
+</span><span style="color:#75715e"></span>}
+...
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">mask</span> <span style="color:#f92672">=</span> [<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">230</span>, <span style="color:#ae81ff">200</span>, ...]; <span style="color:#75715e">// alpha channel data
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">pixelData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">getImageData</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">maskWidth</span>, <span style="color:#a6e22e">maskHeight</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">size</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">maskWidth</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">maskHeight</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">compositeMaskWithGPU</span>(<span style="color:#a6e22e">pixelData</span>.<span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">mask</span>);
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">resultImageData</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ImageData</span>(<span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">resultMaskLayer</span>.<span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">resultMaskLayer</span>.<span style="color:#a6e22e">height</span>)
+<span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">putImageData</span>(<span style="color:#a6e22e">resultImageData</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+</code></pre></div><p>上面的例子仅为了展示两种方式写法上的不同，在这里的改写并没有带来性能上的提升。不过当运算较为复杂时有较为明显的性能提升，可以看看GPU.js的<a href="http://gpu.rocks/">benchmark</a>。</p>
+<p>当操作canvas的像素数据时，可能会进行比较复杂的CPU密集型运算，用这个库的话可以带来更好的性能。</p>
+<h2 id="其他">其他</h2>
+<p>其他的优化点：</p>
+<ul>
+<li>为避免次像素渲染(subpixel rendering)，使用<strong>整形</strong>作为绘制时使用的坐标值，尽管部分浏览器有抗锯齿特性</li>
+<li>使用<strong>window.requestAnimationFrame</strong>执行动画而不是<strong>window.setInterval</strong></li>
+<li>减少不必要的canvas状态变化</li>
+</ul>
+<h1 id="绘制原理">绘制原理</h1>
+<p>浏览器的渲染流水线是一个比较复杂的过程，在这里仅关注canvas图形绘制方面的原理，深究一下那些圆和方块和曲线到底是谁计算和画出来的</p>
+<h2 id="谁负责canvas的绘制">谁负责Canvas的绘制</h2>
+<p>以canvas为目标，以chrome为入口，来看看它引擎盖里面都有什么东西：</p>
+<ol>
+<li>
+<p>Chrome - 2008</p>
+<p>Google Web浏览器，家喻户晓，无需多言</p>
+</li>
+<li>
+<p>Chromium - 2008</p>
+<p>Chrome背后的开源项目，包含Chromium和Chromium OS</p>
+</li>
+<li>
+<p><strong>Blink</strong> - 2013</p>
+<p>Chromium所使用的浏览器引擎，为Webkit中Webcore组件的一个分支，作为Chromium计划的一部分，在Chrome28版本之后使用。</p>
+</li>
+<li>
+<p><strong>Skia</strong> - 2005</p>
+<p>开源的跨平台2D图形库，具有图形绘制、路径与几何计算、结果导出、硬件加速等功能，HTML5 Canvas的相关接口均可以追溯到Skia中的对应API和模块，比如PathKit、SkCanvas等。</p>
+</li>
+<li>
+<p>GPU(OpenGL) / CPU(PDF)</p>
+<p>GPU加速与指定设备导出等</p>
+</li>
+</ol>
+<h2 id="skia图形库">Skia图形库</h2>
+<p>Skia不仅作为Chrome的底层图形库，也是Android、Firefox和Flutter等项目的图形库。</p>
+<h3 id="skia-api">Skia API</h3>
+<p>以下面几个Skia Class为例，从它们的方法中可以看到到很多Canvas API的影子，甚至是完全一样。</p>
+<p><strong>SkCanvas</strong></p>
+<ul>
+<li>上下文：getGrContext, save, restore</li>
+<li>像素： peek/read/writePixels</li>
+<li>变换：translate, rotate, scale, skew</li>
+<li>绘制：drawPoints, drawLine, drawCircle</li>
+</ul>
+<p><strong>SkPaint</strong></p>
+<ul>
+<li>笔触：setStrokeCap, setStrokeJoin</li>
+<li>填充：getFillPath, kFill_Style</li>
+<li>文字：getTextSize, measureText</li>
+<li>效果：setPathEffect, setBlendMode</li>
+</ul>
+<p><strong>SkPath</strong></p>
+<ul>
+<li>路径：moveTo, lineTo, quadTo, conicTo, cubicTo, arcTo</li>
+<li>图形路径：addRect, addOval, addCircle</li>
+</ul>
+<p><strong>SkGeometry</strong></p>
+<ul>
+<li>多种曲线的插值求解：二次贝塞尔(quad)、二次NURBS(conic)、三次贝塞尔(cubic)</li>
+</ul>
+<h3 id="skia绘制">Skia绘制</h3>
+<p>Chromium中：</p>
+<p><strong>绘制层</strong></p>
+<ul>
+<li>Skia中有很多类，最底层的类是<code>SkCanvas</code>，它包含了所有绘制所需的方法。</li>
+<li>SkCanvas会将图形绘制到一个内部的<code>SkDevice</code>对象上，该对象维护一个<code>SkBitmap</code>对象，用来存储比特数据。</li>
+<li>还有针对平台的<code>SkPlatformCanvas</code>，允许使用一些特定平台的API。它的后台是<code>SkPlatformDevice</code>，包含Skia与Windows的共享内存，可以在上面创建一个保存比特数据的HBITMAP并在HDC(GDI句柄)上绘制。</li>
+</ul>
+<p><strong>应用层</strong></p>
+<ul>
+<li>在Webkit层(即Blink)上仅使用<code>SkCanvas</code>和<code>SkPlatformCanvas</code>这两个对象</li>
+<li>对于在浏览器进程中所执行的高层代码，提供了<code>gfx::Canvas</code>类，它封装了SkCanvas，并包含文字绘制与通用图元绘制的功能</li>
+</ul>
+<p><strong>渲染流程</strong></p>
+<ol>
+<li>
+<p>指令处理</p>
+<p>SkCanvas -&gt; <a href="https://github.com/google/skia/blob/76365c6a090e157c9e3b046c55d9617eb9a153ec/src/core/SkCanvas.cpp#L219">MCRec</a> -&gt; <a href="https://github.com/google/skia/blob/76365c6a090e157c9e3b046c55d9617eb9a153ec/src/core/SkCanvas.cpp#L185">DeviceCM</a> -&gt; SkBaseDevice -&gt; SkPDFDevice|SkBitmapDevice|SkGpuDevice</p>
+<p>解析绘制指令，根据状态栈操作取得状态信息</p>
+</li>
+<li>
+<p>解析处理</p>
+<p>SkBitmapDevice -&gt; SkDraw -&gt; SkScan|SkDraw1Glyph</p>
+<p>根据绘制方式，计算变换坐标，解析绘制图元，并进行抗锯齿等其他处理</p>
+</li>
+<li>
+<p>渲染处理</p>
+<p>SkBlitter -&gt; SkBlitRow|SkShader</p>
+<p>渲染指定区域，填充像素，添加其他效果(透明度或抖动处理)</p>
+</li>
+</ol>
+<p><strong>在Skia中画一个矩形</strong></p>
+<ol>
+<li>定义一个Bitmap - SkBitmap</li>
+<li>分配Bitmap所占用的空间</li>
+<li>指定输出设备或上下文 - SkCanvas|SkDevice</li>
+<li>设置绘制风格 - SkPaint</li>
+<li>执行绘制操作 - SkCanvas::drawRect</li>
+</ol>
+<h2 id="transform-matrix">Transform Matrix</h2>
+<p>闲来无事突然想到，css中transform与canvas中transform同样是矩阵变换，它们的处理有什么不同呢？</p>
+<p>在<strong>CSS Transform</strong>属性的处理中，以<a href="https://github.com/chromium/chromium/blob/dbbe79b7c437cc0c991e5f155c98ec54b9541cfd/third_party/blink/renderer/platform/transforms/transformation_matrix.cc#L1179">translate</a>变换为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">TransformationMatrix<span style="color:#f92672">&amp;</span> TransformationMatrix<span style="color:#f92672">::</span>Translate(<span style="color:#66d9ef">double</span> tx, <span style="color:#66d9ef">double</span> ty) {
+  matrix_[<span style="color:#ae81ff">3</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">+=</span> tx <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">+</span> ty <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>];
+  matrix_[<span style="color:#ae81ff">3</span>][<span style="color:#ae81ff">1</span>] <span style="color:#f92672">+=</span> tx <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> ty <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">1</span>];
+  matrix_[<span style="color:#ae81ff">3</span>][<span style="color:#ae81ff">2</span>] <span style="color:#f92672">+=</span> tx <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> ty <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">2</span>];
+  matrix_[<span style="color:#ae81ff">3</span>][<span style="color:#ae81ff">3</span>] <span style="color:#f92672">+=</span> tx <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">3</span>] <span style="color:#f92672">+</span> ty <span style="color:#f92672">*</span> matrix_[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">3</span>];
+  <span style="color:#66d9ef">return</span> <span style="color:#f92672">*</span><span style="color:#66d9ef">this</span>;
+}
+</code></pre></div><p>其中<code>matrx_</code>为<code>TransformationMatrix</code>这个类的成员变量，表示当前的变换矩阵。可以看到对于基础变换直接在<code>matrx_</code>(4✖4二维数组)上进行了变换的融合操作(左乘)。</p>
+<p>这个操作是Blink引擎负责计算的，用于之后的元素渲染与绘制。而<strong>Canvas Transform</strong>的话理所当然的在Skia中进行处理，同样以<a href="https://github.com/google/skia/blob/d9c2e522ddab75f5702bb0c714c57711ade9c788/src/core/SkMatrix.cpp#L276">translate</a>为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">void</span> SkMatrix<span style="color:#f92672">::</span>setTranslate(SkScalar dx, SkScalar dy) {
+  ...
+  fMat[kMTransX] <span style="color:#f92672">=</span> dx;
+  fMat[kMTransY] <span style="color:#f92672">=</span> dy;
+
+  fMat[kMScaleX] <span style="color:#f92672">=</span> fMat[kMScaleY] <span style="color:#f92672">=</span> fMat[kMPersp2] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+  fMat[kMSkewX]  <span style="color:#f92672">=</span> fMat[kMSkewY] <span style="color:#f92672">=</span>
+  fMat[kMPersp0] <span style="color:#f92672">=</span> fMat[kMPersp1] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  ...
+}
+</code></pre></div><p>其中<code>fMat</code>为一个长度为9的一位数组，这个平移变换中并不是直接在当前的变换矩阵上进行操作，而是在一个临时变量上赋值操作。</p>
+<p>在这个类中还提供了<a href="https://github.com/google/skia/blob/d9c2e522ddab75f5702bb0c714c57711ade9c788/src/core/SkMatrix.cpp#L636">concat</a>融合方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">void</span> SkMatrix<span style="color:#f92672">::</span>setConcat(<span style="color:#66d9ef">const</span> SkMatrix<span style="color:#f92672">&amp;</span> a, <span style="color:#66d9ef">const</span> SkMatrix<span style="color:#f92672">&amp;</span> b) {
+  ...
+  SkMatrix tmp;
+  ...
+  tmp.fMat[kMScaleX] <span style="color:#f92672">=</span> muladdmul(a.fMat[kMScaleX],b.fMat[kMScaleX],a.fMat[kMSkewX],b.fMat[kMSkewY]);
+  tmp.fMat[kMSkewX]  <span style="color:#f92672">=</span> muladdmul(a.fMat[kMScaleX],b.fMat[kMSkewX],a.fMat[kMSkewX],b.fMat[kMScaleY]);
+  tmp.fMat[kMTransX] <span style="color:#f92672">=</span> muladdmul(a.fMat[kMScaleX],b.fMat[kMTransX],a.fMat[kMSkewX],b.fMat[kMTransY]) <span style="color:#f92672">+</span> a.fMat[kMTransX];
+
+  tmp.fMat[kMSkewY]  <span style="color:#f92672">=</span> muladdmul(a.fMat[kMSkewY],b.fMat[kMScaleX],a.fMat[kMScaleY],b.fMat[kMSkewY]);
+  tmp.fMat[kMScaleY] <span style="color:#f92672">=</span> muladdmul(a.fMat[kMSkewY],b.fMat[kMSkewX],a.fMat[kMScaleY],b.fMat[kMScaleY]);
+  tmp.fMat[kMTransY] <span style="color:#f92672">=</span> muladdmul(a.fMat[kMSkewY],b.fMat[kMTransX],a.fMat[kMScaleY],b.fMat[kMTransY]) <span style="color:#f92672">+</span> a.fMat[kMTransY];
+
+  tmp.fMat[kMPersp0] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  tmp.fMat[kMPersp1] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  tmp.fMat[kMPersp2] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+  ...
+  <span style="color:#f92672">*</span><span style="color:#66d9ef">this</span> <span style="color:#f92672">=</span> tmp;
+}
+</code></pre></div><p>可以看到在该方法中进行了变换矩阵的乘法运算，计算出融合后的矩阵。也许是由于跨平台和一些历史原因，Skia所提供的transform API与命名方式与blink中的对应部分差异较大，在这种类似的模块中并没有统一的风格。</p>
+<hr>
+<p>到这里为止canvas之旅算是告一段落了，应该对canvas的使用及它的内涵有个大致的了解了，回见！</p>
+<hr>
+<p>笔者水平有限，若有纰漏之处，望在回复评论中指出。</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas/10060462">https://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas/10060462</a></li>
+<li><a href="https://stackoverflow.com/questions/8205828/html5-canvas-performance-and-optimization-tips-tricks-and-coding-best-practices">https://stackoverflow.com/questions/8205828/html5-canvas-performance-and-optimization-tips-tricks-and-coding-best-practices</a></li>
+<li><a href="https://github.com/chromium/chromium">https://github.com/chromium/chromium</a></li>
+<li><a href="http://events17.linuxfoundation.org/sites/events/files/slides/skia-elce-slides.pdf">http://events17.linuxfoundation.org/sites/events/files/slides/skia-elce-slides.pdf</a></li>
+<li><a href="https://www.chromium.org/developers/design-documents/graphics-and-skia">https://www.chromium.org/developers/design-documents/graphics-and-skia</a></li>
+<li><a href="https://blog.csdn.net/jxt1234and2010/article/details/42796449">https://blog.csdn.net/jxt1234and2010/article/details/42796449</a></li>
+</ul>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/canvas-travel/">http://yrq110.me/post/front-end/canvas-travel/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/canvas-effect-snippets/">Canvas效果片段</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                
+                <li><a href='http://yrq110.me/tags/skia'>skia</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

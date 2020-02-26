@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>可爱的puppeteer使用小技巧 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="可爱的puppeteer使用小技巧 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-01-23T20:02:50&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-01-23T20:02:50&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="可爱的puppeteer使用小技巧">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/some-tips-of-using-puppetter/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">可爱的puppeteer使用小技巧</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年1月23日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>总结一些使用puppetter的小技巧，从下面几个角度：</p>
+<ul>
+<li>浏览器的启动与请求</li>
+<li>页面的加载与渲染</li>
+<li>执行优化与状态管理</li>
+</ul>
+<h1 id="浏览器的启动与请求">浏览器的启动与请求</h1>
+<h2 id="自定义chromiumchrome路径">自定义chromium/chrome路径</h2>
+<p>默认的puppeteer会在module内部下载一个满足当前版本的chromium，有时由于网络的原因还经常下载失败，民生怨道。</p>
+<p>从v1.7.0开始，有了<a href="https://www.npmjs.com/package/puppeteer-core">puppeteer-core</a>这个轻量级使用puppeteer的方案，可以用它来指定chromium/chrome路径。这样就可以使用系统中所安装的chrome了(puppeteer内部会使用<code>child_process.spawn()</code>开启使用指定可执行文件的子进程)。</p>
+<p>需要注意以下几点:</p>
+<ul>
+<li>若指定了系统中的chrome，需要注意它的版本是否满足puppetter要求</li>
+<li>puppeteer-core不会自动下载chromium</li>
+<li>会忽略所有<code>PUPPETEER_*</code>环境变量</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;puppeteer-core&#39;</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getDefaultOsPath</span> <span style="color:#f92672">=</span> () =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">platform</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;win32&#39;</span>) {
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe&#39;</span>
+    } <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;/Applications/Google Chrome.app/Contents/MacOS/Google Chrome&#39;</span>
+    }
+}
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>({
+    <span style="color:#a6e22e">executablePath</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">getDefaultOsPath</span>()
+}))
+</code></pre></div><h2 id="ua相关">UA相关</h2>
+<h3 id="获取ua">获取UA</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">getPuppeteerChromeUA</span>() {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ua</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">userAgent</span>();
+  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ua</span>;
+}
+</code></pre></div><h3 id="使用匿名ua">使用匿名UA</h3>
+<p>封装一个函数来设置匿名UA:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">setAnonymizeUA</span> (<span style="color:#a6e22e">page</span>, <span style="color:#a6e22e">opts</span>) {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">ua</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">browser</span>().<span style="color:#a6e22e">userAgent</span>()
+  <span style="color:#75715e">// 1. 替换headless标识
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">opts</span>.<span style="color:#a6e22e">stripHeadless</span>) {
+    <span style="color:#a6e22e">ua</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ua</span>.<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">&#39;HeadlessChrome/&#39;</span>, <span style="color:#e6db74">&#39;Chrome/&#39;</span>)
+  }
+  <span style="color:#75715e">// 2. 设为win10平台
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">opts</span>.<span style="color:#a6e22e">makeWindows</span>) {
+    <span style="color:#a6e22e">ua</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ua</span>.<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">/\(([^)]+)\)/</span>, <span style="color:#e6db74">&#39;(Windows NT 10.0; Win64; x64)&#39;</span>)
+  }
+  <span style="color:#75715e">// 3. 使用自定义函数处理ua
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">opts</span>.<span style="color:#a6e22e">customFn</span>) {
+    <span style="color:#a6e22e">ua</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">opts</span>.<span style="color:#a6e22e">customFn</span>(<span style="color:#a6e22e">ua</span>)
+  }
+  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">setUserAgent</span>(<span style="color:#a6e22e">ua</span>)
+}
+</code></pre></div><ul>
+<li><a href="https://github.com/berstend/puppeteer-extra/blob/master/packages/puppeteer-extra-plugin-anonymize-ua/index.js">puppeteer-extra-plugin-anonymize-ua</a></li>
+</ul>
+<h1 id="页面的加载与渲染">页面的加载与渲染</h1>
+<h2 id="屏蔽指定类型资源的请求">屏蔽指定类型资源的请求</h2>
+<p>使用<code>setRequestInterception()</code>拦截请求，屏蔽指定类型请求来加快加载速度</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">blockTypes</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Set</span>([<span style="color:#e6db74">&#39;image&#39;</span>, <span style="color:#e6db74">&#39;media&#39;</span>, <span style="color:#e6db74">&#39;font&#39;</span>])
+<span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">setRequestInterception</span>(<span style="color:#66d9ef">true</span>)
+<span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;request&#39;</span>, <span style="color:#a6e22e">request</span> =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">type</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">resourceType</span>()
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">shouldBlock</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">blockedTypes</span>.<span style="color:#a6e22e">has</span>(<span style="color:#a6e22e">type</span>)
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#39;onRequest&#39;</span>, { <span style="color:#a6e22e">type</span>, <span style="color:#a6e22e">shouldBlock</span> })
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">shouldBlock</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">abort</span>() <span style="color:#f92672">:</span> <span style="color:#a6e22e">request</span>.<span style="color:#66d9ef">continue</span>()
+})
+...
+</code></pre></div><p><em>注意: 启用请求拦截会使页面缓存不可用</em></p>
+<ul>
+<li><a href="https://github.com/berstend/puppeteer-extra/blob/master/packages/puppeteer-extra-plugin-block-resources/index.js">puppeteer-extra-plugin-block-resources</a></li>
+</ul>
+<h2 id="控制page对象加载页面的阶段">控制page对象加载页面的阶段</h2>
+<p>通过设置<code>goto</code>函数中的<code>waitUntil</code>参数，使page在<code>DOMContentLoaded</code>事件触发时就返回结果，而无需等到Load事件，这样就节省了等待构建渲染树与页面绘制的时间。</p>
+<p>对应CDP中的<a href="https://chromedevtools.github.io/devtools-protocol/tot/Page#event-lifecycleEvent">Page.lifecycleEvent</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>()
+<span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;http://some.site&#39;</span>, {<span style="color:#a6e22e">waitUntil</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;domcontentloaded&#39;</span>})
+...
+</code></pre></div><h1 id="执行优化与状态管理">执行优化与状态管理</h1>
+<h2 id="记录页面内部的console信息">记录页面内部的console信息</h2>
+<p>通过Page对象的console事件监听页面内部打印的console日志并记录下来</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">recordInnerLog</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">page</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Page</span>, <span style="color:#a6e22e">filePath</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">timestamp</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Date().<span style="color:#a6e22e">valueOf</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">logFile</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fs</span>.<span style="color:#a6e22e">createWriteStream</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">filePath</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/log/</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">timestamp</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.txt`</span>, <span style="color:#e6db74">&#39;utf-8&#39;</span>);
+  <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;console&#39;</span>, <span style="color:#a6e22e">msg</span> =&gt; {
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">arg</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">args</span>()) {
+      <span style="color:#a6e22e">arg</span>.<span style="color:#a6e22e">jsonValue</span>().<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">v</span> =&gt; {
+        <span style="color:#a6e22e">v</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">logFile</span>.<span style="color:#a6e22e">write</span>(<span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">v</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span>);
+      });
+    }
+  });
+};
+</code></pre></div><h2 id="使用单例浏览器实例">使用单例浏览器实例</h2>
+<p>在同一个程序中使用多个爬虫对象时，某些情况下可以选择复用同一个浏览器实例，而不用每启动一个爬虫都new一个browser实例出来。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// instance.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pptr</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;puppeteer&#39;</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span>.<span style="color:#a6e22e">getBrowserInstance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span>() {
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">instance</span>)
+    <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">pptr</span>.<span style="color:#a6e22e">launch</span>();
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">instance</span>;
+}
+</code></pre></div><p>使用：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">getBrowserInstance</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./instance&#39;</span>);
+
+<span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">doWork</span>() {
+  <span style="color:#75715e">// ....
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">getBrowserInstance</span>(); <span style="color:#75715e">// this will reuse single browser
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// ....
+</span><span style="color:#75715e"></span>}
+</code></pre></div><ul>
+<li><a href="https://github.com/GoogleChrome/puppeteer/issues/2444#issuecomment-384698480">https://github.com/GoogleChrome/puppeteer/issues/2444#issuecomment-384698480</a></li>
+</ul>
+<p>也可以使用如下简便方法:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">browserInstance</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getSingleBrowser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">option</span> =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">browserInstance</span>) {
+        <span style="color:#a6e22e">browserInstance</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">browserInstance</span>.<span style="color:#a6e22e">close</span>()
+        <span style="color:#a6e22e">browserInstance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>()
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">browser</span>
+}
+</code></pre></div><p>有一种情况：若同时启动多个爬虫，需要等第一个执行完成后，接下来的任务再一起执行，否则同时执行会启动多个浏览器实例。如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">searchHandle</span>() {
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">bing</span>(<span style="color:#e6db74">&#39;hello world&#39;</span>) <span style="color:#75715e">// 创建了browser instance
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">duckduckgo</span>(<span style="color:#e6db74">&#39;hello world&#39;</span>) <span style="color:#75715e">// 使用上面的browser instance
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">google</span>(<span style="color:#e6db74">&#39;hello world&#39;</span>) <span style="color:#75715e">// 使用上面的browser instance
+</span><span style="color:#75715e"></span>}
+</code></pre></div><h2 id="使用transform-stream掌握爬虫执行进度">使用Transform Stream掌握爬虫执行进度</h2>
+<p>若使用promise封装爬虫对象后，想知道爬虫内部执行到哪一步了，可以使用自定义的<a href="https://nodejs.org/api/stream.html#stream_class_stream_transform">Transform Stream</a>来统一接收状态信息，在electron中使用还可以与渲染进程同步状态信息。</p>
+<h3 id="初始化stream">初始化Stream</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">statusStream</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Transform</span>({
+    <span style="color:#75715e">// 读写流均开启对象模式
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">writableObjectMode</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>, 
+    <span style="color:#a6e22e">readableObjectMode</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+
+    <span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">chunk</span>, <span style="color:#a6e22e">encoding</span>, <span style="color:#a6e22e">callback</span>) {
+        <span style="color:#a6e22e">callback</span>(<span style="color:#66d9ef">null</span>, <span style="color:#a6e22e">chunk</span>)
+    }
+})
+
+<span style="color:#75715e">// 设置编码类型与回调
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">stream</span>.<span style="color:#a6e22e">setEncoding</span>(<span style="color:#e6db74">&#39;utf-8&#39;</span>)
+<span style="color:#a6e22e">stream</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;data&#39;</span>, <span style="color:#a6e22e">chunk</span> =&gt; {
+    <span style="color:#a6e22e">handle_func</span>(<span style="color:#a6e22e">chunk</span>) <span style="color:#75715e">// 处理数据
+</span><span style="color:#75715e"></span>})
+
+<span style="color:#75715e">// 若在electron中使用，需要在BrowserWindow创建后进行设置
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">initStatusPipe</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">stream</span>, <span style="color:#a6e22e">win</span>) =&gt; {
+    <span style="color:#a6e22e">stream</span>.<span style="color:#a6e22e">setEncoding</span>(<span style="color:#e6db74">&#39;utf-8&#39;</span>)
+    <span style="color:#a6e22e">stream</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;data&#39;</span>, <span style="color:#a6e22e">chunk</span> =&gt; {
+        <span style="color:#75715e">// 通过ipc发送给渲染进程
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">win</span>.<span style="color:#a6e22e">webContents</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">IPC_RENDERER_SIGNAL</span>.<span style="color:#a6e22e">MESSAGE</span>, { <span style="color:#a6e22e">message</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">chunk</span> })
+    })
+}
+<span style="color:#75715e">// 主窗口创建后初始化流
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;ready&#39;</span>, () =&gt; {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">mainWindow</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">BrowserWindow</span>(...)
+  ...
+  <span style="color:#a6e22e">initStatusPipe</span>(<span style="color:#a6e22e">statusStream</span>, <span style="color:#a6e22e">mainWindow</span>)
+})
+</code></pre></div><p>若在electron中使用，可以在渲染进程中监听对应事件</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$electron</span>.<span style="color:#a6e22e">ipcRenderer</span>.<span style="color:#a6e22e">on</span>(<span style="color:#a6e22e">IPC_RENDERER_SIGNAL</span>.<span style="color:#a6e22e">MESSAGE</span>, (<span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">arg</span>) =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">arg</span>.<span style="color:#a6e22e">message</span>)
+})
+</code></pre></div><h3 id="在爬虫中使用stream">在爬虫中使用stream</h3>
+<p>传入之前定义的stream对象，使用write方法将状态信息写入stream中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// crawler.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">google</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">pipe</span>, <span style="color:#a6e22e">option</span>) =&gt; {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">async</span>(<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+        <span style="color:#66d9ef">try</span> {
+            ...
+            <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#a6e22e">url</span>, {<span style="color:#a6e22e">waitUntil</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;domcontentloaded&#39;</span>})
+            <span style="color:#a6e22e">pipe</span>.<span style="color:#a6e22e">write</span>(<span style="color:#e6db74">`page: open </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">url</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+            ...
+            <span style="color:#a6e22e">pipe</span>.<span style="color:#a6e22e">write</span>(<span style="color:#e6db74">`page: crwaled </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">number</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> results from google`</span>)
+            ...
+            <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">close</span>()
+            <span style="color:#a6e22e">pipe</span>.<span style="color:#a6e22e">write</span>(<span style="color:#e6db74">&#39;page: closed&#39;</span>)
+            <span style="color:#75715e">// return results
+</span><span style="color:#75715e"></span>            <span style="color:#a6e22e">resolve</span>(...)
+        } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">err</span>) {
+            <span style="color:#a6e22e">reject</span>(...)
+        }
+    })
+}
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#a6e22e">google</span>
+</code></pre></div><p>这样，就可以掌握爬虫内的具体情况了。为了更好的管理爬虫状态，也可以针对情况设计一些传递时的消息格式。</p>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/some-tips-of-using-puppetter/">http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/under-the-hood-at-event-loop/">当我们在说事件循环时，我们在说什么</a></li>
+        
+        <li><a href="/post/front-end/the-right-way-to-use-puppeteer-in-electron/">配置electron中puppeteer executablePath的正确姿势</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/puppeteer'>puppeteer</a></li>
+                
+                <li><a href='http://yrq110.me/tags/node'>node</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

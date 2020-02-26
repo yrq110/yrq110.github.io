@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Canvas2D渲染库简析:（一）Fabric | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Canvas2D渲染库简析:（一）Fabric - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-12-23T09:15:56&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-12-23T09:15:56&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Canvas2D渲染库简析:（一）Fabric">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Canvas2D渲染库简析:（一）Fabric</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年12月23日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>了解Canvas2D渲染功能实现与设计，在使用时知其所以然，在创造时有所借鉴。从以下这四个方面来分析Fabric.js</p>
+<ul>
+<li>对象模型处理(使用及设计实现)</li>
+<li>图形变换处理(<strong>canvas与object变换</strong>)</li>
+<li>光标交互处理(<strong>目标检测</strong>与<strong>事件处理</strong>)</li>
+<li>画布与对象渲染处理(<strong>多层结构</strong>与<strong>多阶段绘制</strong>)</li>
+</ul>
+<p><strong>系列目录</strong></p>
+<ul>
+<li>Canvas2D渲染库简析:（一）Fabric</li>
+<li><a href="https://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii/">Canvas2D渲染库简析:（二）Konva</a></li>
+<li><a href="https://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi">Canvas2D渲染库简析:（三）Pixi</a></li>
+</ul>
+<h2 id="canvas框架们">Canvas框架们</h2>
+<p>与Canvas有关的框架有许多，它们具有不同的特点和使用场景：</p>
+<ul>
+<li>游戏开发与交互艺术：EaselJS, P5.js</li>
+<li>2D渲染库：Fabric.js, Konva.js</li>
+<li>3D渲染库：Three.js</li>
+<li>特殊场景与用途：heatmap.js, Paper.js</li>
+</ul>
+<p>这里主要分析Canvas2D渲染框架中的两个：<a href="http://fabricjs.com/">Fabric.js</a>和<a href="http://konvajs.org/">Konva.js</a></p>
+<h2 id="fabric">Fabric</h2>
+<p>一个出现将近十年的经典Canvas图形库，最初由一个商品编辑器的产品发展而来，它所做的主要工作:</p>
+<ol>
+<li>将绘制的元素以对象模型的方式进行封装后提供给使用者，方便操作的执行与状态的管理</li>
+<li>增强了交互部分，可以方便的实现分组与操作对象的绑定</li>
+<li>添加了丰富的事件，可以用来控制对象及画布不同时刻的行为</li>
+<li>&hellip;</li>
+</ol>
+<p><em>本文所用Fabric.js版本为3.5.1</em></p>
+<p>从下面这几个方面来分析下Fabric中的主要功能设计：</p>
+<ul>
+<li>对象模型处理</li>
+<li>图形变换处理</li>
+<li>光标交互处理</li>
+<li>画布与对象渲染处理</li>
+</ul>
+<h3 id="对象模型处理">对象模型处理</h3>
+<h4 id="对象模型的使用方式">对象模型的使用方式</h4>
+<p>在创建对象模型部分主要有两种方式：使用基础图形与自定义图形。</p>
+<p><strong>1.基础图形</strong></p>
+<p>传入Rect的属性创建一个Fabric提供的矩形对象</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">redRect</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">Rect</span>({ <span style="color:#a6e22e">top</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">100</span>, <span style="color:#a6e22e">left</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">width</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">80</span>, <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">50</span>, <span style="color:#a6e22e">fill</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;red&#39;</span> });
+</code></pre></div><p><strong>2.自定义图形</strong></p>
+<p>在自定义图形对象时，需要实现<code>initialize()</code>与<code>_render()</code>方法，前者用于属性与配置初始化，后者用于图形渲染。在添加到fabric的canvas实例上时会自动调用。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">RainbowText</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">createClass</span>(<span style="color:#a6e22e">fabric</span>.Object, {
+  <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;rainbow-text&#39;</span>,
+  <span style="color:#a6e22e">colors</span><span style="color:#f92672">:</span> [<span style="color:#e6db74">&#34;red&#34;</span>,<span style="color:#e6db74">&#39;rgb(217,31,38)&#39;</span>, <span style="color:#e6db74">&#39;rgb(226,91,14)&#39;</span>, <span style="color:#e6db74">&#39;rgb(245,221,8)&#39;</span>, <span style="color:#e6db74">&#39;rgb(5,148,68)&#39;</span>, <span style="color:#e6db74">&#39;rgb(2,135,206)&#39;</span>, <span style="color:#e6db74">&#39;rgb(4,77,145)&#39;</span>, <span style="color:#e6db74">&#39;rgb(42,21,113)&#39;</span>],
+  <span style="color:#a6e22e">initialize</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">options</span>) {
+    <span style="color:#a6e22e">options</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">options</span> <span style="color:#f92672">||</span> {};
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">callSuper</span>(<span style="color:#e6db74">&#39;initialize&#39;</span>, <span style="color:#a6e22e">options</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">text</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">text</span> <span style="color:#f92672">||</span> <span style="color:#e6db74">&#39;Rainbow Text&#39;</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">text</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fontSize</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.6</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fontSize</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1.5</span>;
+    <span style="color:#66d9ef">this</span>.
+  },
+  <span style="color:#a6e22e">_render</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">ctx</span>) {
+    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">font</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;30px Sans&#34;</span>;
+    <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span><span style="color:#f92672">=</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">colors</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">&gt;</span><span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">--</span>) {
+      <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillStyle</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">colors</span>[<span style="color:#a6e22e">i</span>];
+      <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillText</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">text</span> <span style="color:#f92672">||</span> <span style="color:#e6db74">&#39;Hello world&#39;</span>, (<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>, (<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>);
+    }
+  }
+})
+</code></pre></div><!-- raw HTML omitted -->
+<p>在对象模型的创建过程中，fabric将属性、渲染方法等绑定在了一起。</p>
+<h4 id="对象模型的设计">对象模型的设计</h4>
+<p>在对象模型的实现中，主要有以下几个元素：</p>
+<ol>
+<li>类的创建与继承：<a href="https://github.com/fabricjs/fabric.js/blob/master/src/util/lang_class.js#L84">createClass</a></li>
+<li>对象模型的父类：<a href="https://github.com/fabricjs/fabric.js/blob/master/src/shapes/object.class.js#L54">fabric.Object</a></li>
+<li>其他方法的混入：<a href="https://github.com/fabricjs/fabric.js/blob/master/src/util/lang_object.js#L14">object.extend</a></li>
+</ol>
+<h4 id="createclass">createClass</h4>
+<p>这一部分的代码用于框架中所有对象类与功能类的实现，由于年代久远，用的方式比较古老。</p>
+<p>以createClass为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/utils/lang_class.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createClass</span>() {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">parent</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>,
+        <span style="color:#a6e22e">properties</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">slice</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">arguments</span>, <span style="color:#ae81ff">0</span>);
+    <span style="color:#75715e">// 将第一个参数作为父类
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">properties</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;function&#39;</span>) {
+      <span style="color:#a6e22e">parent</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">properties</span>.<span style="color:#a6e22e">shift</span>();
+    }
+    <span style="color:#75715e">// 声明子类
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">klass</span>() {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">initialize</span>.<span style="color:#a6e22e">apply</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">arguments</span>);
+    }
+    <span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">superclass</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">parent</span>;
+    <span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">subclasses</span> <span style="color:#f92672">=</span> [];
+    <span style="color:#75715e">// 若存在父类则继承原型对象
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">parent</span>) {
+      <span style="color:#a6e22e">Subclass</span>.<span style="color:#a6e22e">prototype</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">parent</span>.<span style="color:#a6e22e">prototype</span>;
+      <span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">prototype</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Subclass</span>();
+      <span style="color:#a6e22e">parent</span>.<span style="color:#a6e22e">subclasses</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">klass</span>);
+    }
+    <span style="color:#75715e">// 将父类方法与自定义方法绑定到子类上
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">length</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">properties</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+      <span style="color:#a6e22e">addMethods</span>(<span style="color:#a6e22e">klass</span>, <span style="color:#a6e22e">properties</span>[<span style="color:#a6e22e">i</span>], <span style="color:#a6e22e">parent</span>);
+    }
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">initialize</span>) {
+      <span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">initialize</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(){};
+    }
+    <span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">constructor</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">klass</span>;
+    <span style="color:#a6e22e">klass</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">callSuper</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">callSuper</span>;
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">klass</span>;
+  }
+</code></pre></div><h4 id="fabricobject">fabric.Object</h4>
+<p>在这个&quot;类&quot;中定义了一个图形对象拥有的主要属性及方法。</p>
+<p>其中属性分为<strong>状态属性</strong>与<strong>缓存属性</strong></p>
+<ul>
+<li>状态属性：图形的各种状态
+<ul>
+<li>几何与变换：如top width scaleX flipX transformMatrix</li>
+<li>描边相关: 如stroke strokeWidth strokeDashArray</li>
+<li>样式相关: 如opacity fill globalCompositeOperation shadow</li>
+</ul>
+</li>
+<li>缓存属性：在状态属性中会被缓存的属性
+<ul>
+<li>为状态属性中的子集：如fill stroke width</li>
+</ul>
+</li>
+</ul>
+<p>而方法则主要分为<strong>属性方法</strong>，<strong>绘制方法</strong>及<strong>缓存方法</strong></p>
+<ul>
+<li>属性方法：直接或间接的修改与获取当前属性，如变换rotate()，样式setColor()</li>
+<li>绘制方法：用于渲染，如render()等其他辅助方法</li>
+<li>辅助方法：用于克隆对象实例clone()、canvas元素转换()、序列化等等</li>
+</ul>
+<p>这样一来，图形的渲染及属性的设置已经有了，还需要的是交互事件的绑定、变换的处理等等。</p>
+<h3 id="图形变换处理">图形变换处理</h3>
+<p>如何处理变换是canvas绘制中必不可少的一环，尤其是有大量元素的复杂场景下。</p>
+<p><strong>变换矩阵基础</strong></p>
+<p>一般二维空间下变换的齐次矩阵如下(右乘)：</p>
+<p>$$
+\left[ \begin{array}{ccc} a &amp; c &amp; e ;
+b &amp; d &amp; f ;
+0 &amp; 0 &amp; 1 \end{array} \right]
+$$</p>
+<p>对应使用Canvas API的话如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">a</span>,<span style="color:#a6e22e">b</span>,<span style="color:#a6e22e">c</span>,<span style="color:#a6e22e">d</span>,<span style="color:#a6e22e">e</span>,<span style="color:#a6e22e">f</span>);
+</code></pre></div><p><strong>属性与方法</strong></p>
+<p>按<a href="http://fabricjs.com/using-transformations">官方文档</a>中所述，主要提供了如下与变换有关的属性与方法：</p>
+<ul>
+<li>Canvas
+<ul>
+<li>视口变换矩阵: <strong>viewportTransform</strong>;</li>
+</ul>
+</li>
+<li>Objects
+<ul>
+<li>对象变换矩阵: <strong>calcOwnMatrix()</strong>;</li>
+<li>结合分组变换: <strong>calcTransformMatrix()</strong>;</li>
+</ul>
+</li>
+<li>Utils
+<ul>
+<li>根据变换矩阵变换点的坐标: <strong>transformPoint(point, matrix)</strong>;</li>
+<li>矩阵乘法: <strong>multiplyTransformMatrices(matrix, matrix)</strong>;</li>
+<li>逆阵求解: <strong>invertTransform(matrix)</strong>;</li>
+<li>将变换矩阵解析为属性对象: <strong>qrDecompose(matrix)</strong>;</li>
+</ul>
+</li>
+</ul>
+<p>下面分析下canvas与object类中分别做了哪些与变换有关的工作。</p>
+<h4 id="fabriccanvas的变换">fabric.Canvas的变换</h4>
+<p>在canvas类中通过viewportTransform来保存当前的<strong>视口变换矩阵</strong>，当在canvas上执行拖拽或缩放操作(zoome/pan)时该值会发生改变，会影响它所包含的所有对象的渲染：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/static_canvas.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">renderCanvas</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">objects</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">v</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">viewportTransform</span>;
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">save</span>();
+  <span style="color:#75715e">//apply viewport transform once for all rendering process
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">1</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">3</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">4</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">5</span>]);
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderObjects</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">objects</span>);
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">restore</span>();
+}
+</code></pre></div><p>相关的zoom/pan操作对视口变换矩阵的修改：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/static_canvas.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">zoomToPoint</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">point</span>, <span style="color:#a6e22e">value</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">before</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">point</span>, <span style="color:#a6e22e">vpt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">viewportTransform</span>.<span style="color:#a6e22e">slice</span>(<span style="color:#ae81ff">0</span>);
+  <span style="color:#a6e22e">point</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>(<span style="color:#a6e22e">point</span>, <span style="color:#a6e22e">invertTransform</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">viewportTransform</span>));
+  <span style="color:#75715e">// 对scaleX与scaleY赋值
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">vpt</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+  <span style="color:#a6e22e">vpt</span>[<span style="color:#ae81ff">3</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">after</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>(<span style="color:#a6e22e">point</span>, <span style="color:#a6e22e">vpt</span>);
+  <span style="color:#75715e">// 得到缩放前后的位移差
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">vpt</span>[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">+=</span> <span style="color:#a6e22e">before</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">after</span>.<span style="color:#a6e22e">x</span>;
+  <span style="color:#a6e22e">vpt</span>[<span style="color:#ae81ff">5</span>] <span style="color:#f92672">+=</span> <span style="color:#a6e22e">before</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">after</span>.<span style="color:#a6e22e">y</span>;
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setViewportTransform</span>(<span style="color:#a6e22e">vpt</span>);
+},
+<span style="color:#a6e22e">absolutePan</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">point</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">vpt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">viewportTransform</span>.<span style="color:#a6e22e">slice</span>(<span style="color:#ae81ff">0</span>);
+  <span style="color:#75715e">// 拖拽产生的x与y的变化
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">vpt</span>[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">point</span>.<span style="color:#a6e22e">x</span>;
+  <span style="color:#a6e22e">vpt</span>[<span style="color:#ae81ff">5</span>] <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">point</span>.<span style="color:#a6e22e">y</span>;
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setViewportTransform</span>(<span style="color:#a6e22e">vpt</span>);
+},
+</code></pre></div><p>若在屏幕上存在一个点，想将其位置转换为变换后的canvas上的真实坐标，可以利用这个属性矩阵进行计算：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">newPoint</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">transformPoint</span>(<span style="color:#a6e22e">P</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">viewportTransform</span>);
+</code></pre></div><h4 id="fabricobject的变换">fabric.Object的变换</h4>
+<p><strong>变换操作与变换属性</strong></p>
+<p>要执行object的变换有两种方法：通过<strong>调用自身的变换方法</strong>和通过<strong>控制器上的交互</strong>。</p>
+<p>其中控制器指的是object包围盒矩形上可以拖拽的按钮，可以在上面的例子中选中图形后看到。</p>
+<ol>
+<li>
+<p>调用object方法</p>
+<p>object中会使用一些属性来保存变换相关的值，比如angle, scaleX等。在object上执行执行如rotate()等变换方法时会修改变换对应的属性值：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/shapes/object.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">rotate</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">angle</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">shouldCenterOrigin</span> <span style="color:#f92672">=</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">originX</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;center&#39;</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">originY</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;center&#39;</span>) <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">centeredRotation</span>;
+  <span style="color:#75715e">// 以中心为变换基准点
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">shouldCenterOrigin</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setOriginToCenter</span>();
+  }
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;angle&#39;</span>, <span style="color:#a6e22e">angle</span>);
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+},
+</code></pre></div></li>
+<li>
+<p>控制器上的交互</p>
+<p>控制器交互处理过程中最终会调用canvas上的object变换方法，如_rotateObject：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_rotateObject</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">t</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_currentTransform</span>,
+      <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">constraintPosition</span>,
+      <span style="color:#a6e22e">constraintPosition</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">translateToOriginPoint</span>(<span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">getCenterPoint</span>(), <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">originX</span>, <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">originY</span>);
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">lastAngle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">atan2</span>(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">ey</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">constraintPosition</span>.<span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">ex</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">constraintPosition</span>.<span style="color:#a6e22e">x</span>),
+      <span style="color:#a6e22e">curAngle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">atan2</span>(<span style="color:#a6e22e">y</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">constraintPosition</span>.<span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">x</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">constraintPosition</span>.<span style="color:#a6e22e">x</span>),
+      <span style="color:#a6e22e">angle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">radiansToDegrees</span>(<span style="color:#a6e22e">curAngle</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">lastAngle</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">theta</span>),
+      <span style="color:#a6e22e">hasRotated</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// normalize angle to positive value
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">angle</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+    <span style="color:#a6e22e">angle</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">360</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">angle</span>;
+  }
+  <span style="color:#a6e22e">angle</span> <span style="color:#f92672">%=</span> <span style="color:#ae81ff">360</span>;
+  <span style="color:#75715e">// rotation only happen here
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">angle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">angle</span>;
+  <span style="color:#75715e">// Make sure the constraints apply
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">setPositionByOrigin</span>(<span style="color:#a6e22e">constraintPosition</span>, <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">originX</span>, <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">originY</span>);
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">hasRotated</span>;
+},
+</code></pre></div></li>
+</ol>
+<p><strong>变换矩阵</strong></p>
+<p>触发变换后，对象的变换属性发生了变化。利用这些属性可以计算出最终的复合变换矩阵，即使用object上的calcOwnMatrix()或calcTransformMatrix()。在它们中会调用composeMatrix，利用这些属性来计算对象的复合变换矩阵：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/util/misc.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">composeMatrix</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">options</span>) {
+  <span style="color:#75715e">// 平移处理
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">matrix</span> <span style="color:#f92672">=</span> [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">translateX</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">translateY</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span>],
+      <span style="color:#a6e22e">multiply</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">multiplyTransformMatrices</span>;
+  <span style="color:#75715e">// 旋转处理
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">angle</span>) {
+    <span style="color:#a6e22e">matrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multiply</span>(<span style="color:#a6e22e">matrix</span>, <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">calcRotateMatrix</span>(<span style="color:#a6e22e">options</span>));
+  }
+  <span style="color:#75715e">// 缩放&amp;仿射处理
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">scaleX</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">scaleY</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">skewX</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">skewY</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">flipX</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">flipY</span>) {
+    <span style="color:#a6e22e">matrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multiply</span>(<span style="color:#a6e22e">matrix</span>, <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">calcDimensionsMatrix</span>(<span style="color:#a6e22e">options</span>));
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">matrix</span>;
+},
+</code></pre></div><p>除此之外，还有计算不同类型操作(如旋转、平移)对应变换矩阵的函数等，这些方法用于控制器坐标变换等方法中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/utils/misc.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">calcRotateMatrix</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">options</span>) {
+  <span style="color:#75715e">// 取得angle属性，将角度转换为弧度，计算scale与skew值
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">theta</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">degreesToRadians</span>(<span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">angle</span>),
+      <span style="color:#a6e22e">cos</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">cos</span>(<span style="color:#a6e22e">theta</span>),
+      <span style="color:#a6e22e">sin</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">sin</span>(<span style="color:#a6e22e">theta</span>);
+  <span style="color:#66d9ef">return</span> [<span style="color:#a6e22e">cos</span>, <span style="color:#a6e22e">sin</span>, <span style="color:#f92672">-</span><span style="color:#a6e22e">sin</span>, <span style="color:#a6e22e">cos</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>];
+},
+<span style="color:#75715e">// src/mixins/object_geometry.mixin.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_calcTranslateMatrix</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>() {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">center</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getCenterPoint</span>();
+  <span style="color:#66d9ef">return</span> [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">y</span>];
+},
+</code></pre></div><p>计算控制器坐标变换位置：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/mixins/object_geometry.mixin.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">calcCoords</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">absolute</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">rotateMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcRotateMatrix</span>(),
+      <span style="color:#a6e22e">translateMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcTranslateMatrix</span>(),
+      <span style="color:#a6e22e">startMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multiplyMatrices</span>(<span style="color:#a6e22e">translateMatrix</span>, <span style="color:#a6e22e">rotateMatrix</span>),
+      <span style="color:#a6e22e">vpt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getViewportTransform</span>(),
+      <span style="color:#a6e22e">finalMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">absolute</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">startMatrix</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">multiplyMatrices</span>(<span style="color:#a6e22e">vpt</span>, <span style="color:#a6e22e">startMatrix</span>),
+      <span style="color:#a6e22e">dim</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getTransformedDimensions</span>(),
+      <span style="color:#a6e22e">w</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">dim</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>, <span style="color:#a6e22e">h</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">dim</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>,
+      <span style="color:#a6e22e">tl</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">h</span> }, <span style="color:#a6e22e">finalMatrix</span>),
+      <span style="color:#a6e22e">tr</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">h</span> }, <span style="color:#a6e22e">finalMatrix</span>),
+      <span style="color:#a6e22e">bl</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">h</span> }, <span style="color:#a6e22e">finalMatrix</span>),
+      <span style="color:#a6e22e">br</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">h</span> }, <span style="color:#a6e22e">finalMatrix</span>);
+  <span style="color:#75715e">// corners
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">coords</span> <span style="color:#f92672">=</span> {<span style="color:#a6e22e">tl</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">tl</span>, <span style="color:#a6e22e">tr</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">tr</span>, <span style="color:#a6e22e">br</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">br</span>, <span style="color:#a6e22e">bl</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">bl</span>};
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">coords</span>;
+},
+</code></pre></div><p><strong>操作控制器引起对象变换的处理流程</strong></p>
+<ol>
+<li>
+<p>光标按下时，获取当前激活对象或者获取新对象并保存其当前的变换</p>
+<p>__onMouseDown =&gt; setActiveObject | _setupCurrentTransform</p>
+</li>
+<li>
+<p>选中对象时移动光标，执行变换函数</p>
+<p>__onMouseMove =&gt; _transformObject =&gt; _performTransformAction</p>
+</li>
+<li>
+<p>执行canvas对象上的变换函数，修改object上的对应变换属性，并请求渲染新内容</p>
+<p>_rotateObject | _scaleObject | OTHER_ACTION =&gt; requestRenderAll</p>
+</li>
+</ol>
+<h3 id="光标交互处理">光标交互处理</h3>
+<p>由于绘制的对象模型不是以dom元素的形式添加的，因此无法直接监听绘制元素的鼠标事件，只能通过监听所在canvas元素的鼠标事件来向下分发。</p>
+<p>以mousemove为例，当canvas元素上监听到mousemove事件后，会经过以下处理流程：</p>
+<ol>
+<li>画布监听到鼠标事件</li>
+<li>判断绘制笔画模式 <strong>isDrawingMode</strong></li>
+<li>判断变换状态 <strong>_currentTransform</strong></li>
+<li>检测命中的目标对象 <strong>findTarget</strong></li>
+<li>设置光标样式，在目标对象上分发合成事件 <strong>_setCursorFromEvent &amp;&amp; _fireOverOutEvents</strong></li>
+</ol>
+<p>其中最关键的是第4和第5步，即目标对象的检测和事件的分发</p>
+<p><strong>目标对象检测</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/canvas.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">findTarget</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">skipGroup</span>) {
+  <span style="color:#75715e">// 取得光标数据与激活对象
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">pointer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getPointer</span>(<span style="color:#a6e22e">e</span>, <span style="color:#66d9ef">true</span>),
+      <span style="color:#a6e22e">aObjects</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getActiveObjects</span>();
+  <span style="color:#75715e">// 若存在激活中的对象，则再判断他们的分组和顶点选择情况
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">aObjects</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">skipGroup</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">activeObject</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_searchPossibleTargets</span>([<span style="color:#a6e22e">activeObject</span>], <span style="color:#a6e22e">pointer</span>)) {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">activeObject</span>;
+  }
+  <span style="color:#75715e">// -------------------------
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// 其他关于当前激活对象的条件判断
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// -------------------------
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// 接着寻找新的激活对象
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_searchPossibleTargets</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_objects</span>, <span style="color:#a6e22e">pointer</span>);
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">e</span>[<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">altSelectionKey</span>] <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">activeTarget</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">activeTarget</span>) {
+    <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">activeTarget</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">targets</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">activeTargetSubs</span>;
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">target</span>;
+}
+</code></pre></div><p>进入findTarget后，会通过<code>_searchPossibleTargets =&gt; _checkTarget =&gt; containsPoint =&gt; Object.containsPoint =&gt; _findCrossPoints</code> 一系列的流程得到包含当前点位置的目标对象，其中的关键是<a href="https://web.cs.ucdavis.edu/~okreylos/TAship/Spring2000/PointInPolygon.html">点是否在多边形内</a>的判断，即光标与物体的碰撞检测，感兴趣的话可以看看链接的资料。</p>
+<p><strong>事件处理与分发</strong></p>
+<p>当检测到事件，获得目标对象后，就要进行事件的分发。</p>
+<p>以mousemove事件为例:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/mixins/canvas_events.mixin.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">fireSyntheticInOutEvents</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">config</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">inOpt</span>, <span style="color:#a6e22e">outOpt</span>, <span style="color:#a6e22e">oldTarget</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">oldTarget</span>, <span style="color:#a6e22e">outFires</span>, <span style="color:#a6e22e">inFires</span>,
+      <span style="color:#a6e22e">targetChanged</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">oldTarget</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">canvasEvtIn</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">canvasEvtIn</span>, <span style="color:#a6e22e">canvasEvtOut</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">canvasEvtOut</span>;
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">targetChanged</span>) {
+    <span style="color:#a6e22e">inOpt</span> <span style="color:#f92672">=</span> { <span style="color:#a6e22e">e</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">target</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">previousTarget</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">oldTarget</span> };
+    <span style="color:#a6e22e">outOpt</span> <span style="color:#f92672">=</span> { <span style="color:#a6e22e">e</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">target</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">oldTarget</span>, <span style="color:#a6e22e">nextTarget</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">target</span> };
+  }
+  <span style="color:#a6e22e">inFires</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">targetChanged</span>;
+  <span style="color:#a6e22e">outFires</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">oldTarget</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">targetChanged</span>;
+  <span style="color:#75715e">// 若oldTarget存在且目标改变
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">outFires</span>) {
+    <span style="color:#a6e22e">canvasEvtOut</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#a6e22e">canvasEvtOut</span>, <span style="color:#a6e22e">outOpt</span>);
+    <span style="color:#a6e22e">oldTarget</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">evtOut</span>, <span style="color:#a6e22e">outOpt</span>);
+  }
+  <span style="color:#75715e">// 若存在新的target
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">inFires</span>) {
+    <span style="color:#a6e22e">canvasEvtIn</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#a6e22e">canvasEvtIn</span>, <span style="color:#a6e22e">inOpt</span>);
+    <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">evtIn</span>, <span style="color:#a6e22e">inOpt</span>);
+  }
+},
+</code></pre></div><p>可以看到，在这个事件处理函数中：</p>
+<ul>
+<li>将mouseout和mosueover事件进行合成处理</li>
+<li>在canvas和目标对象上分别触发对应事件</li>
+<li>根据是否存在oldTarget与新的target来触发鼠标in与out时的事件</li>
+</ul>
+<h3 id="画布与对象渲染处理">画布与对象渲染处理</h3>
+<p>渲染的处理主要分为两步：canvas上的分层处理与object中的自定义渲染。</p>
+<p>在上面的例子我们添加过一个示例矩形：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">canvas</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">Canvas</span>(<span style="color:#e6db74">&#39;c&#39;</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">redRect</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">fabric</span>.<span style="color:#a6e22e">Rect</span>({ <span style="color:#a6e22e">top</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">70</span>, <span style="color:#a6e22e">left</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">10</span>, <span style="color:#a6e22e">width</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">220</span>, <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">8</span>, <span style="color:#a6e22e">fill</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;red&#39;</span> });
+<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">redRect</span>);
+</code></pre></div><p>现在来看看Fabric是如何处理它在canvas上的渲染的：</p>
+<ul>
+<li>
+<p>对象处理</p>
+<p>设置对象属性, 计算边界点用于拖拽变换, 触发事件</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/static_canvas.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_onObjectAdded</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">obj</span>) {
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">stateful</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">setupState</span>();
+  <span style="color:#75715e">// 绑定canvas属性
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">_set</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>, <span style="color:#66d9ef">this</span>);
+  <span style="color:#75715e">// 设置包围矩形四角坐标，用于拖拽变换
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">setCoords</span>();
+  <span style="color:#75715e">// 在canvas与对象上触发事件
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#e6db74">&#39;object:added&#39;</span>, { <span style="color:#a6e22e">target</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">obj</span> });
+  <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#e6db74">&#39;added&#39;</span>);
+}
+</code></pre></div></li>
+<li>
+<p>canvas中的render流程</p>
+<ol>
+<li>requestRenderAll(): 根据渲染状态执行rAF动画</li>
+<li>renderAll(): 将当前对象绘制到上下文容器中的canvas上
+* static_canvas: 将对象与容器传入renderCanvas()
+* canvas: 渲染双层canvas</li>
+<li>renderCanvas(): 主要的渲染函数，具体流程见<a href="">多层绘制处理</a></li>
+</ol>
+</li>
+<li>
+<p>object中的render流程</p>
+<ol>
+<li>
+<p>首先会执行对象模型基类object的render函数</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/shapes/object.class.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">render</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">ctx</span>) {
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">save</span>()
+  <span style="color:#75715e">// 应用融合选项(globalCompositeOperation)
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setupCompositeOperation</span>(<span style="color:#a6e22e">ctx</span>);
+  <span style="color:#75715e">// 绘制表示选中区域的矩形
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawSelectionBackground</span>(<span style="color:#a6e22e">ctx</span>); 
+  <span style="color:#75715e">// 在ctx上应用变换矩阵
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">ctx</span>); 
+  <span style="color:#75715e">// 设置透明度(gloablAlpha)与阴影(shadow*属性)
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setOpacity</span>(<span style="color:#a6e22e">ctx</span>); 
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setShadow</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
+  <span style="color:#75715e">// 绘制对象的主函数
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawObject</span>(<span style="color:#a6e22e">ctx</span>);
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">restore</span>()
+}
+</code></pre></div></li>
+<li>
+<p>在drawObject中会进行属性设置与绘制</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/shapes/object.class.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderBackground</span>(<span style="color:#a6e22e">ctx</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setStrokeStyles</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setFillStyles</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
+<span style="color:#75715e">// 自定义对象实现的_render()渲染方法会在这里被执行
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">ctx</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_drawClipPath</span>(<span style="color:#a6e22e">ctx</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fill</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">originalFill</span>;
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">stroke</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">originalStroke</span>;
+</code></pre></div></li>
+</ol>
+</li>
+</ul>
+<h4 id="多层canvas结构与多阶段绘制">多层canvas结构与多阶段绘制</h4>
+<p><strong>html的变化</strong></p>
+<p>在使用Frabic前编写的htm如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;wrapper&#34;</span>&gt;
+  &lt;<span style="color:#f92672">canvas</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;c&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;my-class&#34;</span>&gt;&lt;/<span style="color:#f92672">canvas</span>&gt;
+&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><p>创建fabric canvas实例后变成如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;wrapper&#34;</span>&gt;
+  &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;canvas-container&#34;</span>&gt;
+    &lt;<span style="color:#f92672">canvas</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;c&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;lower-canvas my-class&#34;</span>&gt;&lt;/<span style="color:#f92672">canvas</span>&gt;
+    &lt;<span style="color:#f92672">canvas</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;upper-canvas my-class&#34;</span>&gt;&lt;/<span style="color:#f92672">canvas</span>&gt;
+  &lt;/<span style="color:#f92672">div</span>&gt;
+&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><p><strong>多层canvas结构：2+1</strong></p>
+<p>Fabric在<a href="https://github.com/fabricjs/fabric.js/blob/master/src/canvas.class.js">canvas类</a>中设计了两个屏上canvas层：<strong>lower_canvas</strong>与<strong>upper_canvas</strong>，与一个隐藏层：<strong>cache_canvas</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>canvas层</th>
+<th>上下文对象</th>
+<th>是否可见</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>upper_canvas</td>
+<td>contextTop</td>
+<td>是</td>
+<td>监听光标事件，绘制笔刷(brush)，自由绘制(free_drawing)的区域</td>
+</tr>
+<tr>
+<td>lower_canvas</td>
+<td>contextContainer</td>
+<td>是</td>
+<td>绘制静态对象(objects)，主要内容绘制(main_drawing)区域</td>
+</tr>
+<tr>
+<td>cache_canvas</td>
+<td>contextCache</td>
+<td>否</td>
+<td>用于目标检测，在<a href="https://github.com/fabricjs/fabric.js/blob/master/src/canvas.class.js#L1243">_checkTarget()</a>中使用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>多阶段绘制</strong></p>
+<p>在<a href="https://github.com/fabricjs/fabric.js/blob/master/src/static_canvas.class.js#L927">renderCanvas()</a>处理过程中具有如下绘制步骤:</p>
+<ol>
+<li>dom容器，即#wrapper元素</li>
+<li>绘制背景色，canvas backgroundColor</li>
+<li>绘制背景图片，canvas backgroundImage</li>
+<li>绘制图形对象，canvas objects</li>
+<li>绘制图形对象控制器，canvas objects&rsquo; controls</li>
+<li>绘制图形对象选择器，canvas object selection</li>
+<li>绘制裁剪区域层，canvas clipped area</li>
+<li>绘制层叠图像，canvas overlay image</li>
+<li>渲染完成回调，after:render callback</li>
+</ol>
+<p><em>注意：fabric.Canvas具有以上处理流程，而它的父类StaticCanvas则没有这个流程</em></p>
+<h4 id="图片滤镜处理">图片滤镜处理</h4>
+<p>Fabric还提供了多种图片滤镜的功能，可选择webgl与canvas两种backend。</p>
+<p>在每种滤镜中，均包含了两种backend所需的属性和函数，根据设置的渲染方式执行对应的函数。以取反色的滤镜(invert filter)为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">filters</span>.<span style="color:#a6e22e">Invert</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">createClass</span>(<span style="color:#a6e22e">filters</span>.<span style="color:#a6e22e">BaseFilter</span>, <span style="color:#75715e">/** @lends fabric.Image.filters.Invert.prototype */</span> {
+  <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Invert&#39;</span>,
+  <span style="color:#75715e">// WebGLBackend: 在片元着色器中执行取反色操作
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">fragmentSource</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;precision highp float;\n&#39;</span> <span style="color:#f92672">+</span>
+    <span style="color:#e6db74">&#39;uniform sampler2D uTexture;\n&#39;</span> <span style="color:#f92672">+</span>
+    <span style="color:#e6db74">&#39;uniform int uInvert;\n&#39;</span> <span style="color:#f92672">+</span>
+    <span style="color:#e6db74">&#39;varying vec2 vTexCoord;\n&#39;</span> <span style="color:#f92672">+</span>
+    <span style="color:#e6db74">&#39;void main() {\n&#39;</span> <span style="color:#f92672">+</span>
+      <span style="color:#e6db74">&#39;vec4 color = texture2D(uTexture, vTexCoord);\n&#39;</span> <span style="color:#f92672">+</span>
+      <span style="color:#e6db74">&#39;if (uInvert == 1) {\n&#39;</span> <span style="color:#f92672">+</span>
+        <span style="color:#e6db74">&#39;gl_FragColor = vec4(1.0 - color.r,1.0 -color.g,1.0 -color.b,color.a);\n&#39;</span> <span style="color:#f92672">+</span>
+      <span style="color:#e6db74">&#39;} else {\n&#39;</span> <span style="color:#f92672">+</span>
+        <span style="color:#e6db74">&#39;gl_FragColor = color;\n&#39;</span> <span style="color:#f92672">+</span>
+      <span style="color:#e6db74">&#39;}\n&#39;</span> <span style="color:#f92672">+</span>
+    <span style="color:#e6db74">&#39;}&#39;</span>,
+    <span style="color:#f92672">*</span> <span style="color:#a6e22e">Apply</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Invert</span> <span style="color:#a6e22e">operation</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">Uint8Array</span> <span style="color:#a6e22e">representing</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">pixels</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">an</span> <span style="color:#a6e22e">image</span>.
+  <span style="color:#75715e">// Canvas2dFilterBackend: 在表示图像像素数据的Uint8Array对象上执行取反色操作
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">applyTo2d</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">options</span>) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">imageData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">imageData</span>,
+        <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">imageData</span>.<span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">i</span>,
+        <span style="color:#a6e22e">len</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">length</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">len</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">4</span>) {
+      <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">i</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">i</span>];
+      <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+      <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>];
+    }
+  },
+  <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>});
+</code></pre></div><h2 id="不足与改进">不足与改进</h2>
+<p><strong>官方的评价</strong></p>
+<p>对于自身不擅长的地方，官方在<a href="https://github.com/fabricjs/fabric.js/wiki/When-to-use-Fabric">GitHub wiki</a>中的<strong>not so good</strong>部分略有说明，年代的久远貌似没有影响这些。</p>
+<ol>
+<li>碰撞检测(逐像素与曲线) PS: 曲线碰撞检测可以使用Path2D + Canvas API(isPointInStroke &amp; isPointInPath)的方式来实现</li>
+<li>图表</li>
+<li>精灵动画</li>
+<li>3D渲染(推荐使用Three.js)</li>
+</ol>
+<p><strong>多层结构的思考</strong></p>
+<p>当编辑器的交互功能较为复杂时，也许会在upper_canvas上同时存在多种free_drawing或者其他类型的对象，当这些元素通过rAF动画绘制在upper_canvas时，在渲染与刷新的过程中未免会产生大量多余重复的绘制。</p>
+<p>若为第三方扩展或者是自己实现的话，可以采用<strong>多层offscreen</strong>的方式(<code>document.createElement('canvas')</code>)，在rAF更新时仅更新对应offscreen canvas上的内容，接着在upper_canvas上进行内容合成，这样一来其他动态类型元素所在的offscreen层的内容则无需重新绘制，可以减轻一些渲染压力。</p>
+<p>除此之外，也可以尝试使用<a href="https://yrq110.me/post/front-end/offscreen-canvas-practice/">OffscreenCanvas对象+worker</a>的方法进行优化。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://developer.tizen.org/community/tip-tech/creating-custom-objects-fabric.js">https://developer.tizen.org/community/tip-tech/creating-custom-objects-fabric.js</a></li>
+<li><a href="https://github.com/fabricjs/fabric.js/wiki">https://github.com/fabricjs/fabric.js/wiki</a></li>
+<li><a href="http://fabricjs.com/docs/index.html">http://fabricjs.com/docs/index.html</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/">http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/practice-in-e2e-test-with-puppeteer/">puppeteer&#43;canvas的e2e测试实践</a></li>
+        
+        <li><a href="/post/front-end/offscreen-canvas-practice/">Worker中的OffscreenCanvas渲染实践与浅析</a></li>
+        
+        <li><a href="/post/front-end/canvas-travel/">Canvas从小试牛刀到庖丁解牛</a></li>
+        
+        <li><a href="/post/front-end/canvas-effect-snippets/">Canvas效果片段</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                
+                <li><a href='http://yrq110.me/tags/fabric'>fabric</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

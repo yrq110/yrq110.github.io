@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>incremental-dom简析 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="incremental-dom简析 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-01-15T15:18:34&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-01-15T15:18:34&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="incremental-dom简析">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/brief-of-incremental-dom/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">incremental-dom简析</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年1月15日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>想必对于virtual-dom(以下简称vdom)已经耳熟能详了，react和vue均使用了vdom，在更新与DOM时具有效率高、速度快的特点(相比于直接操作dom)。那么incremental-dom又是什么呢？</p>
+<p><a href="https://github.com/google/incremental-dom">incremental-dom</a>（以下简称idom）的一些特点:</p>
+<ul>
+<li>idom是用于<strong>表现</strong>及<strong>更新</strong>DOM的库，由google开发。</li>
+<li>idom与vdom相比最大的区别是，它不会构建作为中间层的虚拟dom树。当数据变化时，diff操作会在真实DOM上<strong>逐节点</strong>执行，而不是在<strong>虚拟DOM树</strong>之间，内存占用更少。</li>
+<li>idom的目标并不是直接使用的，而是为更高层的库或框架所提供。</li>
+</ul>
+<h1 id="基础">基础</h1>
+<p>介绍一下idom的基本使用，主要来源于<a href="http://google.github.io/incremental-dom/">官方文档</a></p>
+<h2 id="渲染dom">渲染DOM</h2>
+<p>所渲染的DOM使用节点函数<code>elementOpen</code>、<code>elementClose</code>和<code>text</code>来描述。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">renderPart</span>() {
+  <span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+    <span style="color:#a6e22e">text</span>(<span style="color:#e6db74">&#39;Hello world&#39;</span>);
+  <span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+}
+</code></pre></div><p>会被渲染成</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span>&gt;
+  Hello world
+&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><p>在<code>patch</code>函数中使用上的<code>renderPart</code>函数可以在已存在的元素(Element)或文档(Document，包含ShadowDOM)上更新期望的节点。调用patch函数会在DOM树上根据所需的节点变动、更新属性和创建/移除进行局部更新。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">patch</span>(document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;someId&#39;</span>), <span style="color:#a6e22e">renderPart</span>);
+</code></pre></div><h3 id="特性和属性的设置">特性和属性的设置</h3>
+<p>除了创建DOM节点外，有时还需要在元素上添加/删除特性(attribute)和属性(property)。它们被指定为可变的参数，通过attribute/property键值对来改变。传入的对象与函数类型会被设为属性，其他类型会被设为特性。</p>
+<p>ps: attribute是html标签上的特性，只能是字符串。property是DOM上的属性，是JS对象。</p>
+<p>属性设置的一个用法是储存一个事件代理的回调函数。当你可以在DOM节点上分配任何属性时，甚至可以分配一些on*事件的处理器，比如onClick。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#66d9ef">null</span>, <span style="color:#66d9ef">null</span>,
+    <span style="color:#e6db74">&#39;class&#39;</span>, <span style="color:#e6db74">&#39;someClass&#39;</span>,
+    <span style="color:#e6db74">&#39;onclick&#39;</span>, <span style="color:#a6e22e">someFunction</span>);
+  <span style="color:#960050;background-color:#1e0010">…</span>
+<span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+</code></pre></div><h2 id="静态数组">静态数组</h2>
+<p>很多时候DOM节点的一些属性是不会改变的，比如<code>&lt;input type=&quot;text&quot;&gt;</code>的type特性。idom提供了一个shortcut来避免已知不变的特性/属性比较。</p>
+<p><code>elementOpen</code>的第三个参数表示不会改变的特性数组，为了避免每次参数传入都分配一个数组，可以在闭包外声明数组，使其仅执行一次。</p>
+<p>在提供静态数组的同时还需要提供key，这确保了idom永远不会重用那些有着相同标签但不同静态数组的元素。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">render</span>() {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s1</span> <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#39;type&#39;</span>, <span style="color:#e6db74">&#39;text&#39;</span>, <span style="color:#e6db74">&#39;placeholder&#39;</span>, <span style="color:#e6db74">&#39;…&#39;</span>];
+
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">isDisabled</span>) {
+    <span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;input&#39;</span>, <span style="color:#e6db74">&#39;1&#39;</span>, <span style="color:#a6e22e">s1</span>,
+        <span style="color:#e6db74">&#39;disabled&#39;</span>, <span style="color:#a6e22e">isDisabled</span>);
+    <span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;input&#39;</span>);
+  };
+}
+</code></pre></div><p>在上面的代码中，<code>1</code>就是key，s1就是静态数组。</p>
+<h3 id="赋予样式">赋予样式</h3>
+<p>使用字符串或对象均可以设置一个元素的样式。当使用对象设置样式时，它的键名格式应为驼峰式。</p>
+<ol>
+<li>
+<p>作为字符串:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#66d9ef">null</span>, <span style="color:#66d9ef">null</span>,
+    <span style="color:#e6db74">&#39;style&#39;</span>, <span style="color:#e6db74">&#39;color: white; background-color: red;&#39;</span>);
+      <span style="color:#960050;background-color:#1e0010">…</span>
+<span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+</code></pre></div></li>
+<li>
+<p>作为对象:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#66d9ef">null</span>, <span style="color:#66d9ef">null</span>,
+    <span style="color:#e6db74">&#39;style&#39;</span>, {
+      <span style="color:#a6e22e">color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;white&#39;</span>,
+      <span style="color:#a6e22e">backgroundColor</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;red&#39;</span>
+    });
+  <span style="color:#960050;background-color:#1e0010">…</span>
+<span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+</code></pre></div></li>
+</ol>
+<h2 id="条件渲染">条件渲染</h2>
+<ol>
+<li>
+<p>if/else</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">renderGreeting</span>(<span style="color:#a6e22e">date</span>, <span style="color:#a6e22e">name</span>) {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">date</span>.<span style="color:#a6e22e">getHours</span>() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">12</span>) {
+    <span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;strong&#39;</span>);
+    <span style="color:#a6e22e">text</span>(<span style="color:#e6db74">&#39;Good morning, &#39;</span>);
+    <span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;strong&#39;</span>);
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">text</span>(<span style="color:#e6db74">&#39;Hello &#39;</span>);
+  }
+
+  <span style="color:#a6e22e">text</span>(<span style="color:#a6e22e">name</span>);
+}
+</code></pre></div></li>
+<li>
+<p>DOM元素更新/复用</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">condition</span>) {
+  <span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+    <span style="color:#75715e">// subtree &#39;A&#39;
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+}
+
+<span style="color:#a6e22e">elementOpen</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+  <span style="color:#75715e">// subtree &#39;B&#39;
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">elementClose</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+</code></pre></div></li>
+<li>
+<p>逻辑化的特性</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">elementOpenStart</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">key</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">obj</span>) {
+    <span style="color:#a6e22e">attr</span>(<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">obj</span>[<span style="color:#a6e22e">key</span>]);
+  }
+<span style="color:#a6e22e">elementOpenEnd</span>(<span style="color:#e6db74">&#39;div&#39;</span>);
+</code></pre></div></li>
+</ol>
+<h2 id="钩子">钩子</h2>
+<h3 id="值的设置">值的设置</h3>
+<p>idom提供了用来自定义如何处理传入值的钩子。<code>attributes</code>对象允许你提供一个函数来决定：当一个特性传入到elementOpen或其他函数中时要做的事情。下面的例子中使得idom总会将value作为属性(property)来设置。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> {
+  <span style="color:#a6e22e">attributes</span>,
+  <span style="color:#a6e22e">applyProp</span>,
+  <span style="color:#a6e22e">applyAttr</span>
+} <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;incremental-dom&#39;</span>;
+
+<span style="color:#a6e22e">attributes</span>.<span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">applyProp</span>;
+</code></pre></div><p>若想更一步的控制设置值的方式，可以设置自定义执行更新的函数:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">attributes</span>.<span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">element</span>, <span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>) {
+  <span style="color:#960050;background-color:#1e0010">…</span>
+};
+</code></pre></div><p>若未给键名指定函数，那么一个默认函数会被用来执行那些在属性和特性中的值，这个函数可以通过给<code>symbols.default</code>指定函数来修改。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> {
+  <span style="color:#a6e22e">attributes</span>,
+  <span style="color:#a6e22e">symbols</span>
+} <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;incremental-dom&#39;</span>;
+
+<span style="color:#a6e22e">attributes</span>[<span style="color:#a6e22e">symbols</span>.<span style="color:#66d9ef">default</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">someFunction</span>;
+</code></pre></div><h3 id="添加移除节点">添加/移除节点</h3>
+<p>通过指定<code>notifications.nodesCreated</code>和<code>notifications.nodesDeleted</code>上的函数来让idom在节点被添加和移除时发出通知。若在patch操作的过程中添加或移除节点，则会在patch添加或移除节点的操作完成后调用对应的钩子函数。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">notifications</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;incremental-dom&#39;</span>;
+
+<span style="color:#a6e22e">notifications</span>.<span style="color:#a6e22e">nodesCreated</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">nodes</span>) {
+  <span style="color:#a6e22e">nodes</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">node</span>) {
+    <span style="color:#75715e">// node may be an Element or a Text
+</span><span style="color:#75715e"></span>  });
+};
+</code></pre></div><h2 id="优点">优点</h2>
+<p>idom跟vdom相比有如下两个优点:</p>
+<ol>
+<li>逐个操作(incremental nature)使其在渲染过程中可以有效地减少内存占用，并且具有更加可预测的性能，<strong>更适合移动端场景</strong>。</li>
+<li>更容易映射到模板上。可以轻松的在控制与循环语句混入元素与特性声明。</li>
+</ol>
+<p>idom是一个小巧的(2.6kB min+gzip)、独立并且灵活的库。用它可以渲染出DOM节点并且设置特性/属性，至于如何组织视图等剩余的工就取决于用户了。比如说，一个Backbone应用可以在传统的模板与手动更新的基础上使用idom来渲染与更新DOM。</p>
+<h2 id="例子">例子</h2>
+<p><a href="http://termvader.github.io/markdown-it-incremental-dom/">这里</a>是一个简单的使用idom和markdown的例子</p>
+<h1 id="原理">原理</h1>
+<h2 id="api">API</h2>
+<p>idom所提供的API主要可以分为对<code>元素</code>和对<code>指针</code>的操作。</p>
+<h3 id="对元素的操作">对元素的操作</h3>
+<ol>
+<li>使用<code>elementOpen</code>、<code>elementClose</code>和<code>elementClose</code>等函数指定所操作的元素（渲染&amp;更新），自动移动指针到该元素内</li>
+<li>使用<code>attr</code>、<code>text</code>和<code>key</code>等修改元素的特性、属性或内容</li>
+<li>使用<code>patch</code>函数在指定元素上执行传入的更新函数</li>
+</ol>
+<h3 id="对指针的操作">对指针的操作</h3>
+<ol>
+<li>使用<code>currentElement</code>获取当前打开的元素，使用<code>currentPointer</code>获取当前idom指向的位置</li>
+<li>使用<code>skip</code>将指针移动到当前打开元素的末尾，使用<code>skipNode</code>向后跳过一个节点</li>
+</ol>
+<h2 id="diff方法">diff方法</h2>
+<p>idom所提供的diff方法比较的是键值对数组。在下面的代码中可以看到:</p>
+<p><code>prev</code>和<code>next</code>表示更新前与更新后的<code>键值对</code>，注意是字符串数组类型。<code>{key1: value1, key2: value2}</code>对象对应的是形如: <code>['key1', 'value1', 'key2', 'value2']</code>的数组，偶数索引为键，奇数索引为值。</p>
+<p><code>src/diff.ts</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">calculateDiff</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span>(
+  <span style="color:#75715e">// diff时传入的参数，其中更新的上下文为泛型T，在外部指定类型
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">prev</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>[], <span style="color:#a6e22e">next</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>[], <span style="color:#a6e22e">updateCtx</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">T</span>,
+    <span style="color:#a6e22e">updateFn</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">ctx</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">T</span>, <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> {}<span style="color:#f92672">|</span><span style="color:#66d9ef">undefined</span>) =&gt; <span style="color:#66d9ef">undefined</span>) {
+  
+  <span style="color:#75715e">// 1.首先判断是否为新添加的数据
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">isNew</span> <span style="color:#f92672">=</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">prev</span>.<span style="color:#a6e22e">length</span>;
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+
+  <span style="color:#75715e">// 2. 遍历更新后的键值对
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> (; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">next</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">2</span>) {
+    <span style="color:#75715e">// 2.1 比较是否有不同的键名
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">name</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">next</span>[<span style="color:#a6e22e">i</span>];
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isNew</span>) {
+      <span style="color:#75715e">// 更新prev
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">name</span>;
+    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span>] <span style="color:#f92672">!==</span> <span style="color:#a6e22e">name</span>) {
+      <span style="color:#75715e">// 一旦遇到不同的键名，则终止循环
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">break</span>;
+    }
+    <span style="color:#75715e">// 2.2 比较值
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">next</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isNew</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">!==</span> <span style="color:#a6e22e">value</span>) {
+      <span style="color:#75715e">// 若为新数据或对应索引的值不同，则更新prev并执行更新函数
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+      <span style="color:#a6e22e">updateFn</span>(<span style="color:#a6e22e">updateCtx</span>, <span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>);
+    }
+  }
+
+  <span style="color:#75715e">// 当更新前与更新后的键名及顺序完全相同或更新前数据为空，则不会进行下面这步
+</span><span style="color:#75715e"></span>
+  <span style="color:#75715e">// 3. 键值对中项的排列顺序可能与之前的并不完全一样，需要确保旧的项被移除，这种情况比较少见，比如
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// pre:  [&#39;key1&#39;, &#39;value1&#39;, &#39;key2&#39;, &#39;value2&#39;, &#39;key4&#39;, &#39;value4&#39;, &#39;key3&#39;, &#39;value3&#39;]
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// next: [&#39;key1&#39;, &#39;value1&#39;, &#39;key3&#39;, &#39;value3&#39;, &#39;key2&#39;, &#39;value2&#39;]
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">next</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">prev</span>.<span style="color:#a6e22e">length</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">startIndex</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">i</span>;
+    <span style="color:#75715e">// 3.1 暂存剩余的prev键值对
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">startIndex</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">prev</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">2</span>) {
+      <span style="color:#a6e22e">prevValuesMap</span>[<span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span>]] <span style="color:#f92672">=</span> <span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+    }
+    <span style="color:#75715e">// 3.2 遍历next键值对
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">startIndex</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">next</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">2</span>) {
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">name</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">next</span>[<span style="color:#a6e22e">i</span>]) <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">string</span>;
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">next</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+      <span style="color:#75715e">// 若对应prev键名的值与next值不同，则执行更新函数
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">prevValuesMap</span>[<span style="color:#a6e22e">name</span>] <span style="color:#f92672">!==</span> <span style="color:#a6e22e">value</span>) {
+        <span style="color:#a6e22e">updateFn</span>(<span style="color:#a6e22e">updateCtx</span>, <span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>);
+      }
+      <span style="color:#75715e">// 更新prev
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">name</span>;
+      <span style="color:#a6e22e">prev</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+      <span style="color:#75715e">// 删除prevValuesMap对象中已比对的键值对
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">delete</span> <span style="color:#a6e22e">prevValuesMap</span>[<span style="color:#a6e22e">name</span>];
+    }
+
+    <span style="color:#75715e">// 4. 进行去尾操作，删除超过next长度的项，即已不存在的项
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">truncateArray</span>(<span style="color:#a6e22e">prev</span>, <span style="color:#a6e22e">next</span>.<span style="color:#a6e22e">length</span>);
+
+    <span style="color:#75715e">// 5. 若prev中存在的值在next中已不存在，则传入undefined执行更新函数
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">prevValuesMap</span>) {
+      <span style="color:#a6e22e">updateFn</span>(<span style="color:#a6e22e">updateCtx</span>, <span style="color:#a6e22e">name</span>, <span style="color:#66d9ef">undefined</span>);
+      <span style="color:#66d9ef">delete</span> <span style="color:#a6e22e">prevValuesMap</span>[<span style="color:#a6e22e">name</span>];
+    }
+  }
+}
+...
+</code></pre></div><p>该方法的变体同样用在了<code>elementOpen</code>函数中的attribute diff操作:</p>
+<p><code>src/virtual_elements</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">elementOpen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">tag</span>, <span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">statics</span>, <span style="color:#a6e22e">var_args</span>) {
+  ...
+  <span style="color:#66d9ef">for</span> (; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">arguments</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">2</span>, <span style="color:#a6e22e">j</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">2</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">attr</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">arguments</span>[<span style="color:#a6e22e">i</span>];
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isNew</span>) {
+      <span style="color:#a6e22e">attrsArr</span>[<span style="color:#a6e22e">j</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">attr</span>;
+      <span style="color:#a6e22e">newAttrs</span>[<span style="color:#a6e22e">attr</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>;
+    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">attrsArr</span>[<span style="color:#a6e22e">j</span>] <span style="color:#f92672">!==</span> <span style="color:#a6e22e">attr</span>) {
+      <span style="color:#66d9ef">break</span>;
+    }
+
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">arguments</span>[<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isNew</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">attrsArr</span>[<span style="color:#a6e22e">j</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">!==</span> <span style="color:#a6e22e">value</span>) {
+      <span style="color:#a6e22e">attrsArr</span>[<span style="color:#a6e22e">j</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+      <span style="color:#a6e22e">updateAttribute</span>(<span style="color:#a6e22e">node</span>, <span style="color:#a6e22e">attr</span>, <span style="color:#a6e22e">value</span>);
+    }
+  }
+
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">arguments</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">j</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">attrsArr</span>.<span style="color:#a6e22e">length</span>) {
+    ...
+  }
+
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">node</span>;
+};
+</code></pre></div><h2 id="patch方法">patch方法</h2>
+<p>在自定义更新指定元素时，最关键的无疑是<code>patch</code>函数，那么idom的<code>patch</code>函数做了什么呢，如下所示:</p>
+<p><code>src/core.ts</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">patchInner</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">patchFactory</span>((<span style="color:#a6e22e">node</span>, <span style="color:#a6e22e">fn</span>, <span style="color:#a6e22e">data</span>) =&gt; {
+  <span style="color:#a6e22e">currentNode</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">node</span>;
+
+  <span style="color:#a6e22e">enterNode</span>();
+  <span style="color:#a6e22e">fn</span>(<span style="color:#a6e22e">data</span>);
+  <span style="color:#a6e22e">exitNode</span>();
+  ...
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">node</span>;
+});
+...
+</code></pre></div><p>简析它的过程:</p>
+<ol>
+<li>首先，使用了<code>patchFactory</code>这个工厂函数进行构建，在这个函数中主要进行了一些数据初始化，如上下文、文档、元素路径、父元素等等。</li>
+<li>使用<code>enterNode</code>修改<code>currentParent</code>为<code>currentNode</code>，将<code>currentNode</code>置为null。</li>
+<li>使用传入的函数及数据进行更新操作。</li>
+<li>使用<code>exitNode</code>清空当前范围的未访问节点，重置<code>currentNode</code>和<code>currentParent</code>属性。</li>
+</ol>
+<p>在第三步的更新函数中，一般会使用<code>text</code>、<code>elementOpen</code>等会在真实DOM上进行修改操作的函数。</p>
+<h2 id="模板">模板</h2>
+<p>可以参考官方的<a href="https://github.com/google/incremental-dom/blob/master/ECOSYSTEM.md">ecosystem</a></p>
+<ul>
+<li><a href="https://github.com/google/closure-templates/">Closure Compiler Templates</a></li>
+<li><a href="https://github.com/babel-plugins/babel-plugin-incremental-dom">JSX</a></li>
+<li><a href="https://github.com/davidjamesstone/superviews.js">superviews.js</a></li>
+<li>&hellip;</li>
+</ul>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="http://google.github.io/incremental-dom/">incremental-dom | An in-place DOM diffing library</a></li>
+<li><a href="https://www.slideshare.net/zoetrope/incremental-dom-and-recent-trend-of-frontend-development">Incremental DOM and Recent Trend of Frontend Development</a></li>
+<li><a href="https://auth0.com/blog/incremental-dom//">Incremental DOM 101: What is it and why I should care?</a></li>
+<li><a href="https://medium.com/@azizhk/incremental-dom-tutorial-843530b0cb68">Incremental DOM Tutorial – Aziz Khambati – Medium</a></li>
+<li><a href="https://qiita.com/sakana/items/83491d82e370a1765fdd">はじめてのincremental-dom - Qiita</a></li>
+<li><a href="https://github.com/Rapid-Application-Development-JS/itemplate">idom-template</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/brief-of-incremental-dom/">http://yrq110.me/post/front-end/brief-of-incremental-dom/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/dom'>dom</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

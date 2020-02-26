@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>canvas on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/canvas/</link>
+    <description>Recent content in canvas on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 30 Dec 2019 16:59:36 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/canvas/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Canvas2D渲染库简析:（三）Pixi</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/</link>
+      <pubDate>Mon, 30 Dec 2019 16:59:36 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/</guid>
+      <description>&lt;p&gt;fabric和konva主要是用于实现编辑器的场景，而Pixi则是一个高性能2D动画渲染库，通常用于一些H5的小游戏或可交互页面。&lt;/p&gt;
+&lt;p&gt;本次通过以下几个方面来对其进行分析：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;WebGL与Canvas渲染器&lt;/li&gt;
+&lt;li&gt;资源加载器与纹理&lt;/li&gt;
+&lt;li&gt;场景、精灵与图形对象&lt;/li&gt;
+&lt;li&gt;变换、交互及动画处理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas2D渲染库简析:（二）Konva</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/</link>
+      <pubDate>Tue, 24 Dec 2019 15:29:59 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/</guid>
+      <description>&lt;p&gt;与古老的Fabric相比，Konva的使用更为便捷，性能更加优益，这些得益于其内部的种种设计，本次通过以下几个方面来对其进行分析：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;基础元素及上下文的扩展&lt;/li&gt;
+&lt;li&gt;图形变换处理(&lt;strong&gt;变换计算及独立的图形控制器&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;光标交互处理(&lt;strong&gt;基于像素的目标检测&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;层级渲染处理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas2D渲染库简析:（一）Fabric</title>
+      <link>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</link>
+      <pubDate>Mon, 23 Dec 2019 09:15:56 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/</guid>
+      <description>&lt;p&gt;了解Canvas2D渲染功能实现与设计，在使用时知其所以然，在创造时有所借鉴。从以下这四个方面来分析Fabric.js&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对象模型处理(使用及设计实现)&lt;/li&gt;
+&lt;li&gt;图形变换处理(&lt;strong&gt;canvas与object变换&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;光标交互处理(&lt;strong&gt;目标检测&lt;/strong&gt;与&lt;strong&gt;事件处理&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;画布与对象渲染处理(&lt;strong&gt;多层结构&lt;/strong&gt;与&lt;strong&gt;多阶段绘制&lt;/strong&gt;)&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>puppeteer&#43;canvas的e2e测试实践</title>
+      <link>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</link>
+      <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</guid>
+      <description>&lt;p&gt;针对具有复杂canvas交互操作的e2e测试，尝试使用puppeteer模拟复杂canvas交互，自动执行相关测试用例，利于减少重复的人工验证和回归测试。&lt;/p&gt;
+&lt;p&gt;主要做了&lt;strong&gt;封装通用操作&lt;/strong&gt;，&lt;strong&gt;添加操作辅助类&lt;/strong&gt;，&lt;strong&gt;与测试工具集成&lt;/strong&gt;，&lt;strong&gt;结果验证&lt;/strong&gt;等工作。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Worker中的OffscreenCanvas渲染实践与浅析</title>
+      <link>http://yrq110.me/post/front-end/offscreen-canvas-practice/</link>
+      <pubDate>Fri, 18 Oct 2019 09:49:05 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/offscreen-canvas-practice/</guid>
+      <description>&lt;p&gt;Tl;DR：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;OffscreenCanvas&lt;/strong&gt;可以让你在Worker线程中渲染图形，支持多种&lt;strong&gt;RenderingContext&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;两种使用方式：同步的&lt;strong&gt;Transfer模式&lt;/strong&gt;与异步的&lt;strong&gt;Control模式&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;将Canvas的&lt;strong&gt;逻辑计算与渲染分离&lt;/strong&gt;，避免UI线程阻塞&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas从小试牛刀到庖丁解牛</title>
+      <link>http://yrq110.me/post/front-end/canvas-travel/</link>
+      <pubDate>Mon, 16 Sep 2019 09:51:34 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/canvas-travel/</guid>
+      <description>&lt;p&gt;关于canvas的使用经验及深入学习总结，主要有以下几个方面：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;基础绘图、平滑曲线和交互变换&lt;/li&gt;
+&lt;li&gt;状态管理及图像处理&lt;/li&gt;
+&lt;li&gt;性能优化与绘制原理&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+    <item>
+      <title>Canvas效果片段</title>
+      <link>http://yrq110.me/post/front-end/canvas-effect-snippets/</link>
+      <pubDate>Tue, 04 Jun 2019 11:17:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/canvas-effect-snippets/</guid>
+      <description>&lt;p&gt;总结在使用canvas时遇到的一些通用效果实现与相关示例。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

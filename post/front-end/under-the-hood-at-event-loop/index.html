@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>当我们在说事件循环时，我们在说什么 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="当我们在说事件循环时，我们在说什么 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-01-10T16:01:58&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-01-10T16:01:58&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="当我们在说事件循环时，我们在说什么">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/under-the-hood-at-event-loop/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">当我们在说事件循环时，我们在说什么</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年1月10日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>梳理一下浏览器与Node中的事件循环，它们的一些特征:</p>
+<ul>
+<li>浏览器: 不同的实现, browser context</li>
+<li>Node: 多个阶段, process.nextTick()</li>
+</ul>
+<p>关于这个问题，实际场景中很少遇到需要深究的地步，不过还是需要了解下，不仅是为了看到下面这种求打印顺序的题不会懵逼:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;script start&#39;</span>);
+
+<span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout&#39;</span>);
+}, <span style="color:#ae81ff">0</span>);
+
+<span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>) =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;promise&#39;</span>);
+  <span style="color:#a6e22e">resolve</span>()
+}).<span style="color:#a6e22e">then</span>(() =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;promise - then&#39;</span>);
+}).<span style="color:#a6e22e">then</span>(() =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;promise - then - then&#39;</span>);
+})
+
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;script end&#39;</span>);
+</code></pre></div><h1 id="对比">对比</h1>
+<p>在比较浏览器与Node的事件循环有何不同时，可以从下表中的几个方面来看:</p>
+<table>
+<thead>
+<tr>
+<th>类目</th>
+<th>浏览器</th>
+<th>Node</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>规范/设计</td>
+<td><a href="https://www.w3.org/TR/html5/webappapis.html#event-loops">HTML Spec</a></td>
+<td><a href="http://docs.libuv.org/en/v1.x/design.html#the-i-o-loop">libuv</a></td>
+</tr>
+<tr>
+<td>实现</td>
+<td>不同浏览器有不同的实现</td>
+<td>使用libuv的<a href="http://docs.libuv.org/en/v1.x/guide/basics.html#default-loop">uv_default_loop()</a></td>
+</tr>
+<tr>
+<td>任务队列</td>
+<td>macrotask queue, microtask queue</td>
+<td>timers queue / I/O queue / check queue &hellip;</td>
+</tr>
+<tr>
+<td>上下文</td>
+<td><a href="https://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a></td>
+<td>取决于调用模块</td>
+</tr>
+</tbody>
+</table>
+<h1 id="浏览器">浏览器</h1>
+<p>浏览器的事件循环中将任务分为两类：microtask和macrotask(也称为task)</p>
+<h2 id="流程">流程</h2>
+<p>浏览器中的事件循环流程如下</p>
+<ol>
+<li>读取函数执行栈中的任务，执行</li>
+<li>读取所有<a href="https://www.w3.org/TR/html51/webappapis.html#microtask-queue">microtask queue</a>中的任务，执行</li>
+<li>读取一个<a href="https://www.w3.org/TR/html51/webappapis.html#task-queues">macrotask queue</a>中的任务，执行</li>
+<li>循环2，3步，直到无任务</li>
+</ol>
+<h2 id="任务队列">任务队列</h2>
+<p>不同队列中的任务类型:</p>
+<ul>
+<li>macrotasks: setTimeout, setInterval, setImmediate, requestAnimationFrame, I/O, UI rendering</li>
+<li>microtasks: process.nextTick, Promises, Object.observe, MutationObserver</li>
+</ul>
+<p>队列中的任务是存在优先级的，在不同环境下有不同的优先级。</p>
+<h2 id="其他">其他</h2>
+<ul>
+<li>可以在这个<a href="http://latentflip.com/loupe/?code=ZnVuY3Rpb24gZ2V0WSAoeCkgewogICAgcmV0dXJuIG5ldyBQcm9taXNlKGZ1bmN0aW9uIHByb21pc2UocmVzb2x2ZSwgcmVqZWN0KSB7CiAgICAgICAgc2V0VGltZW91dChmdW5jdGlvbiBwcm9taXNlVGltZW91dCgpIHsKICAgICAgICAgICAgcmVzb2x2ZSgoMyAqIHgpIC0gMSk7CiAgICAgICAgfSwgMCk7CiAgICB9KTsKfQoKZnVuY3Rpb24gZm9vIChiYXIsIGJheikgewogICAgdmFyIHggPSBiYXIgKiBiYXo7CgogICAgcmV0dXJuIGdldFkoeCkKICAgICAgICAudGhlbihmdW5jdGlvbiByZXR1cm5BcnJheSh5KSB7CiAgICAgICAgICAgIHJldHVybiBbIHgsIHkgXTsKICAgICAgICB9KTsKfQpzZXRUaW1lb3V0KGZ1bmN0aW9uIHRpbWVvdXQoKSB7CiAgICBjb25zb2xlLmxvZygndGltZW91dCcpCn0sIDApCgpmb28oMTAsIDIwKS50aGVuKGZ1bmN0aW9uIGxvZ01zZyhtc2dzKSB7CiAgICBjb25zb2xlLmxvZyhtc2cpOwp9KTs%3D!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D">网站</a>中查看浏览器执行代码时的实时事件循环和任务队列情况。</li>
+<li>web worker工作在单独的线程，有自己的<a href="https://www.w3.org/TR/workers/#the-event-loop">event loop</a>，不共用browser context。</li>
+</ul>
+<h1 id="node">Node</h1>
+<p>在浏览器和Node中，JS都是以单线程在运行，当前执行栈必须执行完(为空)才会进入下个event loop。</p>
+<p>Node中使用libuv中默认的事件循环对象<code>uv_default_loop</code>。</p>
+<h2 id="流程-1">流程</h2>
+<p>Node(libuv)中每次事件循环的流程如下:</p>
+<ol>
+<li>timer: 执行<code>setTimeout()</code>和<code>setInterval()</code>定时任务的回调</li>
+<li>pending callbacks: 执行上一次循环未执行的回调</li>
+<li>idle，prepare: 内部执行</li>
+<li>poll: 轮询I/O任务</li>
+<li>check: 执行<code>setImmediate()</code>回调</li>
+<li>close callbacks: 一些<code>close</code>事件的回调，比如<code>socket.on('close', ...)</code></li>
+</ol>
+<p>可以看出Node中event loop分为不同的阶段，每个阶段有自己的任务。</p>
+<h2 id="关于settimeout-setimmediate和processnexttick">关于<code>setTimeout()</code>, <code>setImmediate()</code>和<code>process.nextTick()</code></h2>
+<p>当调用<code>setTimeout()</code>和<code>setImmediate()</code>时，会将它们调度的回调函数在下一次事件循环中执行，但<code>nextTick()</code>不会这么做，它会在本次事件循环结束前被调用。可以想象的到如果递归调用<code>nextTick()</code>那么延迟任务将没有任何机会去执行。除此之外，Promise和<a href="https://github.com/creeperyang/blog/issues/21#issuecomment-279441703">nextTick</a>均属于microtask，会在一次event loop结束前被执行。</p>
+<p>若有如下代码:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">setImmediate</span>(() =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;immediate&#39;</span>);
+});
+<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">nextTick</span>(() =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;nextTick&#39;</span>);
+});
+<span style="color:#75715e">// nextTick
+</span><span style="color:#75715e">// immediate
+</span></code></pre></div><p>结果会总是符合预期，<code>nextTick</code>总会先打印出来。但如果改成:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">setImmediate</span>(() =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;immediate&#39;</span>);
+});
+<span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;timeout&#39;</span>);
+}, <span style="color:#ae81ff">0</span>);
+<span style="color:#75715e">// ?
+</span><span style="color:#75715e">// ?
+</span></code></pre></div><p>会发现它们输出顺序会发生变化且不稳定，而在一个I/O循环中调用的话:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">fs</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;fs&#39;</span>);
+
+<span style="color:#a6e22e">fs</span>.<span style="color:#a6e22e">readFile</span>(<span style="color:#a6e22e">__filename</span>, () =&gt; {
+  <span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;timeout&#39;</span>);
+  }, <span style="color:#ae81ff">0</span>);
+  <span style="color:#a6e22e">setImmediate</span>(() =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;immediate&#39;</span>);
+  });
+});
+<span style="color:#75715e">// immediate
+</span><span style="color:#75715e">// timeout
+</span></code></pre></div><p>会看到输出结果总会符合预期，<code>immediate</code>总会优先打印。</p>
+<p>这是因为在Node中定时器执行的顺序跟它们的执行上下文有关。</p>
+<p>若在<code>主模块</code>中调度，则调度时间可能会受到进程性能的约束(受到在机器上运行的其他应用影响)，若在<code>I/O循环</code>中调度，那么<code>setImmediate()</code>总会在其他定时器的回调前执行。</p>
+<p>对于受到性能约束的情况可以举个栗子：虽然setTimeout()的回调是在第一个阶段的timer queue中执行，但它需要访问timer、计算与等待timeout的时间与等待队列中的所有函数执行完成，因此回调的执行可能会比在第四个阶段的setImmediate()回调还要晚。</p>
+<h1 id="实例">实例</h1>
+<p>在浏览器和Node中分别执行如下代码:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 1&#39;</span>)
+  <span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+      <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 1 - 1&#39;</span>)
+  })
+  <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">resolve</span> =&gt; <span style="color:#a6e22e">resolve</span>()).<span style="color:#a6e22e">then</span>(() =&gt; {
+      <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 1 - then&#39;</span>)
+      <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">resolve</span> =&gt; <span style="color:#a6e22e">resolve</span>()).<span style="color:#a6e22e">then</span>(() =&gt; {
+          <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 1 - then - then&#39;</span>)
+      })
+  })
+})
+
+<span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 2&#39;</span>)
+  <span style="color:#a6e22e">setTimeout</span>(() =&gt; {
+      <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 2 - 1&#39;</span>)
+  })
+  <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">resolve</span> =&gt; <span style="color:#a6e22e">resolve</span>()).<span style="color:#a6e22e">then</span>(() =&gt; {
+      <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 2 - then&#39;</span>)
+      <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">resolve</span> =&gt; <span style="color:#a6e22e">resolve</span>()).<span style="color:#a6e22e">then</span>(() =&gt; {
+          <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;setTimeout - 2 - then - then&#39;</span>)
+      })
+  })
+})
+</code></pre></div><p>结果如下:</p>
+<table>
+<thead>
+<tr>
+<th>浏览器(Chrome)</th>
+<th>Node</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>setTimeout - 1</td>
+<td>setTimeout - 1</td>
+</tr>
+<tr>
+<td>setTimeout - 1 - then</td>
+<td>setTimeout - 2</td>
+</tr>
+<tr>
+<td>setTimeout - 1 - then - then</td>
+<td>setTimeout - 1 - then</td>
+</tr>
+<tr>
+<td>setTimeout - 2</td>
+<td>setTimeout - 2 - then</td>
+</tr>
+<tr>
+<td>setTimeout - 2 - then</td>
+<td>setTimeout - 1 - then - then</td>
+</tr>
+<tr>
+<td>setTimeout - 2 - then - then</td>
+<td>setTimeout - 2 - then - then</td>
+</tr>
+<tr>
+<td>setTimeout - 1 - 1</td>
+<td>setTimeout - 1 - 1</td>
+</tr>
+<tr>
+<td>setTimeout - 2 - 1</td>
+<td>setTimeout - 2 - 1</td>
+</tr>
+</tbody>
+</table>
+<p>可以明显的看出浏览器和Node在处理延迟函数时的区别。</p>
+<p>简要说明浏览器中的过程:</p>
+<ol>
+<li>遇到两个setTimeout，注册到macrotask queue中，执行第一个任务。(<code>setTimeout - 1</code>)</li>
+<li>遇到setTimeout，注册到macrotask queue中。遇到Promise，注册microtask queue中，并且注册它嵌套的microtask，执行microtask queue中的所有任务。(<code>setTimeout - 1 - then</code>和<code>setTimeout - 1 - then - then</code>)</li>
+<li>执行macro queue中的下一个任务(第二个外层的setTimeout)，与上一步类似，输出(<code>setTimeout - 2 </code>, <code>setTimeout - 1 - then</code>和<code>setTimeout - 1 - then - then</code>)</li>
+<li>执行macro queue中剩余的两个任务。(<code>setTimeout - 1 - 1</code>和<code>setTimeout - 2 - 1</code>)</li>
+</ol>
+<p>现在在看最开头的题，应该一眼就能看出顺序了:</p>
+<pre><code>script start
+promise
+script end
+promise - then
+promise - then - then
+setTimeout
+</code></pre><p>并且在两种环境中的顺序是一致的。</p>
+<h1 id="深入阅读">深入阅读</h1>
+<p>浏览器</p>
+<ul>
+<li><a href="https://kongchenglc.github.io/blog/%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF20171026/">事件循环与任务队列</a></li>
+<li><a href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">Tasks, microtasks, queues and schedules</a></li>
+<li><a href="https://stackoverflow.com/questions/25915634/difference-between-microtask-and-macrotask-within-an-event-loop-context">Difference between microtask and macrotask within an event loop context</a></li>
+<li><a href="https://www.youtube.com/watch?v=8aGhZQkoFbQ">菲利普·罗伯茨：到底什么是Event Loop呢？ | 欧洲 JSConf 2014</a></li>
+</ul>
+<p>Node</p>
+<ul>
+<li><a href="https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/">The Node.js Event Loop, Timers, and process.nextTick()</a></li>
+<li><a href="https://github.com/creeperyang/blog/issues/26">Node.js的event loop及timer/setImmediate/nextTick</a></li>
+<li><a href="http://acemood.github.io/2016/02/01/event-loop-in-javascript/">Event loop in JavaScript</a></li>
+<li><a href="https://cnodejs.org/topic/5a9108d78d6e16e56bb80882">不要混淆nodejs和浏览器中的event loop</a></li>
+</ul>
+<p>其他</p>
+<ul>
+<li><a href="https://www.w3.org/TR/html5/webappapis.html#event-loops">HTML 5.2: 7. Web application APIs event-loops</a></li>
+<li><a href="https://www.ecma-international.org/ecma-262/9.0/index.html#sec-jobs-and-job-queues">ES6 - Jobs and Job Queues</a></li>
+<li><a href="https://github.com/creeperyang/blog/issues/26#issuecomment-370144475">一段libuv event loop的log</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/under-the-hood-at-event-loop/">http://yrq110.me/post/front-end/under-the-hood-at-event-loop/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/node'>node</a></li>
+                
+                <li><a href='http://yrq110.me/tags/libuv'>libuv</a></li>
+                
+                <li><a href='http://yrq110.me/tags/event-loop'>event-loop</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

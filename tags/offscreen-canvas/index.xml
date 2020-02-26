@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>offscreen canvas on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/offscreen-canvas/</link>
+    <description>Recent content in offscreen canvas on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 18 Oct 2019 09:49:05 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/offscreen-canvas/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Worker中的OffscreenCanvas渲染实践与浅析</title>
+      <link>http://yrq110.me/post/front-end/offscreen-canvas-practice/</link>
+      <pubDate>Fri, 18 Oct 2019 09:49:05 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/offscreen-canvas-practice/</guid>
+      <description>&lt;p&gt;Tl;DR：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;OffscreenCanvas&lt;/strong&gt;可以让你在Worker线程中渲染图形，支持多种&lt;strong&gt;RenderingContext&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;两种使用方式：同步的&lt;strong&gt;Transfer模式&lt;/strong&gt;与异步的&lt;strong&gt;Control模式&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;将Canvas的&lt;strong&gt;逻辑计算与渲染分离&lt;/strong&gt;，避免UI线程阻塞&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

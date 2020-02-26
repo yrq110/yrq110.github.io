@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Canvas2D渲染库简析:（三）Pixi | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Canvas2D渲染库简析:（三）Pixi - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-12-30T16:59:36&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-12-30T16:59:36&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Canvas2D渲染库简析:（三）Pixi">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Canvas2D渲染库简析:（三）Pixi</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年12月30日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>fabric和konva主要是用于实现编辑器的场景，而Pixi则是一个高性能2D动画渲染库，通常用于一些H5的小游戏或可交互页面。</p>
+<p>本次通过以下几个方面来对其进行分析：</p>
+<ul>
+<li>WebGL与Canvas渲染器</li>
+<li>资源加载器与纹理</li>
+<li>场景、精灵与图形对象</li>
+<li>变换、交互及动画处理</li>
+</ul>
+<p><strong>系列目录</strong></p>
+<ul>
+<li><a href="https://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i/">Canvas2D渲染库简析:（一）Fabric</a></li>
+<li><a href="https://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva">Canvas2D渲染库简析:（二）Konva</a></li>
+<li>Canvas2D渲染库简析:（三）Pixi</li>
+</ul>
+<h2 id="pixi">Pixi</h2>
+<p><a href="https://www.pixijs.com/">Pixi</a>是一个基于WebGL Renderer的高性能跨平台渲染库。其中默认使用WebGL相关插件(回退使用CanvasRenderer)去渲染2D图形，并且在资源加载和动画处理方面也有比较好的设计和优化。</p>
+<p>本文所用的Pixi版本为5.2.0。</p>
+<p>在使用Pixi前，需要创建一个Application对象，作为最外层的应用对象。</p>
+<p>Application是Pixi中统领全局的对象，其中包含了使用的渲染器(render)、舞台(stage)、安装的插件等主要属性及操作器。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Application</span> {
+    <span style="color:#a6e22e">constructor</span>(<span style="color:#a6e22e">options</span>)
+    {
+        <span style="color:#75715e">// 处理配置
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">options</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">assign</span>({
+            <span style="color:#a6e22e">forceCanvas</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+        }, <span style="color:#a6e22e">options</span>);
+        <span style="color:#75715e">// 初始化渲染器
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">autoDetectRenderer</span>(<span style="color:#a6e22e">options</span>);
+        <span style="color:#75715e">// 初始化舞台容器
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">stage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Container</span>();
+        <span style="color:#75715e">// 安装插件
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">Application</span>.<span style="color:#a6e22e">_plugins</span>.<span style="color:#a6e22e">forEach</span>((<span style="color:#a6e22e">plugin</span>) =&gt;
+        {
+            <span style="color:#a6e22e">plugin</span>.<span style="color:#a6e22e">init</span>.<span style="color:#a6e22e">call</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">options</span>);
+        });
+    }
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>提供的方法也是从stage和renderer对象中取得的属性或其他操作，如view(), screen()等。</p>
+<h2 id="渲染器">渲染器</h2>
+<p>可以看到在App的创建过程中，会根据当前环境选择可用的渲染器。</p>
+<p>默认采用WebGLRenderer，若当前浏览器环境不支持WebGL则使用Canvas。根据渲染方式初始化对应的renderer</p>
+<ul>
+<li>WenGL: WebGLRenderer</li>
+<li>Canvas: CanvasRenderer</li>
+</ul>
+<p>这两种渲染器均实现自AbstractRenderer类，在这个类中保存了渲染器所的绑定的canvas元素、设置透明度与分辨率等属性。</p>
+<h2 id="webglrenderer">WebGLRenderer</h2>
+<p><code>packages/core/src/Renderer</code></p>
+<p>在WebGLRenderer的初始化过程中，会在Renderer类上注册不同类型的系统插件(均继承自System类)，如上下文插件(ContextSystem)、着色器插件(ShaderSystem)、纹理插件(TextureSystem)等等，并且在注册系统插件时会插入代表不同阶段的生命周期钩子(runner: prerender | postrender | resize | update | contextChange)，</p>
+<p>来看看System这个类，其实很简单，就是用一个于在renderer类上扩展相关属性与方法的类。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">System</span> {
+    <span style="color:#a6e22e">constructor</span>(<span style="color:#a6e22e">renderer</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">renderer</span>;
+    }
+    <span style="color:#a6e22e">destroy</span>() {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+    }
+}
+</code></pre></div><p>这些System插件主要有：</p>
+<ul>
+<li>GeometrySystem - 管理VAO(VertexArrayObject)数据的相关操作及缓冲区(buffer)操作</li>
+<li>StateSystem - 当前WebGL状态机，处理offset、blend和depth test等状态</li>
+<li>ShaderSystem - 管理顶点与片元着色器，如其中attribute和uniform属性的操作，也有常规的解析shader和绑定program等过程</li>
+<li>MaskSystem - 管理图形遮罩，按照指定几何图形的范围显示纹理图像</li>
+<li>FilterSystem - 管理滤镜，处理纹理变换</li>
+</ul>
+<p>作为一个renderer，最重要的方法即是它的render()方法，它的执行过程(省去了生命周期函数)如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">render</span>(<span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">renderTexture</span>, <span style="color:#a6e22e">clear</span>, <span style="color:#a6e22e">transform</span>, <span style="color:#a6e22e">skipUpdateTransform</span>) {
+    <span style="color:#75715e">// 1. 应用变换(GPU级别)
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">projection</span>.<span style="color:#a6e22e">transform</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transform</span>;
+    <span style="color:#75715e">// 2. 渲染纹理绑定与BatchRendering处理
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderTexture</span>.<span style="color:#a6e22e">bind</span>(<span style="color:#a6e22e">renderTexture</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">batch</span>.<span style="color:#a6e22e">currentRenderer</span>.<span style="color:#a6e22e">start</span>();
+    <span style="color:#75715e">// 3. 执行元素渲染，将顶点、索引和纹理等数据添加到BatchRendering中
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">render</span>();
+    <span style="color:#75715e">// 4. 执行renderer的绘制方法
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">batch</span>.<span style="color:#a6e22e">currentRenderer</span>.<span style="color:#a6e22e">flush</span>();
+    <span style="color:#75715e">// 根据传入的clear与renderTexture参数对纹理的处理...
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 5. 清空变换
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">projection</span>.<span style="color:#a6e22e">transform</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+}
+</code></pre></div><p>有关渲染的工作主要由BatchSystem插件负责执行，<a href="https://pixijs.io/pixi-batch-renderer/">BatchRenderer</a></p>
+<h2 id="canvasrenderer">CanvasRenderer</h2>
+<p><code>packages/canvas/canvas-renderer/src/CanvasRenderer</code></p>
+<p>较WebGLRenderer的实现比较简单，在构建函数中并没有加载其他插件，仅初始化了一些属性，如mask与blendMode等，</p>
+<p>CanvasRenderer的render()执行流程如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">render</span>(<span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">renderTexture</span>, <span style="color:#a6e22e">clear</span>, <span style="color:#a6e22e">transform</span>, <span style="color:#a6e22e">skipUpdateTransform</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span>;
+    <span style="color:#75715e">// 1. 当前状态压入状态栈
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">save</span>();
+    <span style="color:#75715e">// 2. 初始化变换及样式属性
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">setTransform</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">globalAlpha</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_activeBlendMode</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">BLEND_MODES</span>.<span style="color:#a6e22e">NORMAL</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_outerBlend</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">globalCompositeOperation</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">blendModes</span>[<span style="color:#a6e22e">BLEND_MODES</span>.<span style="color:#a6e22e">NORMAL</span>];
+    <span style="color:#75715e">// 3.执行元素渲染
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">tempContext</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">context</span>;
+    <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">renderCanvas</span>(<span style="color:#66d9ef">this</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">tempContext</span>;
+    <span style="color:#75715e">// 4. 从状态栈恢复之前状态
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">restore</span>();
+}
+</code></pre></div><h2 id="场景精灵与图形">场景、精灵与图形</h2>
+<h3 id="场景---stage">场景 - Stage</h3>
+<p>Stage本质是一个Container对象，与Konva中的概念类似。</p>
+<p>Pixi的<strong>Container</strong>是一种DisplayObject容器，负责children的管理、变换的应用及包围盒(bounds)计算。Container中可以包含精灵(Sprite)或图形(Graphic)对象，实现分组的效果，需要注意的是在Container应用的变换会作用到所有子元素上。</p>
+<p><strong>DisplayObject</strong>是显示的基础元素，其中包含元素的变换矩阵、alpha系数和层级系数等属性及相关数据操作的方法，每个继承它的类的对象要想渲染出来必须实现它的_render方法。</p>
+<h3 id="精灵---sprite">精灵 - Sprite</h3>
+<p>Pixi中的精灵(<strong>Sprite</strong>)为一种可交互的纹理对象，继承自Container类，因此也可以嵌套其他DisplayObject对象，形成图形树。</p>
+<p>Sprite类中包含用于顶点计算和目标检测等方法，用于为渲染提供关键数据及为交互事件的处理提供辅助方法等。</p>
+<p><strong>vertex的计算</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">calculateVertices</span>() {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">texture</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_texture</span>;
+    <span style="color:#75715e">// 1. 解析变换矩阵
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">wt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>.<span style="color:#a6e22e">worldTransform</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">tx</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">wt</span>.<span style="color:#a6e22e">tx</span>;
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 2. 计算当前区域
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">vertexData</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertexData</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">anchor</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_anchor</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">w1</span> <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">anchor</span>.<span style="color:#a6e22e">_x</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">orig</span>.<span style="color:#a6e22e">width</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">w0</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">w1</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">orig</span>.<span style="color:#a6e22e">width</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">h1</span> <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">anchor</span>.<span style="color:#a6e22e">_y</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">orig</span>.<span style="color:#a6e22e">height</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">h0</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">h1</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">orig</span>.<span style="color:#a6e22e">height</span>;
+
+    <span style="color:#75715e">// 3. 计算通过世界变换后的四个顶点坐标
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">vertexData</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">w1</span>) <span style="color:#f92672">+</span> (<span style="color:#a6e22e">c</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">h1</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">tx</span>;
+    <span style="color:#a6e22e">vertexData</span>[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> (<span style="color:#a6e22e">d</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">h1</span>) <span style="color:#f92672">+</span> (<span style="color:#a6e22e">b</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">w1</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">ty</span>;
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p><strong>判断点是否在该精灵的区域中</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">containsPoint</span>(<span style="color:#a6e22e">point</span>) {
+    <span style="color:#75715e">// 1. 在世界空间上应用逆变换得到模型空间坐标
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldTransform</span>.<span style="color:#a6e22e">applyInverse</span>(<span style="color:#a6e22e">point</span>, <span style="color:#a6e22e">tempPoint</span>);
+    <span style="color:#75715e">// 2. 通过纹理与锚点计算精灵几何属性
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">width</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_texture</span>.<span style="color:#a6e22e">orig</span>.<span style="color:#a6e22e">width</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">height</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_texture</span>.<span style="color:#a6e22e">orig</span>.<span style="color:#a6e22e">height</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">x1</span> <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">width</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">anchor</span>.<span style="color:#a6e22e">x</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">y1</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#75715e">// 3. 判断是否位于对象区域
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">tempPoint</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">&gt;=</span> <span style="color:#a6e22e">x1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">tempPoint</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">x1</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">width</span>) {
+        <span style="color:#a6e22e">y1</span> <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">height</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">anchor</span>.<span style="color:#a6e22e">y</span>;
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">tempPoint</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">&gt;=</span> <span style="color:#a6e22e">y1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">tempPoint</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">y1</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">height</span>) {
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>;
+        }
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>;
+}
+</code></pre></div><p>在Sprite类中默认使用BatchRenderer对精灵进行渲染，BatchRenderer为WebGLRenderer中的一个插件，用于记录相关数据，统一执行绘制(flush)。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 通过修改该pluginName属性设置负责渲染该精灵的插件
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pluginName</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;batch&#39;</span>;
+<span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">renderer</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">calculateVertices</span>();
+    <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">batch</span>.<span style="color:#a6e22e">setObjectRenderer</span>(<span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">plugins</span>[<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pluginName</span>]);
+    <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">plugins</span>[<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pluginName</span>].<span style="color:#a6e22e">render</span>(<span style="color:#66d9ef">this</span>);
+}
+</code></pre></div><h3 id="图形---graphic">图形 - Graphic</h3>
+<p>在场景中除了加载纹理图像生成的精灵外，还可以通过常规或自定义的几何图形来添加图形对象，</p>
+<p><strong>Graphic</strong>中提供类似CanvasContext上的绘图API，比如drawRect、drawCircle等，将这些基础图形的数据经过处理后(如三角化)，再使用WebGL的API进行绘制。Graphic同样继承自Container类。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// packages/graphics/src/Graphics.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">drawRect</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">height</span>) {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawShape</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Rectangle</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">height</span>));
+}
+</code></pre></div><p>对于每种图形，除了保存关键属性外，还实现一些辅助方法，如点与图形的碰撞检测函数等：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// packages/math/src/shapes/Rectangle.ts
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">contains</span>(<span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">boolean</span> {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>; }
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">x</span> <span style="color:#f92672">&gt;=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">x</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span>) {
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">y</span> <span style="color:#f92672">&gt;=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">y</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>) { <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>; }
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>;
+}
+</code></pre></div><p>Pixi对于曲线图形并没有提供碰撞检测的方法，若需要实现吸附点操作之类的功能只能自定义一些hitDetect的方法，或在外面使用<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInStroke">isPointInStroke</a>这类API。</p>
+<p>在Graphics对象的geometry属性中存储缓冲区中使用的几何数据，在drawShape时会将图形数据及样式属性打包成GraphicsData对象添加到当前的图形数组中，用于之后的实际绘制。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// packages/graphics/src/GraphicsGeometry.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">drawShape</span>(<span style="color:#a6e22e">shape</span>, <span style="color:#a6e22e">fillStyle</span>, <span style="color:#a6e22e">lineStyle</span>, <span style="color:#a6e22e">matrix</span>)
+{
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">GraphicsData</span>(<span style="color:#a6e22e">shape</span>, <span style="color:#a6e22e">fillStyle</span>, <span style="color:#a6e22e">lineStyle</span>, <span style="color:#a6e22e">matrix</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">graphicsData</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">data</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dirty</span><span style="color:#f92672">++</span>;
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+}
+</code></pre></div><p>在绘制(更新batch指令、执行填充)时，会计算图形的顶点位置并将三角化后的顶点数据及索引添加到Geometry对象的顶点数组中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// packages/graphics/src/utils/buildRectangle
+</span><span style="color:#75715e">// 1. 顶点坐标计算
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">build</span>() {
+  <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>,
+    <span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">y</span>,
+    <span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">height</span>,
+    <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">height</span>);
+}
+
+<span style="color:#75715e">// 2. 图形三角化，插入顶点数据及三角形顶点索引，用于之后绘制
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">triangulate</span>() {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">vertPos</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">verts</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>;
+  <span style="color:#a6e22e">verts</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">1</span>],
+      <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">3</span>],
+      <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">6</span>], <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">7</span>],
+      <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">4</span>], <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">5</span>]);
+  <span style="color:#a6e22e">graphicsGeometry</span>.<span style="color:#a6e22e">indices</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">vertPos</span>, <span style="color:#a6e22e">vertPos</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">vertPos</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>,
+      <span style="color:#a6e22e">vertPos</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">vertPos</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>, <span style="color:#a6e22e">vertPos</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span>);
+}
+</code></pre></div><p>Graphic在执行渲染时会通过图形的batchable属性来决定是使用BatchRender还是DirectRender的方式：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">renderer</span>) {
+    <span style="color:#75715e">// 多边形对象绘制(本质是PathDrawing)
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">finishPoly</span>();
+    <span style="color:#75715e">// 读取geometry，生成batch数据
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">geometry</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">geometry</span>;
+    <span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">updateBatches</span>();
+    <span style="color:#75715e">// 执行渲染
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">batchable</span>) {
+        <span style="color:#75715e">// 判断batch数据是否需要更新
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">batchDirty</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">batchDirty</span>) {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_populateBatches</span>();
+        }
+        <span style="color:#75715e">// 执行BatchRender
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderBatched</span>(<span style="color:#a6e22e">renderer</span>);
+    } <span style="color:#66d9ef">else</span> {
+        <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">batch</span>.<span style="color:#a6e22e">flush</span>();
+        <span style="color:#75715e">// 执行DirectRender
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderDirect</span>(<span style="color:#a6e22e">renderer</span>);
+    }
+}
+</code></pre></div><p>其中BatchRender与精灵中渲染的方式类似，均为调用BatchSystem执行绘制，在之前需要一些顶点与索引计算等工作。DirectRender中也比较简单，设置了渲染着色器，执行geometry中存储的drawCalls渲染指令。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_renderDirect</span>(<span style="color:#a6e22e">renderer</span>) {
+    <span style="color:#75715e">// 设置uniform
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">uniforms</span>.<span style="color:#a6e22e">translationMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>.<span style="color:#a6e22e">worldTransform</span>;
+    <span style="color:#a6e22e">uniforms</span>.<span style="color:#a6e22e">tint</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> (((<span style="color:#a6e22e">tint</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">16</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">255</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">worldAlpha</span>;
+    <span style="color:#a6e22e">uniforms</span>.<span style="color:#a6e22e">tint</span>[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> (((<span style="color:#a6e22e">tint</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">8</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">255</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">worldAlpha</span>;
+    <span style="color:#a6e22e">uniforms</span>.<span style="color:#a6e22e">tint</span>[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> ((<span style="color:#a6e22e">tint</span> <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFF</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">255</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">worldAlpha</span>;
+    <span style="color:#a6e22e">uniforms</span>.<span style="color:#a6e22e">tint</span>[<span style="color:#ae81ff">3</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">worldAlpha</span>;
+    <span style="color:#75715e">// 设置着色器及状态
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">shader</span>.<span style="color:#a6e22e">bind</span>(<span style="color:#a6e22e">shader</span>);
+    <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">bind</span>(<span style="color:#a6e22e">geometry</span>, <span style="color:#a6e22e">shader</span>);
+    <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">state</span>.<span style="color:#a6e22e">set</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">state</span>);
+    <span style="color:#75715e">// 解析存储的绘制指令，执行渲染
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">l</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">drawCalls</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">l</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {   
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderDrawCallDirect</span>(<span style="color:#a6e22e">renderer</span>, <span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">drawCalls</span>[<span style="color:#a6e22e">i</span>]);
+    }
+}
+</code></pre></div><h2 id="资源加载器与纹理">资源加载器与纹理</h2>
+<h3 id="资源加载器---loader">资源加载器 - Loader</h3>
+<p>Pixi的应用场景中多数都需要加载图像或音频资源，如其他游戏框架一样，因此具有专门的Loader工具对资源进行处理。</p>
+<p>Pixi中使用了<a href="https://github.com/englercj/resource-loader">resource-loader</a>这个库来在内部处理资源加载，将其封装为通用的资源加载类Loader及纹理加载类TextureLoader。</p>
+<p>在TextureLoader中只做了一件事，在加载完成的回调中判断若资源为Image类型，则通过resource生成Texture对象并添加到texture属性</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TextureLoader</span> {
+    <span style="color:#66d9ef">static</span> <span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">resource</span>, <span style="color:#a6e22e">next</span>) {
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">resource</span>.<span style="color:#a6e22e">data</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">resource</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">Resource</span>.<span style="color:#a6e22e">TYPE</span>.<span style="color:#a6e22e">IMAGE</span>) {
+            <span style="color:#a6e22e">resource</span>.<span style="color:#a6e22e">texture</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Texture</span>.<span style="color:#a6e22e">fromLoader</span>(
+                <span style="color:#a6e22e">resource</span>.<span style="color:#a6e22e">data</span>,
+                <span style="color:#a6e22e">resource</span>.<span style="color:#a6e22e">url</span>,
+                <span style="color:#a6e22e">resource</span>.<span style="color:#a6e22e">name</span>
+            );
+        }
+        <span style="color:#a6e22e">next</span>();
+    }
+}
+</code></pre></div><p>接下来看看其中重要的表示所展示图像的Texture对象是什么。</p>
+<h3 id="纹理---texture">纹理 - Texture</h3>
+<p>纹理为精灵对象提供渲染的图像数据，支持多种图像数据类型。</p>
+<p>当通过如下方法创建精灵时：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">bunny</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">PIXI</span>.<span style="color:#a6e22e">Sprite</span>.<span style="color:#a6e22e">from</span>(<span style="color:#e6db74">&#39;examples/assets/bunny.png&#39;</span>);
+</code></pre></div><p>在内部执行了：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// packages/sprite/src/Sprite
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">texture</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">source</span> <span style="color:#66d9ef">instanceof</span> <span style="color:#a6e22e">Texture</span>)
+        <span style="color:#f92672">?</span> <span style="color:#a6e22e">source</span>
+        <span style="color:#f92672">:</span> <span style="color:#a6e22e">Texture</span>.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span>);
+
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Sprite</span>(<span style="color:#a6e22e">texture</span>);
+}
+<span style="color:#75715e">// packages/core/src/textures/Texture
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span> <span style="color:#f92672">=</span> {}, <span style="color:#a6e22e">strict</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">settings</span>.<span style="color:#a6e22e">STRICT_TEXTURE_CACHE</span>) {
+    <span style="color:#a6e22e">texture</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Texture</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">BaseTexture</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span>));
+    <span style="color:#a6e22e">texture</span>.<span style="color:#a6e22e">baseTexture</span>.<span style="color:#a6e22e">cacheId</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">cacheId</span>;
+    <span style="color:#a6e22e">BaseTexture</span>.<span style="color:#a6e22e">addToCache</span>(<span style="color:#a6e22e">texture</span>.<span style="color:#a6e22e">baseTexture</span>, <span style="color:#a6e22e">cacheId</span>);
+    <span style="color:#a6e22e">Texture</span>.<span style="color:#a6e22e">addToCache</span>(<span style="color:#a6e22e">texture</span>, <span style="color:#a6e22e">cacheId</span>);
+}
+</code></pre></div><p>可以看出在精灵的from中实际调用了Texture的from方法用来解析与生成纹理。</p>
+<p>在BaseTexture中会根据传入的source自动判断该资源的类型(autoDetectResource)，判断是否为SVG、Canvas、Buffer等资源类型，若经过test后该source的特征均不满足这些类型，则作为Image类型加载，关键部分如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">autoDetectResource</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span>) {
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">INSTALLED</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>; <span style="color:#f92672">--</span><span style="color:#a6e22e">i</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ResourcePlugin</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">INSTALLED</span>[<span style="color:#a6e22e">i</span>];
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">ResourcePlugin</span>.<span style="color:#a6e22e">test</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">ResourcePlugin</span>.<span style="color:#a6e22e">test</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">extension</span>)) {
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ResourcePlugin</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span>);
+        }
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ImageResource</span>(<span style="color:#a6e22e">source</span>, <span style="color:#a6e22e">options</span>);
+}
+</code></pre></div><p>ImageResource中会使用ImageElement对象来加载图片。</p>
+<p>外层的Texture类中则</p>
+<h2 id="变换交互及动画">变换、交互及动画</h2>
+<p>说完基础元素及资源处理，就到了与实际展示或操作有关的变换、交互及动画部分了。</p>
+<h3 id="变换处理">变换处理</h3>
+<p><code>packages/interaction/Matrix &amp; Transform</code></p>
+<p>为了高效，采用一维数组的格式保存变换矩阵，使用math库中的Matrix和Transform的组合实现变换数据的相关操作。</p>
+<p>Pixi并没有为精灵提供显式调用的变换相关方法(rotate, translate, scale)，仅能通过直接改变变换属性来实现变换，这些变换属性位于DisplayObject类中，即Container和Sprite的父类。</p>
+<p>可以看看<a href="https://pixijs.io/examples/#/sprite/basic.js">这个</a>例子，通过改变精灵的rotation属性来控制旋转</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">ticker</span>.<span style="color:#a6e22e">add</span>((<span style="color:#a6e22e">delta</span>) =&gt; {
+    <span style="color:#a6e22e">bunny</span>.<span style="color:#a6e22e">rotation</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">0.1</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">delta</span>;
+});
+</code></pre></div><p>改变属性后执行的流程</p>
+<ol>
+<li>
+<p>Sprite</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">set</span> <span style="color:#a6e22e">rotation</span>(<span style="color:#a6e22e">value</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>.<span style="color:#a6e22e">rotation</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+}
+</code></pre></div></li>
+<li>
+<p>Transform</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">set</span> <span style="color:#a6e22e">rotation</span>(<span style="color:#a6e22e">value</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotation</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">value</span>)
+    {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotation</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">updateSkew</span>();
+    }
+}
+<span style="color:#66d9ef">protected</span> <span style="color:#a6e22e">updateSkew</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+    <span style="color:#75715e">// 计算变换矩阵中scale与skew参数
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cx</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">cos</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotation</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">skew</span>.<span style="color:#a6e22e">y</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sx</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">sin</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotation</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">skew</span>.<span style="color:#a6e22e">y</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cy</span> <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>Math.<span style="color:#a6e22e">sin</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotation</span> <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">skew</span>.<span style="color:#a6e22e">x</span>); <span style="color:#75715e">// cos, added PI/2
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sy</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">cos</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotation</span> <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">skew</span>.<span style="color:#a6e22e">x</span>); <span style="color:#75715e">// sin, added PI/2
+</span><span style="color:#75715e"></span>}
+</code></pre></div></li>
+</ol>
+<h3 id="交互处理">交互处理</h3>
+<p><code>packages/interaction/src/InteractionManager</code></p>
+<p>默认情况下，负责交互事件的InteractionManager(以下简称IManager)是作为一个插件加载到renderer上。</p>
+<ul>
+<li>IManager负责处理mouse、touch与pointer事件，</li>
+<li>当DisplayObject的interactive属性为true时会加入到IManager的检测对象中</li>
+</ul>
+<p>Manager在初始化时在renderer的view属性对应的元素上一股脑的绑定了相关事件的事件监听函数:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">element</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">view</span>;
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interactionDOMElement</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">element</span>;
+<span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">supportsPointerEvents</span>) {
+    window.document.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;pointermove&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">onPointerMove</span>, <span style="color:#66d9ef">true</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interactionDOMElement</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;pointerdown&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">onPointerDown</span>, <span style="color:#66d9ef">true</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interactionDOMElement</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;pointerleave&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">onPointerOut</span>, <span style="color:#66d9ef">true</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interactionDOMElement</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;pointerover&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">onPointerOver</span>, <span style="color:#66d9ef">true</span>);
+    window.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;pointercancel&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">onPointerCancel</span>, <span style="color:#66d9ef">true</span>);
+    window.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;pointerup&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">onPointerUp</span>, <span style="color:#66d9ef">true</span>);
+} <span style="color:#66d9ef">else</span>  {
+<span style="color:#75715e">// ...
+</span></code></pre></div><p>这里相比较的话还是Konva的绑定事件监听的方式较为科学，Konva考虑到了不同事件触发的次序来对事件与监听函数进行绑定，而不是单纯在某一时间点统一的绑定与移除。</p>
+<p>IManager在监听交互事件时除了触发相关事件外，还会在内部的DisplayObject上执行目标检测与事件分发:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">processInteractive</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">func</span>, <span style="color:#a6e22e">hitTest</span>) {
+    <span style="color:#75715e">// 目标检测，并向内部的interactive DisplayObject分发事件
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">hit</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">search</span>.<span style="color:#a6e22e">findHit</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">func</span>, <span style="color:#a6e22e">hitTest</span>);
+    <span style="color:#75715e">// 处理延迟事件，当多个mouse/pointer事件触发时
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">delayedEvents</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">delayedEvents</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">delayedEvents</span>.<span style="color:#a6e22e">length</span>) { <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">hit</span>; }
+    <span style="color:#75715e">// 重置hint，为了在tree中继续搜索
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">interactionEvent</span>.<span style="color:#a6e22e">stopPropagationHint</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">delayedLen</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">delayedEvents</span>.<span style="color:#a6e22e">length</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">delayedEvents</span> <span style="color:#f92672">=</span> [];
+    <span style="color:#75715e">// 向DisplayObjects分发事件
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">delayedLen</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">eventString</span>, <span style="color:#a6e22e">eventData</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">delayedEvents</span>[<span style="color:#a6e22e">i</span>];
+        <span style="color:#75715e">// 当到达需要停止的地方设置
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">eventData</span>.<span style="color:#a6e22e">stopsPropagatingAt</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">displayObject</span>) {
+            <span style="color:#a6e22e">eventData</span>.<span style="color:#a6e22e">stopPropagationHint</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+        }
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dispatchEvent</span>(<span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">eventString</span>, <span style="color:#a6e22e">eventData</span>);
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">hit</span>;
+}
+</code></pre></div><p>其中findHit为TreeSearch的对象方法，用于执行实际的目标检测与事件分发行为。</p>
+<h4 id="目标检测">目标检测</h4>
+<p><code>packages/interaction/src/TreeSearch</code></p>
+<p>TreeSearch使用<code>recursiveFindHit</code>这个递归函数来在DisplayObject上执行目标检测</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">findHit</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">func</span>, <span style="color:#a6e22e">hitTest</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recursiveFindHit</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">func</span>, <span style="color:#a6e22e">hitTest</span>, <span style="color:#66d9ef">false</span>);
+}
+<span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">recursiveFindHit</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">displayObject</span>, <span style="color:#a6e22e">func</span>, <span style="color:#a6e22e">hitTest</span>, <span style="color:#a6e22e">interactive</span>) {
+    <span style="color:#75715e">// 1. hitArea与mask判断
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">hitArea</span>) {
+        <span style="color:#75715e">// 若存在hitArea，通过contains判断该点是否在模型空间的目标区域内
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hitTest</span>) {
+            <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">worldTransform</span>.<span style="color:#a6e22e">applyInverse</span>(<span style="color:#a6e22e">point</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_tempPoint</span>);
+            <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">hitArea</span>.<span style="color:#a6e22e">contains</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_tempPoint</span>.<span style="color:#a6e22e">x</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_tempPoint</span>.<span style="color:#a6e22e">y</span>)) {
+                <span style="color:#a6e22e">hitTest</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+                <span style="color:#a6e22e">hitTestChildren</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+            } <span style="color:#66d9ef">else</span> {
+                <span style="color:#a6e22e">hit</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+            }
+        }
+        <span style="color:#a6e22e">interactiveParent</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#75715e">// 若存在
+</span><span style="color:#75715e"></span>    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">_mask</span>) {
+        <span style="color:#75715e">// 若存在mask，通过contains判断该点是否在mask区域内
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hitTest</span>) {
+            <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(<span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">_mask</span>.<span style="color:#a6e22e">containsPoint</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">_mask</span>.<span style="color:#a6e22e">containsPoint</span>(<span style="color:#a6e22e">point</span>))) {
+                <span style="color:#a6e22e">hitTest</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+            }
+        }
+    }
+    <span style="color:#75715e">// 2. 执行递归函数检测子元素的碰撞情况
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hitTestChildren</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">interactiveChildren</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">children</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">children</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">children</span>;
+        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">children</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">--</span>) {
+            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">child</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">children</span>[<span style="color:#a6e22e">i</span>];
+            <span style="color:#75715e">// 递归调用，若为true说明检测到碰撞对象
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">childHit</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">recursiveFindHit</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">child</span>, <span style="color:#a6e22e">func</span>, <span style="color:#a6e22e">hitTest</span>, <span style="color:#a6e22e">interactiveParent</span>);
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">childHit</span>)
+            {
+                <span style="color:#75715e">// 若当前子元素的父辈被移除，则跳过检测
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">child</span>.<span style="color:#a6e22e">parent</span>) { <span style="color:#66d9ef">continue</span>; }
+                <span style="color:#a6e22e">interactiveParent</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+                <span style="color:#75715e">// PS: 这里的if(childHit)检测是多余的？
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">childHit</span>) {
+                    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">interactionEvent</span>.<span style="color:#a6e22e">target</span>) {
+                        <span style="color:#a6e22e">hitTest</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+                    }
+                    <span style="color:#a6e22e">hit</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+                }
+            }
+        }
+    }
+    <span style="color:#75715e">// 3. 执行目标检测
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">interactive</span>) {
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hitTest</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">interactionEvent</span>.<span style="color:#a6e22e">target</span>) {
+            <span style="color:#75715e">// 之前检测过hitArea，这里不再处理
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">hitArea</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">containsPoint</span>) {
+                <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">containsPoint</span>(<span style="color:#a6e22e">point</span>))
+                {
+                    <span style="color:#a6e22e">hit</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+                }
+            }
+        }
+        <span style="color:#75715e">// 若该元素interactive为true，则设置为当前事件的target，并执行传入的回调函数
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">displayObject</span>.<span style="color:#a6e22e">interactive</span>) {
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hit</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">interactionEvent</span>.<span style="color:#a6e22e">target</span>) {
+                <span style="color:#a6e22e">interactionEvent</span>.<span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">displayObject</span>;
+            }
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">func</span>) {
+                <span style="color:#a6e22e">func</span>(<span style="color:#a6e22e">interactionEvent</span>, <span style="color:#a6e22e">displayObject</span>, <span style="color:#f92672">!!</span><span style="color:#a6e22e">hit</span>);
+            }
+        }
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">hit</span>;
+}
+</code></pre></div><h3 id="ticker与raf动画">Ticker与rAF动画</h3>
+<p><code>packages/ticker</code></p>
+<p>动画是Pixi中比较重要的一个模块，它将rAF动画封装成了一个Ticker类，主要有如下三个特性：</p>
+<ol>
+<li>可控制的rAF动画运行状态：开始与停止</li>
+<li>灵活的MainLoop任务管理：分离了执行任务，可以根据需要单独在Ticker对象上添加或移除在帧动画中执行的任务</li>
+<li>可自定义的执行频率：可以通过设置指定的最大与最小FPS值，内部经过执行时间差的计算判断是否在下一帧执行后续任务</li>
+</ol>
+<p>通常我们执行rAF动画时都是简单的递归调用，如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">render</span>() {
+    <span style="color:#a6e22e">work</span>();
+    <span style="color:#a6e22e">requestAnimationFrame</span>(<span style="color:#a6e22e">render</span>);
+}
+</code></pre></div><p>使用Ticker操作帧动画的执行函数:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">numA</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">numB</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">renderTaskInit</span> <span style="color:#f92672">=</span> () =&gt; { <span style="color:#a6e22e">initWork</span>() }
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">renderTaskA</span> <span style="color:#f92672">=</span> () =&gt; { <span style="color:#a6e22e">renderWork</span>() }
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">renderTaskB</span> <span style="color:#f92672">=</span> () =&gt; { <span style="color:#a6e22e">renderWork</span>() }
+<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">ticker</span>.<span style="color:#a6e22e">addOnce</span>() <span style="color:#75715e">// 仅执行一次的任务
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">ticker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">renderTaskA</span>); <span style="color:#75715e">// 循环执行的任务
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">ticker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">renderTaskB</span>, <span style="color:#66d9ef">this</span>); <span style="color:#75715e">// 循环执行的任务，可传入context对象
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">ticker</span>.<span style="color:#a6e22e">remove</span>(<span style="color:#a6e22e">renderTaskA</span>) <span style="color:#75715e">// 移除任务
+</span></code></pre></div><p><strong>Ticker的原理</strong></p>
+<p>内部实现主要由Ticker与TickerListener这两个类组成。</p>
+<p><em>1.动画开始与停止的控制</em></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">    <span style="color:#a6e22e">start</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">started</span>) {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">started</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestIfNeeded</span>();
+        }
+    }
+    <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_requestIfNeeded</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_head</span>.<span style="color:#a6e22e">next</span>) {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">lastTime</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">performance</span>.<span style="color:#a6e22e">now</span>();
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_lastFrame</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">lastTime</span>;
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">requestAnimationFrame</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_tick</span>);
+        }
+    }
+    <span style="color:#a6e22e">stop</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">started</span>) {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">started</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cancelIfNeeded</span>();
+        }
+    }
+    <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_cancelIfNeeded</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">null</span>) {
+            <span style="color:#a6e22e">cancelAnimationFrame</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span>);
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+        }
+    }
+</code></pre></div><p><em>2.MainLoop中的任务管理</em></p>
+<p>Ticker类的对象在初始化时会创建_ticker来执行rAF的递归：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_tick</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">time</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> =&gt;{
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">started</span>) {
+        <span style="color:#75715e">// 调用事件监听器
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">time</span>);
+        <span style="color:#75715e">// 当执行
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">started</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_head</span>.<span style="color:#a6e22e">next</span>)
+        {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestId</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">requestAnimationFrame</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_tick</span>);
+        }
+    }
+};
+</code></pre></div><p>在update方法中会遍历一个监听器链表</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">currentTime</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">performance</span>.<span style="color:#a6e22e">now</span>())<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">head</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_head</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">listener</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">head</span>.<span style="color:#a6e22e">next</span>;
+    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">listener</span>) {
+        <span style="color:#a6e22e">listener</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">listener</span>.<span style="color:#a6e22e">emit</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">deltaTime</span>);
+    }
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">head</span>.<span style="color:#a6e22e">next</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cancelIfNeeded</span>();
+    }
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>其中的listener为一个TickerListener对象，在这个对象中以链表的结构存储多个监听事件的处理函数，每次emit时执行当前函数，并返回next值对应的下一个listener，若listener为空则表示执行完毕。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">emit</span>(<span style="color:#a6e22e">deltaTime</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">TickerListener</span> {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fn</span>) {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span>) {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fn</span>.<span style="color:#a6e22e">call</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span>, <span style="color:#a6e22e">deltaTime</span>);
+        } <span style="color:#66d9ef">else</span> {
+            (<span style="color:#66d9ef">this</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">TickerListener</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">any</span><span style="color:#f92672">&gt;</span>).<span style="color:#a6e22e">fn</span>(<span style="color:#a6e22e">deltaTime</span>);
+        }
+    }
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">redirect</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">next</span>;
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">redirect</span>;
+}
+</code></pre></div><p><em>3. 控制任务执行频率</em></p>
+<p>当设置最大FPS时，会计算每秒内帧之间的最短间隔：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">set</span> <span style="color:#a6e22e">maxFPS</span>(<span style="color:#a6e22e">fps</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fps</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span>){
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_minElapsedMS</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    } <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">maxFPS</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">max</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">minFPS</span>, <span style="color:#a6e22e">fps</span>);
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_minElapsedMS</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">/</span> (<span style="color:#a6e22e">maxFPS</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">1000</span>);
+    }
+}
+</code></pre></div><p>则在update()方法中会根据这个时间判断是否在这一帧内执行后续任务：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">currentTime</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">performance</span>.<span style="color:#a6e22e">now</span>())<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_minElapsedMS</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">delta</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">currentTime</span> <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_lastFrame</span> <span style="color:#f92672">|</span> <span style="color:#ae81ff">0</span>;
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">delta</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_minElapsedMS</span>) {
+            <span style="color:#66d9ef">return</span>;
+        }
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_lastFrame</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">currentTime</span> <span style="color:#f92672">-</span> (<span style="color:#a6e22e">delta</span> <span style="color:#f92672">%</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_minElapsedMS</span>);
+    }
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><h2 id="总结">总结</h2>
+<p>可以看出，Pixi实现了高性能2D渲染的目标，背后的付出则是大量额外实现的WebGL图形绘制(贝塞尔曲线、基础图形等)与辅助方法(碰撞检测)的代码，并且针对动画与资源加载也做了许多优化和额外的功能，不失为一个优秀的框架。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://www.pixijs.com/">Pixi.js</a></li>
+<li><a href="https://pixijs.io/pixi-batch-renderer/">pixi-batch-renderer</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/">http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/dive-into-2d-canvas-framework-ii-konva/">Canvas2D渲染库简析:（二）Konva</a></li>
+        
+        <li><a href="/post/front-end/dive-into-2d-canvas-framework-i-fabric/">Canvas2D渲染库简析:（一）Fabric</a></li>
+        
+        <li><a href="/post/front-end/practice-in-e2e-test-with-puppeteer/">puppeteer&#43;canvas的e2e测试实践</a></li>
+        
+        <li><a href="/post/front-end/offscreen-canvas-practice/">Worker中的OffscreenCanvas渲染实践与浅析</a></li>
+        
+        <li><a href="/post/front-end/canvas-travel/">Canvas从小试牛刀到庖丁解牛</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                
+                <li><a href='http://yrq110.me/tags/pixi'>pixi</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

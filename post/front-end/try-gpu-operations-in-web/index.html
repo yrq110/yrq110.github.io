@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Web也要在GPU并行计算中分一杯羹？ | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Web也要在GPU并行计算中分一杯羹？ - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-10-28T20:44:07&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-10-28T20:44:07&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Web也要在GPU并行计算中分一杯羹？">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/try-gpu-operations-in-web/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Web也要在GPU并行计算中分一杯羹？</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年10月28日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>目前Web中主要有两种方式可以显式的调用GPU来执行计算任务：</p>
+<ol>
+<li>GPU.js - 第三方工具。使用JS编写计算任务，内部转换成GLSL交由GPU(OpenGL ES)处理</li>
+<li>WebGPU - w3c规范(19-11-12时处于Editor’s Draft阶段)，提供通用的GPU API，抹平不同底层图形API之间的差异(Vulkan, D3D, Metal)</li>
+</ol>
+<p>首先了解下CPU与GPU具有的不同特点：</p>
+<ul>
+<li>GPU具有大量内核，可以同时执行相同计算任务，如将一张图片的所有像素转为灰度图像素</li>
+<li>CPU需要多级缓存，GPU需要较少的缓存空间</li>
+<li>CPU适合序列型结构的任务，GPU很适合进行并行结构的任务</li>
+<li>CPU具有低时延的特点，GPU具有高吞吐量的特点</li>
+</ul>
+<h1 id="gpujs">GPU.js</h1>
+<p><a href="https://github.com/gpujs/gpu.js">GPU.js</a>的亮点是通过编写JS函数和调用高度封装的接口来方便的使用GPU执行并行计算。</p>
+<ul>
+<li>在Web与Node环境下使用GPU进行GPGPU运算，当GPU不可用时，使用JS执行函数</li>
+<li>原理: 将JS函数转换为WebGL程序中的着色器代码并执行</li>
+</ul>
+<h2 id="基础操作">基础操作</h2>
+<p>以经典的矩阵乘法计算为例</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">GPU</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;gpu.js&#39;</span>); <span style="color:#75715e">// In Node.js
+</span><span style="color:#75715e">// 1. 创建gpu实例
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">gpu</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">GPU</span>();
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">dimension</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>;
+<span style="color:#75715e">// 2. 构建kernel实例，根据环境与配置自动选择kernel类型
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">multiplyMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">gpu</span>.<span style="color:#a6e22e">createKernel</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span>) {
+  <span style="color:#75715e">// 3. kernel处理函数
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">sum</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">constants</span>.<span style="color:#a6e22e">dimensions</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+    <span style="color:#75715e">// thread中可以取得当前各维度中的索引值，在output中配置尺寸，可以使用其作为参数参与计算
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">sum</span> <span style="color:#f92672">+=</span> <span style="color:#a6e22e">a</span>[<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">thread</span>.<span style="color:#a6e22e">y</span>][<span style="color:#a6e22e">i</span>] <span style="color:#f92672">*</span> <span style="color:#a6e22e">b</span>[<span style="color:#a6e22e">i</span>][<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">thread</span>.<span style="color:#a6e22e">x</span>];
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">sum</span>;
+}, {
+  <span style="color:#75715e">// 4. kernel的参数配置，包括函数内使用的常量与输出尺寸等
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">constants</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">dimensions</span> },
+  <span style="color:#a6e22e">output</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">dimensions</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">dimensions</span> }
+})
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">m1</span> <span style="color:#f92672">=</span> [[<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>],[<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span>]];
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">m2</span> <span style="color:#f92672">=</span> [[<span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">3</span>],[<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">3</span>]];
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">m</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multiplyMatrix</span>(<span style="color:#a6e22e">m1</span>, <span style="color:#a6e22e">m2</span>);
+<span style="color:#75715e">// m: [ Float32Array [ 10, 9 ], Float32Array [ 24, 21 ] ]
+</span></code></pre></div><p><strong>输入与输出类型</strong></p>
+<ul>
+<li>输入: Number | Array (1~3维的Number元素，数组为多种类型化数组) | 扁平化数组+input函数 | HTML Image/Video</li>
+<li>输出: 类型化数组 | canvas</li>
+</ul>
+<p><strong>多线程</strong></p>
+<p>支持在work线程中使用，此时内部操作的画布对象为<code>OffscreenCanvas</code>类型</p>
+<h2 id="图形化输出">图形化输出</h2>
+<p>不仅可以使用GPU.js执行一些运算任务，也可以直接处理图像数据。</p>
+<p>实现该操作需要两步：</p>
+<ol>
+<li>将kernel的<code>graphical</code>属性设为<code>true</code>并在内部函数中操作<code>this.color(r,g,b)</code>像素数据</li>
+<li>执行回调函数，导出canvas元素(HTMLCanvasElement|OffscreenCanvas)</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">render</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">gpu</span>.<span style="color:#a6e22e">createKernel</span>(<span style="color:#66d9ef">function</span>() {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">color</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>);
+})
+  .<span style="color:#a6e22e">setOutput</span>([<span style="color:#ae81ff">20</span>, <span style="color:#ae81ff">20</span>])
+  .<span style="color:#a6e22e">setGraphical</span>(<span style="color:#66d9ef">true</span>);
+<span style="color:#75715e">// 执行回调
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">render</span>();
+<span style="color:#75715e">// 取得canvas DOM元素
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">canvas</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">render</span>.<span style="color:#a6e22e">canvas</span>;
+document.<span style="color:#a6e22e">getElementsByTagName</span>(<span style="color:#e6db74">&#39;body&#39;</span>)[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">appendChild</span>(<span style="color:#a6e22e">canvas</span>);
+</code></pre></div><h2 id="性能对比">性能对比</h2>
+<p>GPU.js官方的<a href="https://github.com/gpujs/benchmark">benchmark</a>测试：</p>
+<p><img src="/images/blog/front-end/try-gpu-operations-in-web/gpu.js-benchmark.png" alt=""></p>
+<ul>
+<li>硬件:  Xeon Gold 5217 + 8 x RTX 2080ti</li>
+<li>操作系统:  Ubuntu 18.04</li>
+<li>环境:  NodeJS v8.10.0 + GPU.js v2.2.0</li>
+</ul>
+<p>可以看出，在大规模矩阵乘法的计算中，GPU的并行计算优势很明显，不过在代码中的具体效果还得看在什么样的硬件与软件环境下。</p>
+<h1 id="webgpu">WebGPU</h1>
+<ul>
+<li>最早由苹果<a href="https://www.infoq.com/news/2017/02/webgpu/">提出</a>，目前的google的<a href="https://dawn.googlesource.com/dawn">dawn</a>完成度较高</li>
+<li>越来越多的人使用GPU进行GPGPU编程(general-purpose GPU)，而不是仅仅画一个三角形</li>
+<li>W3C的<a href="https://www.w3.org/community/gpu/">GPU for the Web社区组</a>根据目前大部分设备的现代GPU接口设计暴露的通用API，即<a href="https://gpuweb.github.io/gpuweb/">WebGPU</a></li>
+<li>WebGL的后继者，底层API</li>
+</ul>
+<p>特点：</p>
+<ul>
+<li>为Web暴露GPU硬件的能力，提供映射到Vulkan、Direct3D 12与Metal图形API的接口</li>
+<li>与WebGL不同的是，它不以OpenGL ES为底层的目标图形API，并且提供能直接操作计算着色器的能力</li>
+</ul>
+<p>使用WebGPU的一些<a href="https://austineng.github.io/webgpu-samples/#">示例</a></p>
+<p>下面在chrome(78版本)上展示一些基础操作与示例</p>
+<p><strong>提示</strong>: Chrome 78 for macOS中WebGPU为实验新功能，默认禁用，可以在Canary版本的如下位置修改可用性进行测试：chrome://flags/#enable-unsafe-webgpu。</p>
+<p><strong>注意</strong>：由于WebGPU的规范和实现还在制订与开发阶段，下面的内容很可能会有较大改动。</p>
+<h2 id="基础操作---缓冲区与内存">基础操作 - 缓冲区与内存</h2>
+<p>由于WebGPU提供的是比较细粒度的API，要使用WebGPU实现一个类似GPU.js开头的矩阵乘法功能还是比较繁琐的，稍安勿躁。</p>
+<p>支持的输入格式：</p>
+<ul>
+<li>Number</li>
+<li>一维、二维或三维的数组(Array与Float32Array等其他类型化数组)</li>
+<li>扁平化数组</li>
+<li>HTML Image</li>
+</ul>
+<h3 id="访问gpu">访问GPU</h3>
+<ol>
+<li>使用<code>navigator.gpu.requestAdapter()</code>访问GPU，将返回一个Promise对象，resolve中包含一个GPU适配器。将适配器想象成显卡，集显或独显。</li>
+<li>得到适配器后就可以通过使用<code>adapter.requestDevice()</code>来获取GPU设备。</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">adapter</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">navigator</span>.<span style="color:#a6e22e">gpu</span>.<span style="color:#a6e22e">requestAdapter</span>();
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">device</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">adapter</span>.<span style="color:#a6e22e">requestDevice</span>();
+</code></pre></div><h3 id="缓冲区内存操作">缓冲区内存操作</h3>
+<p>由于现代浏览器的沙箱机制，这个操作并不能直接进行，需要结合map/unmap。（目前的GPU进程还未实现sandbox）</p>
+<p><strong>写入缓冲区内存</strong></p>
+<ol>
+<li>使用<code>device.createBufferMappedAsync()</code>得到指定尺寸和用法标记的缓冲区对象。resolve会返回一个GPU buffer对象，与原始二进制buffer关联。</li>
+<li>写入字节操作类似于将一个类型化数组的值拷贝进一个已获得的ArrayBuffer。</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 获取GPU buffer与用于写入的arrayBuffer
+</span><span style="color:#75715e">// 成功后GPU buffer会进入映射状态(使用返回的引用对象访问)
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">gpuBuffer</span>, <span style="color:#a6e22e">arrayBuffer</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBufferMappedAsync</span>({
+  <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">4</span>,
+  <span style="color:#a6e22e">usage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">MAP_WRITE</span>
+});
+
+<span style="color:#75715e">// 将字节写入缓冲区
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Uint8Array</span>(<span style="color:#a6e22e">arrayBuffer</span>).<span style="color:#a6e22e">set</span>([<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>]);
+</code></pre></div><ul>
+<li>此时，GPU buffer是一个指针，意味着它是属于GPU的，可以使用JS对其进行写入与读取。也可以使用<code>gpuBuffer.unmap()</code>来取消映射</li>
+<li>map/unmap概念是为了避免CPU与GPU同时访问内存时竞态条件的产生而出现的。在目标宿宿主环境得到一个内存数据的指针，使其可以进行编辑，无需设置两块存储区域并进行移动操作。</li>
+</ul>
+<p><strong>读取缓冲区内存</strong></p>
+<p>尝试将的一个GPU buffer内容拷贝到另一个GPU buffer中。</p>
+<ol>
+<li>第一块GPU buffer除了要写入外还存在作为拷贝源操作，因此在usage标记中需要添加一个<code>GPUBufferUsage.COPY_SRC</code></li>
+<li>第二块GPU buffer会以unmapped的状态使用同步的<code>device.createBuffer()</code>创建，其usage标记为<code>GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ</code>意味着它将作为拷贝目标并会被JS读取一次。</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">gpuWriteBuffer</span>, <span style="color:#a6e22e">arrayBuffer</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBufferMappedAsync</span>({
+  <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">4</span>,
+  <span style="color:#a6e22e">usage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">MAP_WRITE</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">COPY_SRC</span>
+});
+
+<span style="color:#75715e">// 将字节写入buffer
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Uint8Array</span>(<span style="color:#a6e22e">arrayBuffer</span>).<span style="color:#a6e22e">set</span>([<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>]);
+
+<span style="color:#75715e">// 解除buffer映射，以便之后用于拷贝
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">gpuWriteBuffer</span>.<span style="color:#a6e22e">unmap</span>();
+
+<span style="color:#75715e">// 取得一个GPU buffer用于在解绑状态下读取它的值
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">gpuReadBuffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBuffer</span>({
+  <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">4</span>,
+  <span style="color:#a6e22e">usage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">COPY_DST</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">MAP_READ</span>
+});
+</code></pre></div><p>指令处理：</p>
+<ul>
+<li>由于GPU是一种独立的协处理器，所有GPU指令的执行均为异步的。也就是为何会构建一个指令列表，在需要时打包发送</li>
+<li>在WebGPU中，使用<code>device.createCommandEncoder()</code>得到的GPU指令编码器是一个JS对象，该对象打包一些&quot;缓存的&quot;指令并在某一时间发送给GPU。</li>
+<li>而<code>GPUBuffer</code>上的方法是另一种情况，它们是<code>非缓存的</code>，当调用时就会自动执行。</li>
+</ul>
+<p>函数调用：</p>
+<ul>
+<li>当创建好GPU指令编码器后，调用<code>copyEncoder.copyBufferToBuffer()</code>即可将这个指令添加到稍后执行的指令队列中。</li>
+<li>最后，调用<code>copyEncoder.finish()</code>来完成指令编码，并将其提交到GPU设备的指令队列中，队列会处理<code>device.getQueue().submit()</code>中传入的指令来完成提交。之后将会自动按顺序执行数组中存放的指令。</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 编码用于拷贝buffer的指令
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">copyEncoder</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createCommandEncoder</span>();
+<span style="color:#a6e22e">copyEncoder</span>.<span style="color:#a6e22e">copyBufferToBuffer</span>(
+  <span style="color:#a6e22e">gpuWriteBuffer</span> <span style="color:#75715e">/* source buffer */</span>,
+  <span style="color:#ae81ff">0</span> <span style="color:#75715e">/* source offset */</span>,
+  <span style="color:#a6e22e">gpuReadBuffer</span> <span style="color:#75715e">/* destination buffer */</span>,
+  <span style="color:#ae81ff">0</span> <span style="color:#75715e">/* destination offset */</span>,
+  <span style="color:#ae81ff">4</span> <span style="color:#75715e">/* size */</span>
+);
+
+<span style="color:#75715e">// 提交拷贝指令
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">copyCommands</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">copyEncoder</span>.<span style="color:#a6e22e">finish</span>();
+<span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">getQueue</span>().<span style="color:#a6e22e">submit</span>([<span style="color:#a6e22e">copyCommands</span>]);
+</code></pre></div><p>此时已经发送了GPU队列指令，但还没必要执行。为了读取第二块GPU buffer，调用<code>gpuReadBuffer.mapReadAsync()</code>，当队列中所有的GPU指令执行完成后，会返回一个包含与第一块GPU buffer相同数据的ArrayBuffer。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 读取buffer.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">copyArrayBuffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">gpuReadBuffer</span>.<span style="color:#a6e22e">mapReadAsync</span>();
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Uint8Array</span>(<span style="color:#a6e22e">copyArrayBuffer</span>));
+</code></pre></div><p>完成。</p>
+<h2 id="计算着色器---compute-shader">计算着色器 - compute shader</h2>
+<p><strong>计算着色器</strong>是GPU中特殊的一种着色器，与图形着色器不同，常用它进行大吞吐量的计算任务，一般不直接用于三角形与像素的绘制。目前Vulkan、DirectX 3D和OpenGL等主要图形API均提供了计算着色器的能力。</p>
+<p>同样以矩阵相乘为例，使用计算着色器执行通常需要以下几步：</p>
+<ol>
+<li>创建三块GPU buffers(两个矩阵用于相乘，一个用于保存结果)</li>
+<li>描述计算着色器的输入和输出</li>
+<li>编译着色器代码</li>
+<li>创建计算管道</li>
+<li>将打包的编码指令提交给GPU</li>
+<li>读取GPU buffer中的结果矩阵</li>
+</ol>
+<p>其中包含了几步前面介绍的基本操作，对于WebGPU中特殊的shader操作做简要介绍。</p>
+<h3 id="绑定数据与缓冲区----bindgroup--bindgrouplayout">绑定数据与缓冲区 -  bindGroup &amp; bindGroupLayout</h3>
+<p>对应上面流程的第2步。</p>
+<p>bindGroupLayout定义一个着色器期望的输入/输出接口，bindGroup则表示一个着色器实际的输入/输出数据。</p>
+<p>在下面的示例中可以看到，bindGroupLayout中定义了计算着色器中期望的存储buffer，并对应其绑定的序号(如<code>binding: 0</code>)。</p>
+<p>另一方面bindGroup中则根据bindGroupLayout来定义，将GPU buffer与其binding序号绑定起来。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">bindGroupLayout</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBindGroupLayout</span>({
+  <span style="color:#a6e22e">bindings</span><span style="color:#f92672">:</span> [
+    {
+      <span style="color:#a6e22e">binding</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+      <span style="color:#a6e22e">visibility</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUShaderStage</span>.<span style="color:#a6e22e">COMPUTE</span>,
+      <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;storage-buffer&#34;</span>
+    }
+    ...
+  ]
+});
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">bindGroup</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBindGroup</span>({
+  <span style="color:#a6e22e">layout</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">bindGroupLayout</span>,
+  <span style="color:#a6e22e">bindings</span><span style="color:#f92672">:</span> [
+    {
+      <span style="color:#a6e22e">binding</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+      <span style="color:#a6e22e">resource</span><span style="color:#f92672">:</span> {
+        <span style="color:#a6e22e">buffer</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">gpuBufferFirstMatrix</span>
+      }
+    },
+    ...
+  ]
+})
+</code></pre></div><h3 id="计算管道---compute-piepieline">计算管道 - compute piepieline</h3>
+<p>对应上面流程的第3和第4步。</p>
+<p>Chrome中的WebGPU使用的是二进制码而不是原始的GLSL代码，因此在执行着色器代码前需要先进行编译。 <a href="https://github.com/kainino0x/-webgpu-glslang">@webgpu/glslang</a>提供了这个能力，可以将computeShaderCode编译成WebGPU接受的格式。这种二进制码格式是基于<a href="https://www.khronos.org/spir/">SPIR-V</a>的一个子集。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">glslangModule</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;https://unpkg.com/@webgpu/glslang@0.0.8/dist/web-devel/glslang.js&#39;</span>;
+</code></pre></div><p>计算流水线是一个可以描述我们实际执行的计算操作的对象，通过调用<code>device.createComputePipeline()</code>创建。接收两个参数：之前的bindGroupLayout对象和一个计算阶段（包含定义的计算着色器入口(主GLSL函数)及使用<code>glslang.compileGLSL()</code>编译的实际计算着色器模块）。</p>
+<p>图形着色器的硬件侧的阶段一般包含光栅化等步骤，而计算着色器则会直接进入计算单元进行处理。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">glslang</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">glslangModule</span>();
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">computePipeline</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createComputePipeline</span>({
+  <span style="color:#a6e22e">layout</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createPipelineLayout</span>({
+    <span style="color:#a6e22e">bindGroupLayouts</span><span style="color:#f92672">:</span> [<span style="color:#a6e22e">bindGroupLayout</span>]
+  }),
+  <span style="color:#a6e22e">computeStage</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">module</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createShaderModule</span>({
+      <span style="color:#a6e22e">code</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">glslang</span>.<span style="color:#a6e22e">compileGLSL</span>(<span style="color:#a6e22e">computeShaderCode</span>, <span style="color:#e6db74">&#34;compute&#34;</span>)
+    }),
+    <span style="color:#a6e22e">entryPoint</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;main&#34;</span>
+  }
+});
+</code></pre></div><p>关于WebGPU API使用的内容主要参考的google developer中的<a href="https://developers.google.com/web/updates/2019/08/get-started-with-gpu-compute-on-the-web#bind_group_layout_and_bind_group">这篇</a>文章。</p>
+<h2 id="其他">其他</h2>
+<h3 id="安全性">安全性</h3>
+<p>Chrome中的渲染进程是在sandbox中，隔离了环境，降低了一些恶意代码执行带来的影响。WebGPU也会在GPU进程中做一些类似的工作，并且随着渲染流水线的不断改进(比如Viz的出现与绘制-合成阶段的步骤调整)，个人猜测或多或少也会影响WebGPU的实现。</p>
+<p>除此之外，在规范中也提出了一些安全性问题：</p>
+<ul>
+<li>基于CPU和GPU的未定义行为</li>
+<li>着色器中的越界访问与硬件的拒绝访问</li>
+<li>由于是基于Web Worker的多线程设计，存在类似SharedArrayBuffer所引起的时序攻击的隐患</li>
+</ul>
+<h3 id="性能对比-1">性能对比</h3>
+<p>benchmark测试结果</p>
+<p><img src="/images/blog/front-end/try-gpu-operations-in-web/webgpu-benchmark.jpg" alt=""></p>
+<h3 id="应用">应用</h3>
+<p>目前<a href="">Babylon.js</a>提供了实验性的<a href="https://doc.babylonjs.com/extensions/webgpu">WebGPU</a>能力，对应的<a href="https://github.com/BabylonJS/Babylon.js/tree/WebGPU">分支</a>，在4.1会全面支持WebGPU。</p>
+<p>未来计划同时提供<strong>WebGL</strong>与<strong>WebGPU</strong>两种创建渲染引擎的方式。</p>
+<p>所支持的相关特性进展<a href="https://github.com/BabylonJS/Babylon.js/issues/6443">列表</a>及<a href="https://playground.babylonjs.com/indexWebGPU.html">演示实例</a></p>
+<h1 id="gpujs原理浅析">GPU.js原理浅析</h1>
+<p>我们已经知道在GPU.js的内部会将JS函数解析为WebGL程序中的着色器代码并执行，那么第一眼可能会想到解析js代码、验证配置与数据类型、生成GLSL代码等步骤，当这些也是主要的步骤，下面来看看具体它是怎么做的。</p>
+<p>创建gpu实例后，会根据配置或自动选择kernel，接着调用createKernel来构建执行实际计算任务的回调函数。</p>
+<p>下面介绍kernel中几个关键模块，主要是用于：解析js代码、转换成GLSL代码和添加WebGL处理代码</p>
+<h2 id="kernel">Kernel</h2>
+<p>在Kernel中主要做了(以WebGLKernel为例)：</p>
+<ul>
+<li>
+<p>构建与处理WebGL程序中的各个阶段代码(创建主程序，加载着色器，处理坐标，绑定缓冲区，处理纹理等等)</p>
+</li>
+<li>
+<p>将片元着色器中各阶段所用到的GLSL代码块(artifacts)存储在一个Map中，用于生成最终的着色器</p>
+<p>如在shader中获取常量</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_getFragShaderArtifactMap</span>(<span style="color:#a6e22e">args</span>) {
+  <span style="color:#66d9ef">return</span> {
+    ...
+    <span style="color:#a6e22e">CONSTANTS</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getConstantsString</span>(),
+    ...
+  };
+}
+<span style="color:#a6e22e">_getConstantsString</span>() {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> [];
+  <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">threadDim</span>, <span style="color:#a6e22e">texSize</span> } <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>;
+  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dynamicOutput</span>) {
+    <span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">push</span>(
+      <span style="color:#e6db74">&#39;uniform ivec3 uOutputDim&#39;</span>,
+      <span style="color:#e6db74">&#39;uniform ivec2 uTexSize&#39;</span>
+    );
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">push</span>(
+      <span style="color:#e6db74">`ivec3 uOutputDim = ivec3(</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">threadDim</span>[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">threadDim</span>[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">threadDim</span>[<span style="color:#ae81ff">2</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">)`</span>,
+      <span style="color:#e6db74">`ivec2 uTexSize = ivec2(</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">texSize</span>[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">texSize</span>[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">)`</span>
+    );
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">utils</span>.<span style="color:#a6e22e">linesToString</span>(<span style="color:#a6e22e">result</span>);
+}
+</code></pre></div><p>着色器中的预置位</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">fragmentShader</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`#version 300 es
+</span><span style="color:#e6db74">...
+</span><span style="color:#e6db74">__CONSTANTS__;
+</span><span style="color:#e6db74">...
+</span><span style="color:#e6db74">`</span>
+</code></pre></div></li>
+<li>
+<p>解析JS生成AST，验证所用的数据类型与语句(由于最终会转换成GLSL，仅支持部分语句和类型)</p>
+</li>
+</ul>
+<h2 id="kernel-value-maps">kernel-value-maps</h2>
+<p>对不同数据类型的变量，提供一些函数用于数据的：</p>
+<ol>
+<li>声明：生成片元着色器中变量声明等语句的字符串</li>
+<li>更新：WebGL程序中对着色器纹理等数据的更新操作</li>
+</ol>
+<p>以HTMLImage类型为例</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 生成在片元着色器中声明变量的代码，与WebGL中的名称保持一致以获取数据
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">getSource</span>() {
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">utils</span>.<span style="color:#a6e22e">linesToString</span>([
+    <span style="color:#e6db74">`uniform sampler2D </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>,
+    <span style="color:#e6db74">`ivec2 </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">sizeId</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> = ivec2(</span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">textureSize</span>[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">textureSize</span>[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">)`</span>,
+    <span style="color:#e6db74">`ivec3 </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dimensionsId</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> = ivec3(</span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">2</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">)`</span>,
+  ]);
+}
+
+<span style="color:#75715e">// 将更新的纹理图像传递给着色器
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">updateValue</span>(<span style="color:#a6e22e">inputImage</span>) {
+  ...
+  <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">context</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">gl</span> } <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>;
+  <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">bindTexture</span>(<span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">TEXTURE_2D</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">texture</span>);
+  ...
+  <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">pixelStorei</span>(<span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">UNPACK_FLIP_Y_WEBGL</span>, <span style="color:#66d9ef">true</span>);
+  <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">texImage2D</span>(<span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">TEXTURE_2D</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">RGBA</span>, <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">RGBA</span>, <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">UNSIGNED_BYTE</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">uploadValue</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">inputImage</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">kernel</span>.<span style="color:#a6e22e">setUniform1i</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">id</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">index</span>);
+}
+</code></pre></div><h2 id="functionnode">FunctionNode</h2>
+<p>插入处理不同数据类型、操作符及表达式所需要的函数，生成字符串，这些函数为在片元着色器中预置的函数。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">...
+<span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;ArrayTexture(4)&#39;</span><span style="color:#f92672">:</span>
+<span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;HTMLImage&#39;</span><span style="color:#f92672">:</span>
+<span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;HTMLVideo&#39;</span><span style="color:#f92672">:</span>
+  <span style="color:#a6e22e">retArr</span>.<span style="color:#a6e22e">push</span>(<span style="color:#e6db74">`getVec4FromSampler2D(</span><span style="color:#e6db74">${</span> <span style="color:#a6e22e">markupName</span> <span style="color:#e6db74">}</span><span style="color:#e6db74">, </span><span style="color:#e6db74">${</span> <span style="color:#a6e22e">markupName</span> <span style="color:#e6db74">}</span><span style="color:#e6db74">Size, </span><span style="color:#e6db74">${</span> <span style="color:#a6e22e">markupName</span> <span style="color:#e6db74">}</span><span style="color:#e6db74">Dim, `</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">memberExpressionXYZ</span>(<span style="color:#a6e22e">xProperty</span>, <span style="color:#a6e22e">yProperty</span>, <span style="color:#a6e22e">zProperty</span>, <span style="color:#a6e22e">retArr</span>);
+  <span style="color:#a6e22e">retArr</span>.<span style="color:#a6e22e">push</span>(<span style="color:#e6db74">&#39;)&#39;</span>);
+  <span style="color:#66d9ef">break</span>;
+...
+</code></pre></div><h2 id="着色器">着色器</h2>
+<h3 id="顶点着色器">顶点着色器</h3>
+<p>在顶点着色器中只做了基础操作：<strong>计算变换后的顶点位置</strong>和<strong>传递纹理坐标</strong>，</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">in vec2 aPos;
+in vec2 aTexCoord;
+out vec2 vTexCoord;
+uniform vec2 ratio;
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
+  gl_Position <span style="color:#f92672">=</span> vec4((aPos <span style="color:#f92672">+</span> vec2(<span style="color:#ae81ff">1</span>)) <span style="color:#f92672">*</span> ratio <span style="color:#f92672">+</span> vec2(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>);
+  vTexCoord <span style="color:#f92672">=</span> aTexCoord;
+}
+</code></pre></div><h3 id="片元着色器">片元着色器</h3>
+<p>在片元着色器中存在多个阶段操作的预置位和对于不同类型变量的预处理代码。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">__HEADER__;
+__PLUGINS__;
+__CONSTANTS__;
+varying vec2 vTexCoord;
+...
+vec4 getVec4FromSampler2D(sampler2D tex, ivec2 texSize, ivec3 texDim, <span style="color:#66d9ef">int</span> z, <span style="color:#66d9ef">int</span> y, <span style="color:#66d9ef">int</span> x) {
+  <span style="color:#66d9ef">return</span> getImage2D(tex, texSize, texDim, z, y, x);
+}
+...
+vec4 getImage2D(sampler2D tex, ivec2 texSize, ivec3 texDim, <span style="color:#66d9ef">int</span> z, <span style="color:#66d9ef">int</span> y, <span style="color:#66d9ef">int</span> x) {
+  <span style="color:#66d9ef">int</span> index <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> texDim.x <span style="color:#f92672">*</span> (y <span style="color:#f92672">+</span> texDim.y <span style="color:#f92672">*</span> z);
+  <span style="color:#66d9ef">int</span> w <span style="color:#f92672">=</span> texSize.x;
+  vec2 st <span style="color:#f92672">=</span> vec2(<span style="color:#66d9ef">float</span>(integerMod(index, w)), <span style="color:#66d9ef">float</span>(index <span style="color:#f92672">/</span> w)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0.5</span>;
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">texture2D</span>(tex, st <span style="color:#f92672">/</span> vec2(texSize));
+}
+...
+<span style="color:#66d9ef">void</span> main(<span style="color:#66d9ef">void</span>) {
+  index <span style="color:#f92672">=</span> <span style="color:#66d9ef">int</span>(vTexCoord.s <span style="color:#f92672">*</span> <span style="color:#66d9ef">float</span>(uTexSize.x)) <span style="color:#f92672">+</span> <span style="color:#66d9ef">int</span>(vTexCoord.t <span style="color:#f92672">*</span> <span style="color:#66d9ef">float</span>(uTexSize.y)) <span style="color:#f92672">*</span> uTexSize.x;
+  __MAIN_RESULT__;
+}
+</code></pre></div><h1 id="最后">最后</h1>
+<p>Web端的GPU计算在一般的业务场景中用处甚少，不过在Web端游戏、图形化相关产品和并行计算相关领域上还是有很大发挥空间的。</p>
+<p>如WebGPU一样，诸如<a href="https://web.dev/native-file-system/">Native File System API</a>这类API的出现，未来Web端的本地化能力只会越来越强，不过也会越来越臃肿，这可能是浏览器开发团队需要考虑的问题之一吧。</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://developers.google.com/web/updates/2019/08/get-started-with-gpu-compute-on-the-web">Get started with GPU Compute on the Web</a></li>
+<li><a href="https://gpuweb.github.io/gpuweb/">WebGPU</a></li>
+<li><a href="https://qiita.com/karszawa/items/8fc3cd1c8c6d5673e0a8">Next-Generation 3D Graphics on the Web (Google I/O ’19)</a></li>
+<li><a href="https://ics.media/entry/18412/">次世代仕様のWebGPUとは？</a></li>
+<li><a href="https://ics.media/entry/18467/">WebGPUのコンピュートシェーダーで高速並列計算</a></li>
+<li><a href="https://ics.media/entry/18507/">WebGPUの描画機能はWebGLと何が違うのか</a></li>
+<li><a href="https://www.w3.org/2018/11/17-chinese-web-gpu.pdf">WebGPU 技术进展及社区组状态更新</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/">http://yrq110.me/post/front-end/try-gpu-operations-in-web/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/gpu'>gpu</a></li>
+                
+                <li><a href='http://yrq110.me/tags/webgpu'>webgpu</a></li>
+                
+                <li><a href='http://yrq110.me/tags/chrome'>chrome</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

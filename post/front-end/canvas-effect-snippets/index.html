@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Canvas效果片段 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Canvas效果片段 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-06-04T11:17:32&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-06-04T11:17:32&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Canvas效果片段">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/canvas-effect-snippets/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Canvas效果片段</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年6月4日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>总结在使用canvas时遇到的一些通用效果实现与相关示例。</p>
+<h1 id="透底剪裁效果">透底(剪裁)效果</h1>
+<p>使用<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip">clip API</a></p>
+<!-- raw HTML omitted -->
+<p>示例中的蓝色小方块即为剪裁的区域，无透明效果的原始图案。</p>
+<p>主要使用了如下三个元素：</p>
+<ol>
+<li>
+<p><code>save()</code>&amp;<code>restore()</code></p>
+<p><code>save()</code>与<code>restore()</code>是为了保留裁剪前的上下文状态，不然在需要交互(如移动透底框体)场景下，透底区域的图像就不会随着外部canvas内容的变化而改变了。</p>
+</li>
+<li>
+<p><code>Path2D</code></p>
+<p>region为一个<a href="https://developer.mozilla.org/en-US/docs/Web/API/Path2D"><code>Path2D</code></a>对象，用于声明路径，可以直接在canvas2d上下文中使用。</p>
+<p>首先在region上添加目标区域矩形，其次添加整体区域矩形，则两者相交叉的部分即为目标的透底(剪裁)区域。之后在上下文上使用clip API应用该region区域即可对目标区域进行透底(裁剪)。</p>
+</li>
+<li>
+<p><code>clip()</code></p>
+<p>clip有两种填充模式：<a href="https://en.wikipedia.org/wiki/Nonzero-rule"><code>nonzero</code></a>模式和<a href="https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule"><code>evenodd</code></a>模式，默认为<code>nonzero</code>。详情可以看张鑫旭的<a href="https://www.zhangxinxu.com/wordpress/2018/10/nonzero-evenodd-fill-mode-rule/">这篇</a>文章了解。</p>
+<p>本例中使用的是<code>evenodd</code>模式(奇偶判断规则)。若想剪裁相关区域可以直接通过例子中<code>targetArea</code>所代表的目标区域来进行剪裁</p>
+</li>
+</ol>
+<p>相关QA：https://stackoverflow.com/questions/7821384/html-canvas-clip-area-context-restore</p>
+<h1 id="笔画效果">笔画效果</h1>
+<p>在canvas上想实现一个可以自由绘制的画笔效果，需要两个步骤</p>
+<ol>
+<li>监听鼠标事件得到坐标数据</li>
+<li>使用处理后的坐标进行绘制</li>
+</ol>
+<p>在第2步中有两种方法进行绘制：一种是在监听到鼠标事件并处理坐标后立即绘制，第二种是通过一个标志位(开关)在requestAnimationFrame所执行的函数中进行绘制，区别在于体验时的流畅度、执行的频率以及性能。</p>
+<h2 id="鼠标事件">鼠标事件</h2>
+<!-- raw HTML omitted -->
+<p>设置开始与结束绘制的标志位</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">el</span>.<span style="color:#a6e22e">onmousedown</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">e</span>) {
+  <span style="color:#a6e22e">isDrawing</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">push</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">clientX</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">clientY</span> });
+};
+<span style="color:#a6e22e">el</span>.<span style="color:#a6e22e">onmouseup</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>() {
+  <span style="color:#a6e22e">isDrawing</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+  <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+};
+</code></pre></div><p>在移动时通过标志点进行绘制，示例中为了使路径光滑使用了二次贝塞尔曲线函数</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">el</span>.<span style="color:#a6e22e">onmousemove</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">e</span>) {
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">isDrawing</span>) <span style="color:#66d9ef">return</span>;
+  
+  <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">push</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">clientX</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">clientY</span> });
+
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">clearRect</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">height</span>);
+  
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">p1</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">0</span>];
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">p2</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">1</span>];
+  
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">beginPath</span>();
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">moveTo</span>(<span style="color:#a6e22e">p1</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">p1</span>.<span style="color:#a6e22e">y</span>);
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">len</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">len</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">midPoint</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">midPointBtw</span>(<span style="color:#a6e22e">p1</span>, <span style="color:#a6e22e">p2</span>);
+    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">quadraticCurveTo</span>(<span style="color:#a6e22e">p1</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">p1</span>.<span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">midPoint</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">midPoint</span>.<span style="color:#a6e22e">y</span>);
+    <span style="color:#a6e22e">p1</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">i</span>];
+    <span style="color:#a6e22e">p2</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">i</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>];
+  }
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">lineTo</span>(<span style="color:#a6e22e">p1</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">p1</span>.<span style="color:#a6e22e">y</span>);
+  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">stroke</span>();
+};
+</code></pre></div><h2 id="鼠标事件--requestanimationframe">鼠标事件 + requestAnimationFrame</h2>
+<p>同样根据判断鼠标事件中设置标志位绘制，不过是在requestAnimationFrame的动画关键帧函数中执行</p>
+<!-- raw HTML omitted -->
+<h1 id="路径坐标绘制">路径坐标绘制</h1>
+<p>同样可以使用Path2D来绘制一个给定一系列坐标的轨迹线，需要先将这些坐标点转换成SVG路径，直接传入Path2D构造函数即可。笔者这里用了<a href="https://github.com/colinmeinke/svg-points"><code>svg-points</code></a>这个库来将坐标点转换成SVG路径。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">points</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">contour</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">p</span> =&gt; {
+    <span style="color:#66d9ef">let</span> [<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">p</span>;
+    <span style="color:#66d9ef">return</span> { <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span> };
+});
+<span style="color:#a6e22e">points</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">moveTo</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">svgPath</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">toPath</span>(<span style="color:#a6e22e">points</span>);
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">beginPath</span>();
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Path2D</span>(<span style="color:#a6e22e">svgPath</span>);
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">stroke</span>(<span style="color:#a6e22e">p</span>);
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">closePath</span>();
+</code></pre></div><!-- raw HTML omitted -->
+<h1 id="图形或图像的透明效果">图形或图像的透明效果</h1>
+<h2 id="rgba">RGBA</h2>
+<p>在绘制时给填充或笔触颜色设置alpha值，就可以实现透明图形或图像的绘制。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">canvas</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>);
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;2d&#39;</span>);
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillStyle</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;rgba(255,0,255,0.2)&#39;</span>;
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillRect</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">75</span>, <span style="color:#ae81ff">75</span>);
+</code></pre></div><!-- raw HTML omitted -->
+<h2 id="globalalpha">globalAlpha</h2>
+<p>在canvas context上设定<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalAlpha">globalAlpha</a>属性可以用来设置之后图形或图像绘制在canvas上的alpha值。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">globalAlpha</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.5</span>;
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillStyle</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;#FD0&#39;</span>;
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillRect</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">75</span>, <span style="color:#ae81ff">75</span>); <span style="color:#75715e">// 该矩形为半透明的
+</span></code></pre></div><!-- raw HTML omitted -->
+<h3 id="层叠图形的加深效果">层叠图形的加深效果</h3>
+<p>若设置globalAlpha后绘制层叠图形，那么层叠的部分会出现透明度加深的效果</p>
+<!-- raw HTML omitted -->
+<h3 id="全局统一透明度">全局统一透明度</h3>
+<p>若想保持图形的透明度统一，可以采用加一层offscreen canvas(通过<code>document.createElement('canvas')</code>创建)的方式。</p>
+<p>offscreen层为不透明的，将其绘制到onscreen层，设置onscreen层的globalAlpha属性即可。</p>
+<!-- raw HTML omitted -->
+<p>相关QA: <a href="https://stackoverflow.com/questions/33723384/how-to-reset-transparency-when-drawing-overlapping-content-on-html-canvas">https://stackoverflow.com/questions/33723384/how-to-reset-transparency-when-drawing-overlapping-content-on-html-canvas</a></p>
+<h1 id="擦除操作">擦除操作</h1>
+<p>设置<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation"><code>globalCompositeOperation</code></a>属性进行绘制即可，会将绘制图形的形状未覆盖的部分保留。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">globalCompositeOperation</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;destination-out&#34;</span>;
+</code></pre></div><p>在下面这个例子中，绘制的路径形状会被去除，显示为背景的白色。</p>
+<!-- raw HTML omitted -->
+<h1 id="图片绘制与导出">图片绘制与导出</h1>
+<h2 id="图片绘制">图片绘制</h2>
+<p>使用<a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage"><code>drawImage API</code></a>进行绘制。</p>
+<p>需要注意的是，表示图像源的第一个参数可以是多种类型：CSSImageValue, HTMLImageElement, SVGImageElement, HTMLVideoElement,  HTMLCanvasElement, ImageBitmap, OffscreenCanvas。</p>
+<p>即在常见的场景中，可以将图像绘制到画布，也可以将另一个画布的内容绘制到该画布上。</p>
+<p>通过调整表示尺寸的source与destination参数可以在绘制时进行一定比例的缩放。</p>
+<h3 id="跨域问题">跨域问题</h3>
+<p>若跨域使用图片资源，并在画布上进行如下三种操作时：</p>
+<ol>
+<li>在canvas上下文中调用getImageData()</li>
+<li>在&lt;canvas&gt;元素上调用toBlob()</li>
+<li>在canvas对象上调用toDataURL()</li>
+</ol>
+<p>会提示<code>Tainted canvases may not be exported</code>的错误，此时需要给Image对象设置一个<code>crossOrigin</code>属性来解决。</p>
+<p>如下是个简单封装的加载image方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">loadImage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">imgPath</span> =&gt; {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">img</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Image</span>();
+    <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">setAttribute</span>(<span style="color:#e6db74">&#34;crossOrigin&#34;</span>, <span style="color:#e6db74">&#34;anonymous&#34;</span>); <span style="color:#75715e">// to solve &#34;Tainted canvases may not be exported&#34; error
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">onload</span> <span style="color:#f92672">=</span> () =&gt; {
+      <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">img</span>);
+    };
+    <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">onerror</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span> =&gt; {
+      <span style="color:#a6e22e">reject</span>(<span style="color:#66d9ef">new</span> Error(<span style="color:#a6e22e">e</span>));
+    };
+    <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">src</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">imgPath</span>;
+  });
+};
+</code></pre></div><h2 id="图片导出成base64">图片导出成base64</h2>
+<p>使用<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL">toDataURL API</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">img</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">loadImage</span>(<span style="color:#a6e22e">imagePath</span>)
+<span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">height</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">img</span>;
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">canvas</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">createElement</span>(<span style="color:#e6db74">&#34;canvas&#34;</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#34;2d&#34;</span>);
+<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">drawImage</span>(<span style="color:#a6e22e">img</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">height</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">width</span>, <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">height</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">imageData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">toDataURL</span>(<span style="color:#e6db74">&#34;image/png&#34;</span>);
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;imageData: &#39;</span>, <span style="color:#a6e22e">imageData</span>)
+<span style="color:#75715e">// imageData:  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAg4AAAIOCAYAAADQu4U5AAAgAElEQVR4Xu3dd5zdVZ3/8de5M5M6k4QmLqKsIhYgE4orsjbcddcVewklE5pYsLA2VBQRfooFFxXsNEWSCWBYy+qK7loQFREJGxKwF1BBBYEkM5M6c8/v8Z077EYI8J3J/Z45c+/r+6ee7/mc8zwn4Z3v/ZaAhwIKKKCAAgooUFIglGxnMwUUUEABBRRQAIO...
+</span></code></pre></div><h1 id="原始图像与mask遮罩合成">原始图像与mask遮罩合成</h1>
+<p>将mask层的alpha通道值赋予原始图像的alpha通道进行结果图的合成</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// resultMaskData: { width, height, values }
+</span><span style="color:#75715e"></span>...
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">resultMaskLayer</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">createElement</span>(<span style="color:#e6db74">&#34;canvas&#34;</span>);
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">resultMaskCtx</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">resultMaskLayer</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#34;2d&#34;</span>);
+<span style="color:#a6e22e">resultMaskLayer</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">width</span>;
+<span style="color:#a6e22e">resultMaskLayer</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">img</span>.<span style="color:#a6e22e">height</span>;
+<span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">drawImage</span>(<span style="color:#a6e22e">img</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">resultMaskData</span>) {
+  <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">width</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">maskWidth</span>, <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">maskHeight</span>, <span style="color:#a6e22e">values</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">resultMaskData</span>;
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">maskData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">getImageData</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">maskWidth</span>, <span style="color:#a6e22e">maskHeight</span>);
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">size</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">maskWidth</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">maskHeight</span>;
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">size</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">values</span>[<span style="color:#a6e22e">i</span>] <span style="color:#f92672">!==</span> <span style="color:#ae81ff">255</span>) {
+      <span style="color:#a6e22e">maskData</span>.<span style="color:#a6e22e">data</span>[(<span style="color:#a6e22e">i</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">values</span>[<span style="color:#a6e22e">i</span>];
+    }
+  }
+  <span style="color:#a6e22e">resultMaskCtx</span>.<span style="color:#a6e22e">putImageData</span>(<span style="color:#a6e22e">maskData</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+}
+</code></pre></div>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/canvas-effect-snippets/">http://yrq110.me/post/front-end/canvas-effect-snippets/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

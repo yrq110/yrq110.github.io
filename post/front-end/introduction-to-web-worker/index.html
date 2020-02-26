@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Web Worker融会贯通 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Web Worker融会贯通 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-03-12T16:24:19&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-03-12T16:24:19&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Web Worker融会贯通">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/introduction-to-web-worker/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Web Worker融会贯通</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年3月12日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>介绍与web worker有关的:</p>
+<ul>
+<li>概况: 支持情况, 类型, 特点等</li>
+<li>使用场景: 轮询, 复杂数据解析, JS库的代理等</li>
+<li>相关工具: workerize, comlink等</li>
+</ul>
+<h1 id="是什么">是什么</h1>
+<p>用<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API/Using_web_workers">MDN</a>上的一段介绍来开头:</p>
+<blockquote>
+<p>Web Worker为Web内容在后台线程中运行脚本提供了一种简单的方法。线程可以执行任务而不干扰用户界面。此外，他们可以使用XMLHttpRequest执行 I/O  (尽管responseXML和channel属性总是为空)。一旦创建， 一个worker 可以将消息发送到创建它的JavaScript代码, 通过将消息发布到该代码指定的事件处理程序（反之亦然）。</p>
+</blockquote>
+<h2 id="支持情况">支持情况</h2>
+<!-- raw HTML omitted -->
+<h2 id="类型">类型</h2>
+<p>Web Worker具有如下三种不同的类型:</p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>Dedicated Worker</th>
+<th>Shared Worker</th>
+<th>Service Worker</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>用途</td>
+<td>在属于创建者的worker线程中执行任务</td>
+<td>在同一主域跨browser环境下(window,iframe..)的worker线程执行任务</td>
+<td>缓存、推送、离线模式等</td>
+</tr>
+<tr>
+<td>执行上下文</td>
+<td>DedicatedWorkerGlobalScope</td>
+<td>SharedWorkerGlobalScope</td>
+<td>ServiceWorkerGlobalScope</td>
+</tr>
+<tr>
+<td>与主线程通讯</td>
+<td>Worker.postMessage()</td>
+<td>Worker.port.postMessage()</td>
+<td>特殊生命周期+事件驱动</td>
+</tr>
+<tr>
+<td>访问限制</td>
+<td>DOM API</td>
+<td>DOM API</td>
+<td>DOM API &amp; 同步API(localStorage, XHR&hellip;)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="特点">特点</h2>
+<p>Worker的本质是在本地开启一个系统级的新线程来处理任务，具有以下特点:</p>
+<ul>
+<li><strong>上下文</strong>: 具有独立的worker执行上下文，也就是<a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope">WorkerGlobalScope</a>，在worker内通过<code>self</code>来获取引用它的对象</li>
+<li><strong>事件循环</strong>: 具有与browser context下不同的<a href="https://html.spec.whatwg.org/multipage/workers.html#worker-event-loop">worker event loop</a>，它的任务队列仅包含事件、回调与网络活动</li>
+<li><strong>数据通讯</strong>: 在主线程与worker线程之间传递消息时使用<a href="https://developer.mozilla.org/zh-CN/docs/Web/Guide/API/DOM/The_structured_clone_algorithm">结构化克隆算法</a>对数据进行处理，使用基于<a href="https://developer.mozilla.org/en-US/docs/Web/API/Transferable">Transferable</a>接口的<code>postMessage()</code>方法进行数据的传输，无法直接传输Error和Function对象，在另一侧通过监听<code>message</code>事件来获取数据。</li>
+<li><strong>网络访问</strong>: XMLHttpRequest(Service Worker中无法使用)</li>
+</ul>
+<p>主线程与worker线程之间的消息传递示意图:
+<img src="https://cdn-images-1.medium.com/max/1600/1*Cvw3z6LjQG9VnXc7NUz7bA.png" alt=""></p>
+<h2 id="提升渲染性能">提升渲染性能</h2>
+<p>具体可以看看<a href="https://medium.com/launch-school/what-are-web-workers-4a0e1ded7a67">这篇文章</a></p>
+<p>直接在主线程中运行一段代码
+<img src="https://cdn-images-1.medium.com/max/800/1*n_HhYQ4Sk7E9u8M9oUNAjg.png" alt=""></p>
+<p>使用worker后
+<img src="https://cdn-images-1.medium.com/max/800/1*xQSjqbNvWAHhic_JKJobpA.png" alt=""></p>
+<p>worker的执行不会影响到页面渲染进程的执行</p>
+<h1 id="怎么用">怎么用</h1>
+<ol>
+<li>
+<p>创建一个worker对象(以Dedicated Worker为例)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">myWorker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;worker.js&#39;</span>)
+</code></pre></div></li>
+<li>
+<p>主线程发送消息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">myWorker</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#e6db74">&#39;hi from main&#39;</span>)
+</code></pre></div></li>
+<li>
+<p>worker线程处理&amp;发送消息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// worker.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">e</span> =&gt; {
+  <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">data</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Message received from main script: &#39;</span>, <span style="color:#a6e22e">data</span>)
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Posting message back to main script&#39;</span>)
+  <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#e6db74">&#39;hello fron worker&#39;</span>)
+  <span style="color:#75715e">// self.close() 在内部关闭worker
+</span><span style="color:#75715e"></span>})
+</code></pre></div></li>
+<li>
+<p>主线程监听消息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">myWorker</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">e</span> =&gt; {
+  <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">data</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Message received from worker: &#39;</span>, <span style="color:#a6e22e">data</span>)
+  <span style="color:#75715e">// myWorker.terminate() 在外部关闭worker
+</span><span style="color:#75715e"></span>})
+</code></pre></div></li>
+</ol>
+<h1 id="什么时候用">什么时候用</h1>
+<p>列举一些常见场景</p>
+<h2 id="轮询">轮询</h2>
+<p>比如说对文件上传进度的轮询，对于每一个上传的文件均在worker内启用一个定时任务来进行轮询处理。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// polling-worker.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">apiURL</span>, <span style="color:#a6e22e">WORKER_SIGNAL</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@/utils/config&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">axios</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;axios&#39;</span>
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">intervalTasks</span> <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pollingPeriod</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">5000</span>
+<span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">e</span> =&gt; {
+    <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">message</span>, <span style="color:#a6e22e">id</span>, <span style="color:#a6e22e">token</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>
+    <span style="color:#66d9ef">switch</span> (<span style="color:#a6e22e">message</span>) {
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">WORKER_SIGNAL</span>.<span style="color:#a6e22e">AUDIO_POLLING</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">apiURL</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/upload/status&#39;</span>
+            <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">param</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`?ids=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>
+            <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">interval</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">setInterval</span>(<span style="color:#a6e22e">async</span>() =&gt; {
+                <span style="color:#66d9ef">try</span> {
+                    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">res</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">url</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">param</span>, { <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">token</span> } })
+                    <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;success&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>})
+                } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">err</span>) {
+                    <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;error&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">err</span>})
+                }
+            }, <span style="color:#a6e22e">pollingPeriod</span>)
+            <span style="color:#a6e22e">intervalTasks</span>.<span style="color:#a6e22e">push</span>({ <span style="color:#a6e22e">interval</span>, <span style="color:#a6e22e">id</span> })
+            <span style="color:#66d9ef">break</span>
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">WORKER_SIGNAL</span>.<span style="color:#a6e22e">STOP</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">obj</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">intervalTasks</span>.<span style="color:#a6e22e">find</span>(<span style="color:#a6e22e">e</span> =&gt; <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">id</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">id</span>)
+            <span style="color:#a6e22e">clearInterval</span>(<span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">interval</span>)
+    }
+}
+</code></pre></div><p>当请求成功时通知渲染进程已完成该文件上传，并在worker内部终止自身线程，在队列中取消该worker任务的flag。</p>
+<h2 id="复杂数据解析">复杂数据解析</h2>
+<p>在worker中处理与解析复杂的数据对象可以避免阻塞UI线程，而且也可以节省一次往返时间(round trip)。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// filter-worker.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>) {
+  <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">filter</span>(<span style="color:#66d9ef">function</span> () {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">flagged</span>;
+  }));
+}
+
+<span style="color:#75715e">// app.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">filterWorker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;filter-worker.js&#39;</span>);
+
+<span style="color:#a6e22e">filterWorker</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>) {
+  <span style="color:#75715e">// Log filtered list
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>);
+}
+
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">hugeData</span> <span style="color:#f92672">=</span> [ ... ];
+
+<span style="color:#a6e22e">filterWorker</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#a6e22e">hugeData</span>);
+</code></pre></div><h2 id="代理其他js库的api">代理其他JS库的API</h2>
+<p>可以在worker线程中加载与执行JS库，执行相关操作。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// proxy-worker.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">loadScripts</span>(<span style="color:#e6db74">&#39;https://large/but/cool/library.js&#39;</span>);
+
+<span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>) {
+  <span style="color:#66d9ef">switch</span>(<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">type</span>) {
+    <span style="color:#66d9ef">case</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;thingIWantToDo&#39;</span><span style="color:#f92672">:</span>
+      <span style="color:#a6e22e">myLibraryScope</span>.<span style="color:#a6e22e">doTheThing</span>(<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">payload</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">res</span> =&gt; {
+        <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({
+          <span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;COMPLETED&#39;</span>
+          <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">type</span>,
+          <span style="color:#a6e22e">payload</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span>
+        })
+      });
+      <span style="color:#66d9ef">break</span>;
+      
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+      <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">`Action </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">type</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> is not handled by proxy-worker`</span>);
+  }
+}
+
+<span style="color:#75715e">// app.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">coolWorker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;proxy-worker.js&#39;</span>);
+
+<span style="color:#a6e22e">dispatch</span>({
+  <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;thingIWantToDo&#39;</span>,
+  <span style="color:#a6e22e">payload</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1000</span>
+}).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>);
+
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">dispatch</span>(<span style="color:#a6e22e">action</span>) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">resolve</span> =&gt; {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">listener</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">res</span> =&gt; {
+      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">action</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">status</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;COMPLETED&#39;</span>) {
+        <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">payload</span>);
+        
+        <span style="color:#a6e22e">coolWorker</span>.<span style="color:#a6e22e">removeEventListener</span>(<span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">listener</span>);
+      }
+    };
+    
+    <span style="color:#a6e22e">coolWorker</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;message&#39;</span>, <span style="color:#a6e22e">listener</span>);
+    
+    <span style="color:#a6e22e">coolWorker</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#a6e22e">action</span>);
+  });
+}
+</code></pre></div><h2 id="electron中的node任务">electron中的node任务</h2>
+<p>在使用electron时，由于全局node可用的特点，也可以把一些node任务放在渲染进程的worker线程中，如文件读写等。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// node-worker.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">WORKER_SIGNAL</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@/utils/config&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">nodeUtils</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@/utils/node&#39;</span>
+<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">e</span> =&gt; {
+    <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">message</span>, <span style="color:#a6e22e">detailInfos</span>,<span style="color:#a6e22e">type</span>,<span style="color:#a6e22e">targetPath</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>
+    <span style="color:#66d9ef">switch</span> (<span style="color:#a6e22e">message</span>) {
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">WORKER_SIGNAL</span>.<span style="color:#a6e22e">EXPORT_CONFERENCE</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">try</span> {
+                <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">nodeUtils</span>.<span style="color:#a6e22e">generateOfficeWord</span>(<span style="color:#a6e22e">detailInfos</span>, <span style="color:#a6e22e">type</span>, <span style="color:#a6e22e">targetPath</span>)
+                <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;success&#39;</span>})
+            } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">err</span>) {
+                <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;error&#39;</span><span style="color:#960050;background-color:#1e0010">，</span> <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">err</span>})
+            }
+            <span style="color:#66d9ef">break</span>
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+            <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">message</span>)
+    }
+}
+</code></pre></div><h1 id="更优雅的使用">更优雅的使用</h1>
+<h2 id="worker-plugin--worker-loader">worker-plugin &amp; worker-loader</h2>
+<p>若要在使用webpack的项目中使用worker，需要根据webpack版本选择对应的loader:</p>
+<ul>
+<li>webpack3+: <a href="https://github.com/webpack-contrib/worker-loader">worker-loader</a></li>
+<li>webpack4: <a href="https://github.com/GoogleChromeLabs/worker-plugin">worker-plugin</a></li>
+</ul>
+<p>以<code>worker-loader</code>为例:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// webpack.config.js
+</span><span style="color:#75715e"></span>{
+  <span style="color:#a6e22e">module</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">rules</span><span style="color:#f92672">:</span> [
+      {
+        <span style="color:#a6e22e">test</span><span style="color:#f92672">:</span> <span style="color:#e6db74">/\.worker\.js$/</span>,
+        <span style="color:#a6e22e">use</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">loader</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;worker-loader&#39;</span> }
+      }
+    ]
+  }
+}
+
+<span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">FileWorker</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;worker-loader!@/workers/file.worker.js&#39;</span>
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fileWorker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">FileWorker</span>()
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fileWorker</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span> =&gt; {
+  ...
+}
+<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fileWorker</span>.<span style="color:#a6e22e">postMessage</span>({...})
+
+<span style="color:#75715e">// file.worker.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span> =&gt; {...}
+</code></pre></div><h2 id="workerize--workerize-loader">workerize &amp; workerize-loader</h2>
+<p>如果想要通过async/await与ES6的模块化使用worker，可以使用<code>workerize</code>:</p>
+<blockquote>
+<p>Moves a module into a Web Worker, automatically reflecting exported functions as asynchronous proxies.</p>
+</blockquote>
+<h3 id="workerize的使用">workerize的使用</h3>
+<p>通过workerize使用worker如下所示:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">workerize</span>(<span style="color:#e6db74">`
+</span><span style="color:#e6db74">	export function add(a, b) {
+</span><span style="color:#e6db74">		// block for half a second to demonstrate asynchronicity
+</span><span style="color:#e6db74">		let start = Date.now();
+</span><span style="color:#e6db74">		while (Date.now()-start &lt; 500);
+</span><span style="color:#e6db74">		return a + b;
+</span><span style="color:#e6db74">	}
+</span><span style="color:#e6db74">`</span>);
+
+(<span style="color:#a6e22e">async</span> () =&gt; {
+	<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;3 + 9 = &#39;</span>, <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">9</span>));
+	<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;1 + 2 = &#39;</span>, <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>));
+})();
+</code></pre></div><h3 id="workerize-loader的使用">workerize-loader的使用</h3>
+<p>如果是在webpack环境中需要使用<code>workerize-loader</code>来载入worker:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// worker.js
+</span><span style="color:#75715e">// block for `time` ms, then return the number of loops we could run in that time:
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">expensive</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">time</span> =&gt;
+  <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">start</span> <span style="color:#f92672">=</span> Date.<span style="color:#a6e22e">now</span>()
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">count</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#66d9ef">while</span> (Date.<span style="color:#a6e22e">now</span>() <span style="color:#f92672">-</span> <span style="color:#a6e22e">start</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">time</span>) <span style="color:#a6e22e">count</span><span style="color:#f92672">++</span>
+    <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">count</span>)
+  })
+
+<span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">worker</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;workerize-loader!./worker&#39;</span>
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">worker</span>()  <span style="color:#75715e">// `new` is optional
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">expensive</span>(<span style="color:#ae81ff">1000</span>).<span style="color:#a6e22e">then</span>( <span style="color:#a6e22e">count</span> =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Ran </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">count</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> loops`</span>)
+})
+</code></pre></div><h3 id="workerize的核心">workerize的核心</h3>
+<p>workerize的源码非常简洁，来看看其中主要的两个方法。</p>
+<p>生成worker对象的workerize方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">workerize</span>(<span style="color:#a6e22e">code</span>, <span style="color:#a6e22e">options</span>) {
+	<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> {};
+  ...
+  <span style="color:#75715e">// 若为函数，则获取函数的字符串转化结果
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">code</span><span style="color:#f92672">===</span><span style="color:#e6db74">&#39;function&#39;</span>) <span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`(</span><span style="color:#e6db74">${</span>Function.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">code</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">)(</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">)`</span>;
+  <span style="color:#75715e">// 转换为commonjs模块规范
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">toCjs</span>(<span style="color:#a6e22e">code</span>, <span style="color:#a6e22e">exportsObjName</span>, <span style="color:#a6e22e">exports</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">`</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">n(</span><span style="color:#e6db74">${</span>Function.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">setup</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">)(self,</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">,{})`</span>;
+	<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">URL</span>.<span style="color:#a6e22e">createObjectURL</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Blob</span>([<span style="color:#a6e22e">code</span>])),
+		<span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">options</span>);
+    ...
+}
+</code></pre></div><p>该方法中最关键的是使用了<code>Function.prototype.toString()</code>将函数转换成了字符串再进行传输，这是由于根据结构化克隆的限制是不能传递Function类型对象的，只有使用这个trick。</p>
+<p>另外，<code>Function.prototype.toString()</code>并不继承自<code>Object.prototype.toString()</code>，对于用户定义的函数会返回一个包含用于定义函数源文本段的字符串，详情见<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString">MDN文档</a>。</p>
+<p>除此之外为了兼容性还使用了<code>toCjs()</code>方法来转换模块化的方式(ES6 &ndash;&gt; CommonJS):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">toCjs</span>(<span style="color:#a6e22e">code</span>, <span style="color:#a6e22e">exportsObjName</span>, <span style="color:#a6e22e">exports</span>) {
+	<span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">code</span>.<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">/^(\s*)export\s+default\s+/m</span>, (<span style="color:#a6e22e">s</span>, <span style="color:#a6e22e">before</span>) =&gt; {
+		<span style="color:#a6e22e">exports</span>.<span style="color:#66d9ef">default</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+		<span style="color:#66d9ef">return</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">before</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.default=`</span>;
+	});
+	<span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">code</span>.<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">/^(\s*)export\s+((?:async\s*)?function(?:\s*\*)?|const|let|var)(\s+)([a-zA-Z$_][a-zA-Z0-9$_]*)/mg</span>, (<span style="color:#a6e22e">s</span>, <span style="color:#a6e22e">before</span>, <span style="color:#a6e22e">type</span>, <span style="color:#a6e22e">ws</span>, <span style="color:#a6e22e">name</span>) =&gt; {
+		<span style="color:#a6e22e">exports</span>[<span style="color:#a6e22e">name</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+		<span style="color:#66d9ef">return</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">before</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">type</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">ws</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>;
+	});
+	<span style="color:#66d9ef">return</span> <span style="color:#e6db74">`var </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">={};</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">n</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">code</span><span style="color:#e6db74">}</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">n</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">;`</span>;
+}
+</code></pre></div><h2 id="comlink--comlink-loader">comlink &amp; comlink-loader</h2>
+<p>如果想使用简化的worker操作接口，可以使用comlink:</p>
+<blockquote>
+<p>makes WebWorkers enjoyable.</p>
+</blockquote>
+<p>comlink抽象化了MessageChannel与postMessage，将本来基于message的API变成了像使用本地变量一样在一个线程中使用另一个线程中的变量。</p>
+<p>comlink可以在提供postMessage方法的环境下使用，比如window，iframe和ServiceWorker。</p>
+<p>comlink所提供的三个方法:</p>
+<ul>
+<li>
+<p><code>Comlink.proxy(endpoint)</code> - 返回在endpoint另一端暴露的值，endpoint可以是<code>Window</code>,<code>Worker</code>或<code>MessagePort</code>。</p>
+</li>
+<li>
+<p><code>Comlink.expose(obj, endpoint)</code> - 将obj暴露给endpoint，在endpoint的另一端使用<code>Comlink.proxy</code>。</p>
+</li>
+<li>
+<p><code>Comlink.proxyValue(value)</code> - 确保参数或返回值是代理的引用值，而不是使用拷贝的值。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">api</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxy</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;worker.js&#39;</span>));
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">obj</span> <span style="color:#f92672">=</span> { <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span> };
+<span style="color:#75715e">// await api.setXto4(obj); obj.x仍为0
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">await</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">setXto4</span>(<span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxyValue</span>(<span style="color:#a6e22e">obj</span>)); <span style="color:#75715e">//obj.x变成了4
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">x</span>);
+</code></pre></div></li>
+</ul>
+<h3 id="comlink的使用">comlink的使用</h3>
+<p>在不同的线程中使用上面的方法即可:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// main.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">MyClass</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxy</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#34;worker.js&#34;</span>));
+<span style="color:#75715e">// `instance` is an instance of `MyClass` that lives in the worker!
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">MyClass</span>();
+<span style="color:#a6e22e">await</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">logSomething</span>(); <span style="color:#75715e">// logs “myValue = 42”
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// worker.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myValue</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">42</span>;
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyClass</span> {
+  <span style="color:#a6e22e">logSomething</span>() {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`myValue = </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">myValue</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+  }
+}
+<span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">expose</span>(<span style="color:#a6e22e">MyClass</span>, <span style="color:#a6e22e">self</span>);
+</code></pre></div><h3 id="comlink的内部">comlink的内部</h3>
+<p>几个关键方法:</p>
+<ul>
+<li>
+<p>在proxy中代理worker中的对象，包括endpoint和message通讯的处理</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">proxy</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">any</span><span style="color:#f92672">&gt;</span>(
+  <span style="color:#a6e22e">endpoint</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Endpoint</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">Window</span>,
+  <span style="color:#a6e22e">target</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">any</span>
+)<span style="color:#f92672">:</span> <span style="color:#a6e22e">ProxyResult</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span> {
+  <span style="color:#75715e">// 检查endpoint
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isWindow</span>(<span style="color:#a6e22e">endpoint</span>)) <span style="color:#a6e22e">endpoint</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">windowEndpoint</span>(<span style="color:#a6e22e">endpoint</span>);
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">isEndpoint</span>(<span style="color:#a6e22e">endpoint</span>))
+    <span style="color:#66d9ef">throw</span> Error(
+      <span style="color:#e6db74">&#34;endpoint does not have all of addEventListener, removeEventListener and postMessage defined&#34;</span>
+    );
+  <span style="color:#75715e">// 若endpoint为MessagePort，则开启port
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">activateEndpoint</span>(<span style="color:#a6e22e">endpoint</span>);
+  <span style="color:#75715e">// 返回一个绑定了endpoint中的代理对象、值或其他类型
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">cbProxy</span>(
+    <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">irequest</span> =&gt; {
+      <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">args</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">WrappedValue</span>[] <span style="color:#f92672">=</span> [];
+      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">irequest</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;APPLY&#34;</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">irequest</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;CONSTRUCT&#34;</span>)
+      <span style="color:#a6e22e">args</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">irequest</span>.<span style="color:#a6e22e">argumentsList</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">wrapValue</span>);
+      <span style="color:#75715e">// 获取监听到的MessageEvent事件对象
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">pingPongMessage</span>(
+        <span style="color:#a6e22e">endpoint</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">Endpoint</span>,
+        Object.<span style="color:#a6e22e">assign</span>({}, <span style="color:#a6e22e">irequest</span>, { <span style="color:#a6e22e">argumentsList</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">args</span> }),
+        <span style="color:#a6e22e">transferableProperties</span>(<span style="color:#a6e22e">args</span>)
+      );
+      <span style="color:#75715e">// 处理并返回WrappedValue数据
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">data</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">InvocationResult</span>;
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">unwrapValue</span>(<span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">value</span>);
+    },
+    [],
+    <span style="color:#a6e22e">target</span>
+  <span style="color:#75715e">// ProxyResult&lt;T&gt;扩展自ProxyObject&lt;T&gt;，可以正确处理raw functions与class类型
+</span><span style="color:#75715e"></span>  ) <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">ProxyResult</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span><span style="color:#f92672">&gt;</span>; 
+}
+</code></pre></div></li>
+<li>
+<p>对于message的抽象是在pingPongMessage()方法中做的，其中整合了postMessage()、监听与移除message事件Handler的操作，如下所示</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">pingPongMessage</span>(
+  <span style="color:#a6e22e">endpoint</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Endpoint</span>,
+  <span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> Object,
+  <span style="color:#a6e22e">transferables</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Transferable</span>[]
+)<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">MessageEvent</span><span style="color:#f92672">&gt;</span> {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">id</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">uid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">pingPongMessageCounter</span><span style="color:#f92672">++</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>;
+
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">resolve</span> =&gt; {
+    <span style="color:#75715e">// 在内部addEventListener
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">attachMessageHandler</span>(<span style="color:#a6e22e">endpoint</span>, <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">handler</span>(<span style="color:#a6e22e">event</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">MessageEvent</span>) {
+      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">id</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">id</span>) <span style="color:#66d9ef">return</span>;
+      <span style="color:#75715e">// 在内部removeEventListener
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">detachMessageHandler</span>(<span style="color:#a6e22e">endpoint</span>, <span style="color:#a6e22e">handler</span>);
+      <span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">event</span>);
+    });
+
+    <span style="color:#75715e">// 使用当前endpoint的postMessage方法传送消息
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Copy msg and add `id` property
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">msg</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">assign</span>({}, <span style="color:#a6e22e">msg</span>, { <span style="color:#a6e22e">id</span> });
+    <span style="color:#a6e22e">endpoint</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">transferables</span>);
+  });
+}
+</code></pre></div></li>
+</ul>
+<p>在WebRTC中使用comlink的一个<a href="https://dassur.ma/things/comlink-webrtc/">例子</a></p>
+<h2 id="workerize-vs-comlink">workerize vs comlink</h2>
+<p>引用一下<a href="https://twitter.com/_developit/status/1006611291824361474?lang=en">Jason Miller</a>对于三种常见worker wrapper言简意赅的对比:</p>
+<ul>
+<li><code>greenlet</code>: move a function into a thread</li>
+<li><code>workerize</code>: move a module with async function exports into a thread</li>
+<li><code>comlink</code>: move a module with any interface into a thread</li>
+</ul>
+<p>workerize相对于comlink更轻量，<a href="https://github.com/GoogleChromeLabs/comlink-loader/issues/6#issuecomment-405284626">issue</a>中的一个总结:</p>
+<ul>
+<li>workerize的实现更加小巧和简洁</li>
+<li>workerize是基于Function的，无需导出Class</li>
+<li>workerize仅需ES3(Promise，基本无需polyfill)，而comlink需要ES6(Proxy, Map, WeakSet, generator)和ES7(async functions)的支持</li>
+</ul>
+<p>在代码中可以根据实际情况选择workerize或comlink。</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers">Using Web Workers</a></li>
+<li><a href="https://medium.com/launch-school/what-are-web-workers-4a0e1ded7a67">Web Workers Explained with Rendering Performance</a></li>
+<li><a href="https://nhiroki.jp/2018/10/29/nested-workers">Chrome 69 で Web Worker から Web Worker を作れるようになった話</a></li>
+<li><a href="https://github.com/deebloo/things-you-can-do-in-a-web-worker">things-you-can-do-in-a-web-worker</a></li>
+<li><a href="https://www.loxodrome.io/post/easier-web-workers/">Easier Web Workers</a></li>
+<li><a href="https://qiita.com/karszawa/items/d97e2b0618a69f0565e7">WebWorkerをenjoyableにするComlinkとは何者か</a></li>
+</ul>
+<!-- raw HTML omitted -->
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/introduction-to-web-worker/">http://yrq110.me/post/front-end/introduction-to-web-worker/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/web-worker'>web worker</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

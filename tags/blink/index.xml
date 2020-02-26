@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>blink on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/blink/</link>
+    <description>Recent content in blink on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 06 Nov 2019 11:02:30 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/blink/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>一个像素的一生 - 剖析Chromium渲染流水线</title>
+      <link>http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/</link>
+      <pubDate>Wed, 06 Nov 2019 11:02:30 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/</guid>
+      <description>&lt;p&gt;介绍目前Chromium中渲染流水线中的主要阶段及其工作。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

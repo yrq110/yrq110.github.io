@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>MongoDB之旅(下) | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="MongoDB之旅(下) - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2017-04-15T20:58:03&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2017-04-15T20:58:03&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="MongoDB之旅(下)">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/database/mongo-travel-part-2/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">MongoDB之旅(下)</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2017年4月15日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/database'>database</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>介绍副本集、分片、备份等内容</p>
+<p>本文所使用的MongoDB版本为3.4.2</p>
+<h2 id="副本集">副本集</h2>
+<h3 id="建立">建立</h3>
+<p>在本地启动所有成员，分别设置不同的路径和端口，使用相同的标识符<code>student</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># terminal-1</span>
+mongod --dbpath ~/Desktop/db --port <span style="color:#ae81ff">27017</span> --replSet <span style="color:#e6db74">&#34;student&#34;</span>
+
+<span style="color:#75715e"># terminal-2</span>
+mongod --dbpath ~/Desktop/db-rs0 --port <span style="color:#ae81ff">27016</span> --replSet <span style="color:#e6db74">&#34;student&#34;</span>
+
+<span style="color:#75715e"># terminal-3</span>
+mongod --dbpath ~/Desktop/db-rs1 --port <span style="color:#ae81ff">27015</span> --replSet <span style="color:#e6db74">&#34;student&#34;</span>
+</code></pre></div><h3 id="配置">配置</h3>
+<p>连接一个节点</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongo --port <span style="color:#ae81ff">27017</span>
+</code></pre></div><p>创建配置对象与初始化</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">&gt; var config <span style="color:#f92672">=</span> <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;_id&#34;</span> : <span style="color:#e6db74">&#34;student&#34;</span>,
+    <span style="color:#e6db74">&#34;members&#34;</span> : <span style="color:#f92672">[</span>
+      <span style="color:#f92672">{</span><span style="color:#e6db74">&#34;_id&#34;</span>: 0, <span style="color:#e6db74">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;127.0.0.1:27017&#34;</span><span style="color:#f92672">}</span>,
+      <span style="color:#f92672">{</span><span style="color:#e6db74">&#34;_id&#34;</span>: 1, <span style="color:#e6db74">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;127.0.0.1:27016&#34;</span><span style="color:#f92672">}</span>,
+      <span style="color:#f92672">{</span><span style="color:#e6db74">&#34;_id&#34;</span>: 2, <span style="color:#e6db74">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;127.0.0.1:27015&#34;</span><span style="color:#f92672">}</span>
+    <span style="color:#f92672">]</span>
+<span style="color:#f92672">}</span>
+&gt; rs.initiate<span style="color:#f92672">(</span>config<span style="color:#f92672">)</span>
+</code></pre></div><p>所连接的节点解析这个对象后会将配置文件发给其他成员，所有成员配置完成后会自动选出一个主节点(primary member)，其他成员为备份节点(secondary member)。</p>
+<p>这里27017端口的副本集被选为主节点，其他两个为备份节点，先在主节点中添加一条数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; db.stu.insert<span style="color:#f92672">({</span><span style="color:#e6db74">&#34;name&#34;</span>:<span style="color:#e6db74">&#34;yrq&#34;</span>,<span style="color:#e6db74">&#34;grade&#34;</span>:<span style="color:#e6db74">&#34;3&#34;</span>,<span style="color:#e6db74">&#34;class&#34;</span>:<span style="color:#e6db74">&#34;7&#34;</span><span style="color:#f92672">})</span>
+</code></pre></div><p>默认情况下备份节点是不可读的，需要执行<code>db.setSlaveOk()</code>后才可读取数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">&gt; mongo --port <span style="color:#ae81ff">27016</span>
+student:SECONDARY&gt; db.stu.find<span style="color:#f92672">()</span>
+Error: error: <span style="color:#f92672">{</span>
+	<span style="color:#e6db74">&#34;ok&#34;</span> : 0,
+	<span style="color:#e6db74">&#34;errmsg&#34;</span> : <span style="color:#e6db74">&#34;not master and slaveOk=false&#34;</span>,
+	<span style="color:#e6db74">&#34;code&#34;</span> : 13435,
+	<span style="color:#e6db74">&#34;codeName&#34;</span> : <span style="color:#e6db74">&#34;NotMasterNoSlaveOk&#34;</span>
+<span style="color:#f92672">}</span>
+student:SECONDARY&gt; db.setSlaveOk<span style="color:#f92672">()</span>
+student:SECONDARY&gt; db.stu.find<span style="color:#f92672">()</span>
+<span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;_id&#34;</span> : ObjectId<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;58f58ded93e9bbcb0bceb3c5&#34;</span><span style="color:#f92672">)</span>, <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#e6db74">&#34;yrq&#34;</span>, <span style="color:#e6db74">&#34;grade&#34;</span> : <span style="color:#e6db74">&#34;3&#34;</span>, <span style="color:#e6db74">&#34;class&#34;</span> : <span style="color:#e6db74">&#34;7&#34;</span> <span style="color:#f92672">}</span>
+</code></pre></div><h4 id="查看配置与状态">查看配置与状态</h4>
+<ol>
+<li>
+<p>rs.conf()</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.conf<span style="color:#f92672">()</span>
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;_id&#34;</span> : <span style="color:#e6db74">&#34;student&#34;</span>,
+  <span style="color:#e6db74">&#34;version&#34;</span> : 1,       <span style="color:#75715e"># 每个修改配置时这个值都会自增+1</span>
+  <span style="color:#e6db74">&#34;protocolVersion&#34;</span> : NumberLong<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>,  
+  <span style="color:#e6db74">&#34;members&#34;</span> : <span style="color:#f92672">[</span>        <span style="color:#75715e"># 副本集成员列表</span>
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;_id&#34;</span> : 0,
+      <span style="color:#e6db74">&#34;host&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27017&#34;</span>,        
+      <span style="color:#e6db74">&#34;arbiterOnly&#34;</span> : false,        
+      <span style="color:#e6db74">&#34;buildIndexes&#34;</span> : true,
+      <span style="color:#e6db74">&#34;hidden&#34;</span> : false,           
+      <span style="color:#e6db74">&#34;priority&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;tags&#34;</span> : <span style="color:#f92672">{</span>
+
+      <span style="color:#f92672">}</span>,
+      <span style="color:#e6db74">&#34;slaveDelay&#34;</span> : NumberLong<span style="color:#f92672">(</span>0<span style="color:#f92672">)</span>,
+      <span style="color:#e6db74">&#34;votes&#34;</span> : <span style="color:#ae81ff">1</span>
+    <span style="color:#f92672">}</span>,
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;_id&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;host&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27016&#34;</span>,
+      <span style="color:#e6db74">&#34;arbiterOnly&#34;</span> : false,
+      <span style="color:#e6db74">&#34;buildIndexes&#34;</span> : true,
+      <span style="color:#e6db74">&#34;hidden&#34;</span> : false,
+      <span style="color:#e6db74">&#34;priority&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;tags&#34;</span> : <span style="color:#f92672">{</span>
+
+      <span style="color:#f92672">}</span>,
+      <span style="color:#e6db74">&#34;slaveDelay&#34;</span> : NumberLong<span style="color:#f92672">(</span>0<span style="color:#f92672">)</span>,
+      <span style="color:#e6db74">&#34;votes&#34;</span> : <span style="color:#ae81ff">1</span>
+    <span style="color:#f92672">}</span>,
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;_id&#34;</span> : 2,
+      <span style="color:#e6db74">&#34;host&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27015&#34;</span>,
+      <span style="color:#e6db74">&#34;arbiterOnly&#34;</span> : false,
+      <span style="color:#e6db74">&#34;buildIndexes&#34;</span> : true,
+      <span style="color:#e6db74">&#34;hidden&#34;</span> : false,
+      <span style="color:#e6db74">&#34;priority&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;tags&#34;</span> : <span style="color:#f92672">{</span>
+
+      <span style="color:#f92672">}</span>,
+      <span style="color:#e6db74">&#34;slaveDelay&#34;</span> : NumberLong<span style="color:#f92672">(</span>0<span style="color:#f92672">)</span>,
+      <span style="color:#e6db74">&#34;votes&#34;</span> : <span style="color:#ae81ff">1</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">]</span>,
+  <span style="color:#e6db74">&#34;settings&#34;</span> : <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;chainingAllowed&#34;</span> : true,
+    <span style="color:#e6db74">&#34;heartbeatIntervalMillis&#34;</span> : 2000,
+    <span style="color:#e6db74">&#34;heartbeatTimeoutSecs&#34;</span> : 10,
+    <span style="color:#e6db74">&#34;electionTimeoutMillis&#34;</span> : 10000,
+    <span style="color:#e6db74">&#34;catchUpTimeoutMillis&#34;</span> : 2000,
+    <span style="color:#e6db74">&#34;getLastErrorModes&#34;</span> : <span style="color:#f92672">{</span>
+
+    <span style="color:#f92672">}</span>,
+    <span style="color:#e6db74">&#34;getLastErrorDefaults&#34;</span> : <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;w&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;wtimeout&#34;</span> : <span style="color:#ae81ff">0</span>
+    <span style="color:#f92672">}</span>,
+    <span style="color:#e6db74">&#34;replicaSetId&#34;</span> : ObjectId<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;58f58a448ab72530955abf84&#34;</span><span style="color:#f92672">)</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div></li>
+<li>
+<p>db.isMaster()</p>
+<p>查看当前mongod实例的角色，若mongod实例是副本集中的成员，则通过<code>ismaster</code>与<code>secondary</code>可以判断它是主节点还是备份节点。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; db.isMaster<span style="color:#f92672">()</span>
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;hosts&#34;</span> : <span style="color:#f92672">[</span>
+    <span style="color:#e6db74">&#34;127.0.0.1:27017&#34;</span>,
+    <span style="color:#e6db74">&#34;127.0.0.1:27016&#34;</span>,
+    <span style="color:#e6db74">&#34;127.0.0.1:27015&#34;</span>
+  <span style="color:#f92672">]</span>,
+  <span style="color:#e6db74">&#34;setName&#34;</span> : <span style="color:#e6db74">&#34;student&#34;</span>,        
+  <span style="color:#e6db74">&#34;setVersion&#34;</span> : 1,
+  <span style="color:#e6db74">&#34;ismaster&#34;</span> : true,        <span style="color:#75715e"># 是否为主节点</span>
+  <span style="color:#e6db74">&#34;secondary&#34;</span> : false,      <span style="color:#75715e"># 是否为备份节点</span>
+  <span style="color:#e6db74">&#34;primary&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27017&#34;</span>,   <span style="color:#75715e"># 主节点成员</span>
+  <span style="color:#e6db74">&#34;me&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27017&#34;</span>,        <span style="color:#75715e"># 自己</span>
+  ...
+<span style="color:#f92672">}</span>
+</code></pre></div></li>
+<li>
+<p>rs.status()</p>
+<p>显示当前副本集的状态。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.status<span style="color:#f92672">()</span>
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;set&#34;</span> : <span style="color:#e6db74">&#34;student&#34;</span>,
+  <span style="color:#e6db74">&#34;date&#34;</span> : ISODate<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;2017-04-18T04:03:52.781Z&#34;</span><span style="color:#f92672">)</span>,
+  <span style="color:#e6db74">&#34;myState&#34;</span> : 1,
+  <span style="color:#e6db74">&#34;term&#34;</span> : NumberLong<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>,
+  <span style="color:#e6db74">&#34;heartbeatIntervalMillis&#34;</span> : NumberLong<span style="color:#f92672">(</span>2000<span style="color:#f92672">)</span>,
+  ...
+  <span style="color:#e6db74">&#34;members&#34;</span> : <span style="color:#f92672">[</span>
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;_id&#34;</span> : 0,
+      <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27017&#34;</span>,
+      <span style="color:#e6db74">&#34;health&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;state&#34;</span> : 1,     <span style="color:#75715e"># 1表示主节点，可进行写操作，有投票资格</span>
+      <span style="color:#e6db74">&#34;stateStr&#34;</span> : <span style="color:#e6db74">&#34;PRIMARY&#34;</span>,
+      ...
+      <span style="color:#e6db74">&#34;self&#34;</span> : true
+    <span style="color:#f92672">}</span>,
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;_id&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27016&#34;</span>,
+      <span style="color:#e6db74">&#34;health&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;state&#34;</span> : 2,    <span style="color:#75715e"># 2表示备份节点，有投票资格</span>
+      <span style="color:#e6db74">&#34;stateStr&#34;</span> : <span style="color:#e6db74">&#34;SECONDARY&#34;</span>,
+      ...
+    <span style="color:#f92672">}</span>,
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;_id&#34;</span> : 2,
+      <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27015&#34;</span>,
+      <span style="color:#e6db74">&#34;health&#34;</span> : 1,
+      <span style="color:#e6db74">&#34;state&#34;</span> : 2,
+      <span style="color:#e6db74">&#34;stateStr&#34;</span> : <span style="color:#e6db74">&#34;SECONDARY&#34;</span>,
+      ...
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">]</span>,
+  <span style="color:#e6db74">&#34;ok&#34;</span> : <span style="color:#ae81ff">1</span>
+<span style="color:#f92672">}</span>
+</code></pre></div></li>
+</ol>
+<h4 id="修改配置">修改配置</h4>
+<ol>
+<li>
+<p>添加成员</p>
+<p>启动一个成员</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongod --dbpath ~/Desktop/db-rs2 --port <span style="color:#ae81ff">27014</span> --replSet <span style="color:#e6db74">&#34;student&#34;</span>
+</code></pre></div><p>添加到副本集中</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.add<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;127.0.0.1:27014&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;ok&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+student:PRIMARY&gt; rs.status<span style="color:#f92672">()</span>.members.length
+<span style="color:#ae81ff">4</span>
+</code></pre></div></li>
+<li>
+<p>删除成员</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.remove<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;127.0.0.1:27014&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;ok&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+student:PRIMARY&gt; rs.status<span style="color:#f92672">()</span>.members.length
+<span style="color:#ae81ff">3</span>
+</code></pre></div></li>
+<li>
+<p>将主节点降级为备份节点</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.stepDown<span style="color:#f92672">()</span>
+</code></pre></div></li>
+<li>
+<p>阻止选举</p>
+<p>若主节点要进行维护，不需要再这期间选举新的主节点，可以在每个备份节点执行freeze命令冻结状态，始终为备份节点。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:SECONDARY&gt; rs.freeze<span style="color:#f92672">(</span>1000000<span style="color:#f92672">)</span>
+</code></pre></div><p>输入参数为秒数，需要释放时执行rs.freeze(0)即可。</p>
+</li>
+</ol>
+<h3 id="设计">设计</h3>
+<h4 id="仲裁成员">仲裁成员</h4>
+<p>仲裁成员(arbiter)不保存数据，不为客户端提供服务，仅参与投票选举，避免出现平票的情况，可部署在性能较差的服务器上。
+添加仲裁成员的方法:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.addArb<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;127.0.0.1:27014&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><p>或</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.add<span style="color:#f92672">({</span><span style="color:#e6db74">&#34;_id&#34;</span>:3,<span style="color:#e6db74">&#34;host&#34;</span>:<span style="color:#e6db74">&#34;127.0.0.1:27014&#34;</span>,<span style="color:#e6db74">&#34;arbiterOnly&#34;</span>:true<span style="color:#f92672">})</span>
+</code></pre></div><h4 id="隐藏成员">隐藏成员</h4>
+<p>隐藏成员对用户不可见，不为客户端提供服务。只有优先级为0的成员才能被隐藏，</p>
+<p>隐藏一个成员</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; var config <span style="color:#f92672">=</span> rs.conf<span style="color:#f92672">()</span>
+student:PRIMARY&gt; config.members<span style="color:#f92672">[</span>2<span style="color:#f92672">]</span>.hidden <span style="color:#f92672">=</span> true;
+true
+student:PRIMARY&gt; config.members<span style="color:#f92672">[</span>2<span style="color:#f92672">]</span>.priority <span style="color:#f92672">=</span> 0;
+<span style="color:#ae81ff">0</span>
+student:PRIMARY&gt; rs.reconfig<span style="color:#f92672">(</span>config<span style="color:#f92672">)</span>
+</code></pre></div><p>隐藏成员对isMaster()是不可见的，对status()和conf()是可见的。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">student:PRIMARY&gt; rs.status<span style="color:#f92672">()</span>.members.length
+<span style="color:#ae81ff">3</span>
+student:PRIMARY&gt; rs.conf<span style="color:#f92672">()</span>.members.length
+<span style="color:#ae81ff">3</span>
+student:PRIMARY&gt; db.isMaster<span style="color:#f92672">()</span>.hosts.length
+<span style="color:#ae81ff">2</span>
+</code></pre></div><p>取消隐藏需要将hidden属性设为false或者删掉hidden。</p>
+<h4 id="延迟备份">延迟备份</h4>
+<p>config中的每个成员都有一个slaveDelay选项，用来设置备份节点同步主节点的延迟，默认为0，表示当主节点有操作改变时立即同步。</p>
+<p>设置延迟可以防止对主节点的误操作，如删除或有严重bug的情况。</p>
+<p>设置这个选项要求成员的优先级为0。</p>
+<h4 id="创建索引">创建索引</h4>
+<p>有时备份节点并不需要像主节点拥有索引，可以通过设置<code>&quot;buildIndexes&quot; : false</code>来阻止备份节点创建索引，这个修改是永久操作，无法再次恢复为可拥有索引的状态。</p>
+<p>设置这个选项要求成员的优先级为0。</p>
+<h4 id="同步">同步</h4>
+<p>复制功能是使用操作日志oplog实现的，操作日志包含了主节点每一次写操作，备份节点查询oplog获取需要执行的操作，然后在自己的数据集上执行操作。</p>
+<h4 id="心跳">心跳</h4>
+<p>每个成员每隔一段时间都会向其它成员发送心跳请求(heartbeat request)，用于检查每个成员的状态。</p>
+<h3 id="成员状态">成员状态</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>STARTUP</td>
+<td>成员刚启动的状态，若继续加载配置则进入STARTUP2状态</td>
+</tr>
+<tr>
+<td>1</td>
+<td>PRIMARY</td>
+<td>主节点，有投票资格</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SECONDARY</td>
+<td>备份节点，有投票资格</td>
+</tr>
+<tr>
+<td>3</td>
+<td>RECOVERING</td>
+<td>成员在进行启动自检，或刚完成回滚或重同步操作的过渡，有投票资格</td>
+</tr>
+<tr>
+<td>5</td>
+<td>STARTUP2</td>
+<td>已启动在初始化过程中</td>
+</tr>
+<tr>
+<td>6</td>
+<td>UNKNOWN</td>
+<td>状态对其它成员是未知的</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ARBITER</td>
+<td>仲裁成员，不复制数据，仅参与选举</td>
+</tr>
+<tr>
+<td>8</td>
+<td>DOWN</td>
+<td>其它成员不可达</td>
+</tr>
+<tr>
+<td>9</td>
+<td>ROLLBACK</td>
+<td>成员正在执行回滚操作，不能进行读操作</td>
+</tr>
+<tr>
+<td>10</td>
+<td>REMOVED</td>
+<td>成员被移出副本集</td>
+</tr>
+</tbody>
+</table>
+<h2 id="分片">分片</h2>
+<h3 id="作用">作用</h3>
+<ul>
+<li>增加可用RAM</li>
+<li>增加可用磁盘空间</li>
+<li>减轻单台服务器的负载</li>
+<li>处理单个mongod无法承受的吞吐量</li>
+</ul>
+<h3 id="分片集群">分片集群</h3>
+<p>每个分片集群都由三个部分组成：</p>
+<ol>
+<li>分片(shard) - 每个分片包含分片数据中的一个子集，分片可以是副本集。</li>
+<li>mongos - mongos作为查询数据的路由，提供客户端与分片集群间的接口。</li>
+<li>配置服务器(config server) - 保存集群的元数据与配置，在3.4版本后要求配置服务器必须为副本集。</li>
+</ol>
+<p>生产环境中的配置:</p>
+<ol>
+<li>3个及以上的配置服务器</li>
+<li>3个及以上的分片</li>
+<li>1个及以上的mongos路由</li>
+</ol>
+<p>开发环境中的配置:</p>
+<ol>
+<li>一个配置服务器(副本集)</li>
+<li>至少一个分片(副本集)</li>
+<li>一个mongo实例</li>
+</ol>
+<h3 id="启动">启动</h3>
+<p>端口设计:</p>
+<ul>
+<li>27014~27016 配置服务器</li>
+<li>27001~27003 分片1(副本集)</li>
+<li>27004       分片2</li>
+<li>27000       mongos</li>
+</ul>
+<ol>
+<li>
+<p>创建配置服务器副本集</p>
+<p>mongos需要从配置服务器中获取配置信息，因此需要优先启动.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># terminal-1</span>
+mongod --configsvr --dbpath ~/Desktop/db-conf1 --port <span style="color:#ae81ff">27016</span> --replSet <span style="color:#e6db74">&#34;config&#34;</span>
+
+<span style="color:#75715e"># terminal-2</span>
+mongod --configsvr --dbpath ~/Desktop/db-conf2 --port <span style="color:#ae81ff">27015</span> --replSet <span style="color:#e6db74">&#34;config&#34;</span>
+
+<span style="color:#75715e"># terminal-3</span>
+mongod --configsvr --dbpath ~/Desktop/db-conf3 --port <span style="color:#ae81ff">27014</span> --replSet <span style="color:#e6db74">&#34;config&#34;</span>
+</code></pre></div><p>配置服务器不需要分配太大的空间，它存放数据分布表.</p>
+<p>初始化副本集:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">&gt; rs.initiate<span style="color:#f92672">(</span>
+... <span style="color:#f92672">{</span>
+...   _id: <span style="color:#e6db74">&#34;config&#34;</span>,
+...   configsvr: true,
+...   members: <span style="color:#f92672">[</span>
+...     <span style="color:#f92672">{</span> _id : 0, host : <span style="color:#e6db74">&#34;127.0.0.1:27016&#34;</span> <span style="color:#f92672">}</span>,
+...     <span style="color:#f92672">{</span> _id : 1, host : <span style="color:#e6db74">&#34;127.0.0.1:27015&#34;</span> <span style="color:#f92672">}</span>,
+...     <span style="color:#f92672">{</span> _id : 2, host : <span style="color:#e6db74">&#34;127.0.0.1:27014&#34;</span> <span style="color:#f92672">}</span>
+...   <span style="color:#f92672">]</span>
+... <span style="color:#f92672">})</span>
+</code></pre></div></li>
+<li>
+<p>创建分片
+创建副本集分片</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># terminal-4</span>
+mongod --shardsvr --dbpath ~/Desktop/db-sh1 --port <span style="color:#ae81ff">27001</span> --replSet <span style="color:#e6db74">&#34;shard&#34;</span>
+
+<span style="color:#75715e"># terminal-5</span>
+mongod --shardsvr --dbpath ~/Desktop/db-sh2 --port <span style="color:#ae81ff">27002</span> --replSet <span style="color:#e6db74">&#34;shard&#34;</span>
+
+<span style="color:#75715e"># terminal-6</span>
+mongod --shardsvr --dbpath ~/Desktop/db-sh3 --port <span style="color:#ae81ff">27003</span> --replSet <span style="color:#e6db74">&#34;shard&#34;</span>
+</code></pre></div><p>配置副本集</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">&gt; rs.initiate<span style="color:#f92672">(</span>
+... <span style="color:#f92672">{</span>
+...   _id: <span style="color:#e6db74">&#34;shard&#34;</span>,
+...   members: <span style="color:#f92672">[</span>
+...     <span style="color:#f92672">{</span> _id : 0, host : <span style="color:#e6db74">&#34;127.0.0.1:27001&#34;</span> <span style="color:#f92672">}</span>,
+...     <span style="color:#f92672">{</span> _id : 1, host : <span style="color:#e6db74">&#34;127.0.0.1:27002&#34;</span> <span style="color:#f92672">}</span>,
+...     <span style="color:#f92672">{</span> _id : 2, host : <span style="color:#e6db74">&#34;127.0.0.1:27003&#34;</span> <span style="color:#f92672">}</span>
+...   <span style="color:#f92672">]</span>
+... <span style="color:#f92672">})</span>
+</code></pre></div><p>创建普通分片</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># terminal-7</span>
+mongod --shardsvr --dbpath ~/Desktop/db-sh4 --port <span style="color:#ae81ff">27004</span>
+</code></pre></div></li>
+<li>
+<p>启动mongos</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos --configdb config/127.0.0.1:27016,127.0.0.1:27015,127.0.0.1:27014
+</code></pre></div><p><code>config</code>为配置服务器副本集名称，斜杠后为具体数据集地址。</p>
+<p>连接到mongos</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongo --port <span style="color:#ae81ff">27000</span>
+</code></pre></div></li>
+<li>
+<p>添加分片</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; sh.addShard<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;shard/127.0.0.1:27001,127.0.0.1:27002,127.0.0.1:27003&#34;</span><span style="color:#f92672">)</span>
+mongos&gt; sh.addShard<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;127.0.0.1:27004&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div><p><code>shard</code>为分片副本集名称，斜杠后为具体数据集地址，若为普通数据集则不用添加名称。</p>
+</li>
+<li>
+<p>查看状态</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; sh.status<span style="color:#f92672">()</span>.shards
+--- Sharding Status ---
+...
+shards:
+<span style="color:#f92672">{</span>  <span style="color:#e6db74">&#34;_id&#34;</span> : <span style="color:#e6db74">&#34;shard&#34;</span>,  <span style="color:#e6db74">&#34;host&#34;</span> : <span style="color:#e6db74">&#34;shard/127.0.0.1:27001,127.0.0.1:27002,127.0.0.1:27003&#34;</span>,  <span style="color:#e6db74">&#34;state&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+<span style="color:#f92672">{</span>  <span style="color:#e6db74">&#34;_id&#34;</span> : <span style="color:#e6db74">&#34;shard0001&#34;</span>,  <span style="color:#e6db74">&#34;host&#34;</span> : <span style="color:#e6db74">&#34;127.0.0.1:27004&#34;</span>,  <span style="color:#e6db74">&#34;state&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+...
+databases:
+<span style="color:#f92672">{</span>  <span style="color:#e6db74">&#34;_id&#34;</span> : <span style="color:#e6db74">&#34;foo&#34;</span>,  <span style="color:#e6db74">&#34;primary&#34;</span> : <span style="color:#e6db74">&#34;shard&#34;</span>,  <span style="color:#e6db74">&#34;partitioned&#34;</span> : false <span style="color:#f92672">}</span>
+</code></pre></div><p>可以看到有两个分片，一个是副本集&quot;shard&rdquo;，一个是普通分片&quot;shard0001&rdquo;。
+databases中的_id为数据库名。primary表示主分片，为随机选择的，所有分片都会在主分片上。partitioned表示是否启用了分片。</p>
+<p>先在mongos中操作添加一些数据</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; <span style="color:#66d9ef">for</span><span style="color:#f92672">(</span>var i<span style="color:#f92672">=</span>0;i&lt;5000;i++<span style="color:#f92672">){</span>
+... db.user.insert<span style="color:#f92672">(</span>
+...   <span style="color:#f92672">{</span>
+...     <span style="color:#e6db74">&#34;name&#34;</span>:<span style="color:#e6db74">&#34;user_&#34;</span>+i,
+...     <span style="color:#e6db74">&#34;created&#34;</span>: new Date<span style="color:#f92672">()</span>
+...   <span style="color:#f92672">})</span>;
+... <span style="color:#f92672">}</span>
+</code></pre></div></li>
+<li>
+<p>启用分片</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; use foo
+switched to db foo
+mongos&gt; sh.enableSharding<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo&#34;</span><span style="color:#f92672">)</span>
+</code></pre></div></li>
+<li>
+<p>创建索引</p>
+<p>对集合分片时需要选择一个片键，为集合的一个键，分片时会根据这个片键拆分数据。只有具有索引的键才能成为片键，因此先要在想使用片键的键上创建索引。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; db.user.ensureIndex<span style="color:#f92672">({</span><span style="color:#e6db74">&#34;name&#34;</span>:1<span style="color:#f92672">})</span>
+</code></pre></div></li>
+<li>
+<p>对集合进行分片</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; sh.shardCollection<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;foo.user&#34;</span>,<span style="color:#f92672">{</span><span style="color:#e6db74">&#34;name&#34;</span>:1<span style="color:#f92672">})</span>
+</code></pre></div></li>
+<li>
+<p>分片后的状态</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; sh.status<span style="color:#f92672">()</span>.shards
+--- Sharding Status ---
+...
+foo.user
+  shard key: <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+  unique: false
+  balancing: true
+  chunks:
+    shard	<span style="color:#ae81ff">1</span>
+  <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;</span>$minKey<span style="color:#e6db74">&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span> <span style="color:#f92672">}</span> --&gt;&gt; <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;</span>$maxKey<span style="color:#e6db74">&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span> <span style="color:#f92672">}</span> on : shard Timestamp<span style="color:#f92672">(</span>1, 0<span style="color:#f92672">)</span>
+</code></pre></div><p>可以看到分片后只有一个块，存储在分片&quot;shard&quot;上，&ldquo;$minKey&quot;与&quot;$maxKey&quot;表示键所对应值范围的端值，</p>
+</li>
+<li>
+<p>查看块(chunk)的状态</p>
+<p>需要在config db下操作</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mongos&gt; use config
+switched to db config
+mongos&gt; db.chunks.find<span style="color:#f92672">()</span>.pretty<span style="color:#f92672">()</span>
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;_id&#34;</span> : <span style="color:#e6db74">&#34;foo.user-name_MinKey&#34;</span>,
+  <span style="color:#e6db74">&#34;ns&#34;</span> : <span style="color:#e6db74">&#34;foo.user&#34;</span>,
+  <span style="color:#e6db74">&#34;min&#34;</span> : <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;</span>$minKey<span style="color:#e6db74">&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>,
+  <span style="color:#e6db74">&#34;max&#34;</span> : <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;name&#34;</span> : <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;</span>$maxKey<span style="color:#e6db74">&#34;</span> : <span style="color:#ae81ff">1</span> <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>,
+  <span style="color:#e6db74">&#34;shard&#34;</span> : <span style="color:#e6db74">&#34;shard&#34;</span>,
+  <span style="color:#e6db74">&#34;lastmod&#34;</span> : Timestamp<span style="color:#f92672">(</span>1, 0<span style="color:#f92672">)</span>,
+  <span style="color:#e6db74">&#34;lastmodEpoch&#34;</span> : ObjectId<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;58f75c5b9cde39278500058c&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">}</span>
+</code></pre></div></li>
+</ol>
+<h3 id="片键">片键</h3>
+<h3 id="块">块</h3>
+<h2 id="备份">备份</h2>
+<h3 id="文件系统快照">文件系统快照</h3>
+<p>使用文件系统快照有两个条件:</p>
+<ol>
+<li>需要文件系统本身支持快照(如Linux的LVM和Amazon EBS的EC2)。</li>
+<li>启用journaling日记系统。</li>
+</ol>
+<h3 id="cp或rsync">cp或rsync</h3>
+<p>若系统不支持快照，可直接使用cp、rsync或其它工具备份数据。</p>
+<ol>
+<li>
+<p>锁定数据库，禁止写入等操作</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">&gt; db.fsync<span style="color:#f92672">()</span>
+</code></pre></div></li>
+<li>
+<p>复制数据库文件到指定目录</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cp -R ~/Desktop/db/* ~/Desktop/backup
+</code></pre></div></li>
+<li>
+<p>复制完成后解锁数据库</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">&gt; db.fsyncUnlock<span style="color:#f92672">()</span>
+</code></pre></div></li>
+</ol>
+<h3 id="mongodump">mongodump</h3>
+<p>mongodump和mongorestore是备份小型mongo数据库的有效工具，不适合大型的系统的备份。</p>
+<ol>
+<li>
+<p>使用mongodump创建备份</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mongodump
+2017-04-10T23:20:46.221+0800	writing admin.system.version to
+2017-04-10T23:20:46.222+0800	<span style="color:#66d9ef">done</span> dumping admin.system.version <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> document<span style="color:#f92672">)</span>
+2017-04-10T23:20:46.223+0800	writing test.users to
+2017-04-10T23:20:46.223+0800	writing test.comments to
+2017-04-10T23:20:46.224+0800	<span style="color:#66d9ef">done</span> dumping test.comments <span style="color:#f92672">(</span><span style="color:#ae81ff">40</span> documents<span style="color:#f92672">)</span>
+2017-04-10T23:20:46.228+0800	<span style="color:#66d9ef">done</span> dumping test.users <span style="color:#f92672">(</span><span style="color:#ae81ff">1124</span> documents<span style="color:#f92672">)</span>
+</code></pre></div><p>可以设置&ndash;dbpath指定数据文件进行备份，若mongod正在运行则不要设置使用这个选项，</p>
+</li>
+<li>
+<p>使用mongorestore恢复mongodump产生的备份</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mongorestore
+2017-04-10T23:22:26.789+0800	using default <span style="color:#e6db74">&#39;dump&#39;</span> directory
+2017-04-10T23:22:26.789+0800	preparing collections to restore from
+2017-04-10T23:22:26.790+0800	reading metadata <span style="color:#66d9ef">for</span> test.comments from dump/test/comments.metadata.json
+2017-04-10T23:22:26.791+0800	reading metadata <span style="color:#66d9ef">for</span> test.users from dump/test/users.metadata.json
+2017-04-10T23:22:26.791+0800	restoring test.comments from dump/test/comments.bson
+2017-04-10T23:22:26.792+0800	restoring test.users from dump/test/users.bson
+...
+2017-04-10T23:22:26.842+0800	restoring indexes <span style="color:#66d9ef">for</span> collection test.users from metadata
+2017-04-10T23:22:26.843+0800	finished restoring test.users <span style="color:#f92672">(</span><span style="color:#ae81ff">1124</span> documents<span style="color:#f92672">)</span>
+2017-04-10T23:22:26.843+0800	<span style="color:#66d9ef">done</span>
+</code></pre></div></li>
+</ol>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://docs.mongodb.com/manual/">The MongoDB 3.4 Manual</a></li>
+<li><a href="https://www.amazon.cn/%E5%9B%BE%E4%B9%A6/dp/B00HLX035Q/ref=sr_1_1?ie=UTF8&amp;qid=1491184176&amp;sr=8-1&amp;keywords=mongodb%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97">MongoDB权威指南(第2版)</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/database/mongo-travel-part-2/">http://yrq110.me/post/database/mongo-travel-part-2/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/database/mongo-travel-part-1/">MongoDB之旅(上)</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/mongo'>mongo</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

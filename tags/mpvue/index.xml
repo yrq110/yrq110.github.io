@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>mpvue on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/mpvue/</link>
+    <description>Recent content in mpvue on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 15 Mar 2019 13:36:32 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/mpvue/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>微信小程序开发中的代码片段总结</title>
+      <link>http://yrq110.me/post/front-end/code-snippets-of-wxapp/</link>
+      <pubDate>Fri, 15 Mar 2019 13:36:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/code-snippets-of-wxapp/</guid>
+      <description>&lt;p&gt;经过一段时间的微信小程序开发，总结了一些代码片段，主要是以下几个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;小程序（授权、网络、录音、图像）&lt;/li&gt;
+&lt;li&gt;mpvue（分包、全局变量、svg组件、组件class绑定）&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

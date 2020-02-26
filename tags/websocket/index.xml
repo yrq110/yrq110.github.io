@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>websocket on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/websocket/</link>
+    <description>Recent content in websocket on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Thu, 04 Apr 2019 11:36:35 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/websocket/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>微信小程序WebSocket实践</title>
+      <link>http://yrq110.me/post/front-end/wxapp-ws-practice/</link>
+      <pubDate>Thu, 04 Apr 2019 11:36:35 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/wxapp-ws-practice/</guid>
+      <description>&lt;p&gt;微信基础库1.7.0之后的版本提供了新版的WebSocket API，考虑到兼容性问题，尝试整合新旧两种版本的API，进行简单的封装。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
