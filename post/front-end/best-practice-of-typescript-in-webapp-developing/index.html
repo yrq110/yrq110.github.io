@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Web应用开发中的TypeScript最佳实践 | ￥ЯႭ1I0</title>
-    <meta property="og:title" content="Web应用开发中的TypeScript最佳实践 - ￥ЯႭ1I0">
+    <title>使用TypeScript开发Web应用的最佳实践 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="使用TypeScript开发Web应用的最佳实践 - ￥ЯႭ1I0">
     <meta property="og:type" content="article">
         
     <meta property="article:published_time" content='2020-02-19T01:44:17&#43;08:00'>
@@ -16,7 +16,7 @@
     <meta property="article:modified_time" content='2020-02-19T01:44:17&#43;08:00'>
         
     <meta name="Keywords" content="">
-    <meta name="description" content="Web应用开发中的TypeScript最佳实践">
+    <meta name="description" content="使用TypeScript开发Web应用的最佳实践">
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/">
@@ -70,7 +70,7 @@
     
     <article class="post">
         <header>
-            <h1 class="post-title">Web应用开发中的TypeScript最佳实践</h1>
+            <h1 class="post-title">使用TypeScript开发Web应用的最佳实践</h1>
         </header>
         <date class="post-meta meta-date">
             2020年2月19日
@@ -142,8 +142,7 @@
 <h3 id="路径别名与tsc的未解決问题">路径别名与tsc的未解決问题</h3>
 <p>在TS的ESM(ECMAScript Modules)语法中，除了导入node_modules等外部包外，必须使用相对路径来描述导入的模块。在从React开始的组件化UI开发方法成为主流的今天，开发中会遇到很多有大量层级嵌套很深的目录，如../../../../foo，在这样的目录下操作路径是很令人头秃的一件事。</p>
 <p><strong>路径别名</strong>是一种为项目中指定路径设置别名的功能，通过<code>tsconfig.json</code>的<code>compilerOptions.paths</code>来设置，它的目标路径会以<code>compilerOptions.baseUrl</code>属性的值为基础路径。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">tsconfig.json</span>
-{
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
   <span style="color:#f92672">&#34;compilerOptions&#34;</span>: {
     <span style="color:#f92672">&#34;baseUrl&#34;</span>: <span style="color:#e6db74">&#34;./src&#34;</span>,
     <span style="color:#f92672">&#34;paths&#34;</span>: {
@@ -173,8 +172,7 @@
 <h3 id="类型检查方式与fork-ts-checker-webpack-plugin">类型检查方式与fork-ts-checker-webpack-plugin</h3>
 <p>如前所述，ts-loader中可以通过设置<code>transpileOnly</code>选项，不执行类型检查以此来提高性能。虽然VS Code等编辑器中会进行实时的类型检查，但还是推荐在构建时进行类型检查。</p>
 <p>在类型检查的方法中包括<strong>使用tsc</strong>。尽管tsc本质是个编译器，不过通过设置<code>--noEmit</code>选项可以阻止编译文件的生成，即仅执行类型检查。笔者在其项目中将该操作放在npm-run-scipts的lint命令中。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">package.json</span>
-{
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
   <span style="color:#f92672">&#34;scripts&#34;</span>: {
     <span style="color:#f92672">&#34;lint&#34;</span>: <span style="color:#e6db74">&#34;tsc --noEmit&#34;</span>
   }
@@ -182,7 +180,7 @@
 </code></pre></div><p>另外一种方法就是在运行时阶段执行类型检查，比如webpack插件<a href="https://github.com/TypeStrong/fork-ts-checker-webpack-plugin">fork-ts-checker-webpack-plugin</a> 。由于检查是在独立的进程中执行的，因此不会影响ts-loader等的编译处理，在React框架Next.js的9版本中使用了这个插件。</p>
 <h2 id="babel">Babel</h2>
 <p><a href="https://babeljs.io/">Babel · The compiler for next generation JavaScript</a></p>
-<p>Babel在2018年夏天发布的版本7中支持TS编译，需要设置**@babel/preset-typescript**。</p>
+<p>Babel在2018年夏天发布的版本7中支持TS编译，需要设置@babel/preset-typescript。</p>
 <p>遵循最新ES规范的JS项目中基本都使用了Babel，仅需要在preset设置中添加一个预设项即可使用TS。这仅仅是Babel的一个扩展功能，除了用在编译JS外没有其他作用。</p>
 <h3 id="typescript特性的使用限制">TypeScript特性的使用限制</h3>
 <p>Babel中的TS编译限制了一部分TS特性的使用，比如Const Enums(常量枚举)。无法使用这个特性，自然也无法编译使用这个特性的库。</p>
@@ -697,7 +695,7 @@
 <ul class="widget-list">
     
     <li>
-        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="Web应用开发中的TypeScript最佳实践">Web应用开发中的TypeScript最佳实践</a>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
     </li>
     
     <li>
