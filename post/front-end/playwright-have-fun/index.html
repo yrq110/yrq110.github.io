@@ -246,11 +246,11 @@
 <li>用户输入：RawKeyboardImpl, RawMouseImpl</li>
 </ul>
 <p>通过分析源码整理出这些类之间的关系大致如下图所示：</p>
-<p><img src="/images/blog/front-end/playwright/client-files.png" alt=""></p>
+<p><img src="/images/blog/front-end/playwright-have-fun/client-files.png" alt=""></p>
 <p>可以看出这个结构与Puppeteer非常相似，在多个平台的实现中使用共同的组件与架构来实现跨平台的特性。</p>
 <p><strong>能力差异</strong></p>
 <p>目前chromium端的能力是最丰富的，这源于Puppeteer的基础和CDP提供的细粒度操作。不同平台的client相关文件对比如下图：</p>
-<p><img src="/images/blog/front-end/playwright/client-files.jpg" alt=""></p>
+<p><img src="/images/blog/front-end/playwright-have-fun/client-files.jpg" alt=""></p>
 <p>所有平台的Browser实例通用API如下：</p>
 <ul>
 <li>event: &lsquo;disconnected&rsquo;</li>
