@@ -238,11 +238,10 @@
 <h3 id="client组件">Client组件</h3>
 <p>三种平台均实现了下面这些Client核心组件</p>
 <ul>
-<li>客户端及上下文：Browser, BrowserContext</li>
-<li>页面：Page</li>
-<li>会话：Connection, Session</li>
-<li>执行上下文：ExecutionContext</li>
-<li>网络：NetworkManager, InterceptableRequest</li>
+<li>客户端与页面: ：Browser, BrowserContext, Page</li>
+<li>连接与会话：Connection, Session</li>
+<li>执行上下文与注入脚本：ExecutionContext</li>
+<li>网络管理与请求：NetworkManager, InterceptableRequest</li>
 <li>用户输入：RawKeyboardImpl, RawMouseImpl</li>
 </ul>
 <p>通过分析源码整理出这些类之间的关系大致如下图所示：</p>
@@ -250,7 +249,7 @@
 <p>可以看出这个结构与Puppeteer非常相似，在多个平台的实现中使用共同的组件与架构来实现跨平台的特性。</p>
 <p><strong>能力差异</strong></p>
 <p>目前chromium端的能力是最丰富的，这源于Puppeteer的基础和CDP提供的细粒度操作。不同平台的client相关文件对比如下图：</p>
-<p><img src="/images/blog/front-end/playwright-have-fun/client-files.jpg" alt=""></p>
+<p><img src="/images/blog/front-end/playwright-have-fun/client-files.png" alt=""></p>
 <p>所有平台的Browser实例通用API如下：</p>
 <ul>
 <li>event: &lsquo;disconnected&rsquo;</li>
@@ -305,38 +304,42 @@
 </code></pre></div><p>Playwright则通过引入多种Selector引擎实现了多种可用选择器，包含CSS、XPath、text、id等，并且可以自定义选择器引擎。</p>
 <p>由于同时支持多种选择器，因此其使用的选择器语句也进行了一定设计。</p>
 <h3 id="选择语句">选择语句</h3>
-<ul>
-<li>由<strong>子句</strong>与<strong><code>&gt;&gt;</code>分隔符</strong>组成
-如<code>子句1 &gt;&gt; 子句2 &gt;&gt; 子句3</code>，当存在多个子句时，每个子句的源为前一子句的选择结果</li>
-<li>子句的格式为<code>引擎=主体</code>
-如<code>engine=body</code>。若body中需要使用<code>&gt;&gt;</code>的话需要字符串类型处理避免被分割成两个子句，如<code>text=&quot;hello &gt;&gt; world&quot;</code>。</li>
-<li>例子
-<code>css=div &gt;&gt; css=.form &gt; span &gt;&gt; css=input[attr=name]</code> 等价于
+<p>由<strong>子句</strong>与<strong><code>&gt;&gt;</code>分隔符</strong>组成。如<code>子句1 &gt;&gt; 子句2 &gt;&gt; 子句3</code>，当存在多个子句时，每个子句的源为前一子句的选择结果。</p>
+<p>子句的格式为<code>引擎=主体</code>。如<code>engine=body</code>。若body中需要使用<code>&gt;&gt;</code>的话需要字符串类型处理，避免被分割成两个子句，如<code>text=&quot;hello &gt;&gt; world&quot;</code>。</p>
+<p>例子：
+<code>css=div &gt;&gt; css=.form &gt; span &gt;&gt; css=input[attr=name]</code> 等价于</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">document
   .<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;div&#39;</span>)
   .<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;.form &gt; span&#39;</span>)
   .<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;input[attr=name]&#39;</span>)
-</code></pre></div></li>
-<li>格式转换
-当格式错误或没有设置格式时，会根据内容尝试转换成正确格式：
+</code></pre></div><p>格式转换：当格式错误或没有设置格式时，会根据内容尝试转换成正确格式：</p>
 <ul>
 <li>以<code>//</code>开头的选择器主体会被认为是<code>xpath=selector</code></li>
 <li>以<code>&quot;</code>开头的选择器主体会被认为是<code>text=selector</code></li>
 <li>其他情况会被人为是<code>css=selector</code></li>
 </ul>
-</li>
-</ul>
 <h3 id="内置selector引擎">内置Selector引擎</h3>
 <ol>
-<li>CSS - 等价于<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector">Document.querySelector</a></li>
-<li>XPath - 等价于<a href="https://developer.mozilla.org/en/docs/Web/API/Document/evaluate">Document.evaluate</a></li>
-<li>text - 找到包含传入文本的text node所在的元素。大小写不敏感，<code>text=Login</code>会匹配到<code>&lt;button&gt;loGIN &lt;/button&gt;.</code></li>
-<li>id - 根据元素的attribute属性来选择。<code>data-test-id=foo等价于</code>querySelector('*[data-test-id=foo]')`</li>
+<li>
+<p>CSS</p>
+<p>等价于<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector">Document.querySelector</a></p>
+</li>
+<li>
+<p>XPath</p>
+<p>等价于<a href="https://developer.mozilla.org/en/docs/Web/API/Document/evaluate">Document.evaluate</a></p>
+</li>
+<li>
+<p>text</p>
+<p>找到包含传入文本的text node所在的元素。大小写不敏感，<code>text=Login</code>会匹配到<code>&lt;button&gt;loGIN &lt;/button&gt;</code></p>
+</li>
+<li>
+<p>id</p>
+<p>根据元素的attribute属性来选择。<code>data-test-id=foo</code>等价于<code>querySelector('*[data-test-id=foo]')</code></p>
+</li>
 </ol>
-<p>关于自定义引擎的实现可以查看<a href="https://github.com/microsoft/playwright/blob/master/docs/selectors.md#custom-selector-engines">官方文档</a>。</p>
-<h3 id="选择器的实现与使用">选择器的实现与使用</h3>
+<h3 id="选择器的实现与内部使用">选择器的实现与内部使用</h3>
 <h4 id="选择器引擎类">选择器引擎类</h4>
-<p>选择器引擎是可以自定义，一般为如下结构：</p>
+<p>选择器引擎是可以<a href="https://github.com/microsoft/playwright/blob/master/docs/selectors.md#custom-selector-engines">自定义</a>，一般为如下结构：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 一个可以注入到选择器引擎实例中的函数
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createTagNameEngine</span> <span style="color:#f92672">=</span> () <span style="color:#f92672">=&gt;</span> ({
   <span style="color:#75715e">// 创建一个从根元素到目标元素的选择器（利用选择器选择元素的反向操作）
