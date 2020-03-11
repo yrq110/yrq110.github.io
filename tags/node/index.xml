@@ -6,13 +6,28 @@
     <description>Recent content in node on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Fri, 19 Apr 2019 13:12:34 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 09 Mar 2020 13:49:15 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/tags/node/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>puppeteer常用API浅析</title>
+      <title>源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</title>
+      <link>http://yrq110.me/post/front-end/playwright-have-fun/</link>
+      <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/playwright-have-fun/</guid>
+      <description>&lt;p&gt;从以下几个方面分析下Puppeteer的衍生项目&lt;strong&gt;Playwirght&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;基本介绍与使用示例&lt;/li&gt;
+&lt;li&gt;云原生：BrowserContext的隔离与增强&lt;/li&gt;
+&lt;li&gt;跨平台：不同平台通用的Client与Server实现&lt;/li&gt;
+&lt;li&gt;多选择器：内置与自定义选择器引擎&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>Puppeteer常用API浅析</title>
       <link>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</link>
       <pubDate>Fri, 19 Apr 2019 13:12:34 +0800</pubDate>
       
@@ -21,7 +36,7 @@
     </item>
     
     <item>
-      <title>可爱的puppeteer使用小技巧</title>
+      <title>可爱的Puppeteer使用小技巧</title>
       <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
       <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
       

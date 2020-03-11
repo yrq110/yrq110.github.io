@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Lerna的依赖管理及hoisting浅析 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Lerna的依赖管理及hoisting浅析 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-12-02T11:29:23&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-12-02T11:29:23&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Lerna的依赖管理及hoisting浅析">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Lerna的依赖管理及hoisting浅析</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年12月2日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/devops'>devops</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>简单分析下lerna中依赖管理的部分</p>
+<ul>
+<li>在使用lerna时，若使用yarn作为npmClient并开启workspace功能，则bootstrap命令会代理给yarn执行</li>
+<li>相同的依赖通过提升(hoist)安装在根路径下，本地包之间的依赖通过软链接实现</li>
+<li>虽然在依赖处理部分yarn的底层具有较好的实现，但lerna提供的上层指令则方便了开发者的使用</li>
+</ul>
+<h2 id="处理package的相同依赖">处理package的相同依赖</h2>
+<h3 id="lerna-bootstrap">lerna bootstrap</h3>
+<p>在lerna中，执行默认的bootstrap命令会在每个package下安装各自<em>package.json</em>中的依赖。</p>
+<p>该方法的问题是，当多个package中拥有多个相同且同版本的依赖时，它们会被安装多次，分别安装在包含它们的package下，造成空间的浪费，降低构建速度。为了解决这个问题可以使用hoist功能来执行依赖的安装。</p>
+<h3 id="lerna-bootstrap---hoist">lerna bootstrap --hoist</h3>
+<p>在开启<a href="https://github.com/lerna/lerna/blob/master/doc/hoist.md">hoist功能</a>的bootstrap命令中，lerna会自动检测package中相同的依赖，并将其安装在根目录下的node_modules中，减少依赖安装次数，提升速度。</p>
+<p>在新版的lerna(v3.19.0)中，当npmClient为yarn时加上hoist参数时执行会报错：<strong>--hoist is not supported with --npm-client=yarn, use yarn workspaces instead</strong>，此时看看接下来的方法即可解决。</p>
+<h3 id="enable-workspace-yarn-install">[Enable workspace] yarn install</h3>
+<p>当使用yarn workspace，并在lerna中开启该功能时，lerna bootstrap命令由<code>yarn install</code>代理，等价于在workspace的根目录下执行<code>yarn install</code>。</p>
+<p>相关配置：</p>
+<p><code>lerna.json</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;npmClient&#34;</span>: <span style="color:#e6db74">&#34;yarn&#34;</span>,
+  <span style="color:#f92672">&#34;useWorkspaces&#34;</span>: <span style="color:#66d9ef">true</span>,
+}
+</code></pre></div><p><code>package.json</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;workspaces&#34;</span>: [
+    <span style="color:#e6db74">&#34;packages/*&#34;</span>
+  ],
+}
+</code></pre></div><p>这么做是因为yarn本身提供了较lerna更好的依赖分析与hoisting的功能。yarn的<a href="https://github.com/yarnpkg/yarn/blob/master/src/package-hoister.js">hoisting算法</a>。</p>
+<p>默认情况下，yarn会开启hoist功能，也可以通过设置<strong>nohoist选项</strong><a href="https://yarnpkg.com/lang/en/docs/workspaces/#toc-limitations-caveats">手动关闭</a>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;workspaces&#34;</span>: {
+    <span style="color:#f92672">&#34;packages&#34;</span>: [
+      <span style="color:#e6db74">&#34;Packages/*&#34;</span>,
+    ],
+    <span style="color:#f92672">&#34;nohoist&#34;</span>: [
+      <span style="color:#e6db74">&#34;**&#34;</span>
+    ]
+  }
+}
+</code></pre></div><p>虽然yarn提供的较好的底层依赖处理的支持，但lerna提供了更高层的更方便实用的各种命令。</p>
+<h2 id="本地package间的依赖">本地package间的依赖</h2>
+<p><a href="https://github.com/lerna/lerna/blob/master/commands/bootstrap/README.md"><strong>@lerna/bootstrap</strong></a>中有如下简介: <strong>Link local packages together and install remaining package dependencies</strong>。</p>
+<p>上面已经介绍了<strong>install package dependencies</strong>的部分，那么还有一个更重要的作用就是处理本地package之间的相互依赖，即<strong>link local packages</strong></p>
+<p>lerna中使用**软链接(symlink)**来实现本地多项目之间的依赖，该功能在执行bootstrap时会自动在根目录的node_modules下创建本地package对应的软链接。</p>
+<p>这样，就可以在某一package中通过如下命令来添加workspace中的其他package：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ lerna add @workspace/package-a --scope @workspace/package-b
+</code></pre></div><h2 id="hoisting原理">hoisting原理</h2>
+<h3 id="lerna中的hoisting">lerna中的hoisting</h3>
+<p>lerna命令中有很多通用的选项，而<code>--hoist</code>选项是bootstrap命令独有的。</p>
+<p>相关代码在<a href="https://github.com/lerna/lerna/blob/master/commands/bootstrap/README.md"><strong>@lerna/bootstrap</strong></a>中。其中比较关键的一个函数是<a href="https://github.com/lerna/lerna/blob/ea6ec639560ce71d9df8cbd7eef2d416e71f5442/commands/bootstrap/index.js#L294">getDependenciesToInstall()</a>，它做了以下工作：</p>
+<ol>
+<li>解析需要安装的依赖，保存在<strong>depsToInstall</strong>中</li>
+<li>判断是否开启hoist功能并且该依赖在packages中是否出现了多次，若不满足则向下执行</li>
+<li>检测在出现的多次中最常出现的版本号(<strong>commonVersion</strong>)</li>
+<li>若在根目录的依赖中也存在则比较版本号(<strong>rootVersion</strong>)，若不同则发出警告</li>
+<li>在根节点上安装最佳版本的依赖</li>
+<li>在叶子节点上安装其他出现次数较少的版本且未安装的依赖</li>
+</ol>
+<p>关键代码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 初始化依赖容器，在之后解析出需要安装的依赖给其赋值
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">depsToInstall</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Map</span>();
+...
+<span style="color:#75715e">// 遍历依赖，执行安装
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">externalName</span>, <span style="color:#a6e22e">externalDependents</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">depsToInstall</span>) {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">rootVersion</span>
+  <span style="color:#75715e">// 若开启了hoist功能并且该依赖在packages中出现了多次
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hoisting</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">isHoistedPackage</span>(<span style="color:#a6e22e">externalName</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hoisting</span>)) {
+    <span style="color:#75715e">// 检测该依赖出现次数最多的版本
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">commonVersion</span> <span style="color:#f92672">=</span> Array.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">externalDependents</span>.<span style="color:#a6e22e">keys</span>()).<span style="color:#a6e22e">reduce</span>((<span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span>) =&gt;
+      <span style="color:#a6e22e">externalDependents</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">a</span>).<span style="color:#a6e22e">size</span> <span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">externalDependents</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">b</span>).<span style="color:#a6e22e">size</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">b</span>
+    );
+    <span style="color:#75715e">// 得到安装在根依赖中的版本，并取得它所依赖的其他包
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">rootVersion</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">rootExternalVersions</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">externalName</span>) <span style="color:#f92672">||</span> <span style="color:#a6e22e">commonVersion</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dependents</span> <span style="color:#f92672">=</span> Array.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">externalDependents</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">rootVersion</span>)).<span style="color:#a6e22e">map</span>(
+      <span style="color:#a6e22e">leafName</span> =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">targetGraph</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">leafName</span>).<span style="color:#a6e22e">pkg</span>
+    );
+    <span style="color:#a6e22e">externalDependents</span>.<span style="color:#66d9ef">delete</span>(<span style="color:#a6e22e">rootVersion</span>);
+    <span style="color:#75715e">// 安装依赖的最佳版本
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">rootActions</span>.<span style="color:#a6e22e">push</span>(() =&gt;
+      <span style="color:#a6e22e">hasDependencyInstalled</span>(<span style="color:#a6e22e">rootPkg</span>, <span style="color:#a6e22e">externalName</span>, <span style="color:#a6e22e">rootVersion</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">isSatisfied</span> =&gt; {
+        <span style="color:#a6e22e">rootSet</span>.<span style="color:#a6e22e">add</span>({
+          <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">externalName</span>,
+          <span style="color:#a6e22e">dependents</span>,
+          <span style="color:#a6e22e">dependency</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">externalName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">@</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">rootVersion</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>,
+          <span style="color:#a6e22e">isSatisfied</span>,
+        });
+      })
+    );
+  }
+  <span style="color:#75715e">// 将其他出现次数较少的版本安装在原始的叶子节点下
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">leafVersion</span>, <span style="color:#a6e22e">leafDependents</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">externalDependents</span>) {
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">leafName</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">leafDependents</span>) {
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">leafNode</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">targetGraph</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">leafName</span>);
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">leafRecord</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">leaves</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">leafNode</span>) <span style="color:#f92672">||</span> <span style="color:#a6e22e">leaves</span>.<span style="color:#a6e22e">set</span>(<span style="color:#a6e22e">leafNode</span>, <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Set</span>()).<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">leafNode</span>);
+      <span style="color:#75715e">// 安装未安装的依赖
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">leafActions</span>.<span style="color:#a6e22e">push</span>(() =&gt;
+        <span style="color:#a6e22e">hasDependencyInstalled</span>(<span style="color:#a6e22e">leafNode</span>.<span style="color:#a6e22e">pkg</span>, <span style="color:#a6e22e">externalName</span>, <span style="color:#a6e22e">leafVersion</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">isSatisfied</span> =&gt; {
+          <span style="color:#a6e22e">leafRecord</span>.<span style="color:#a6e22e">add</span>({
+            <span style="color:#a6e22e">dependency</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">externalName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">@</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">leafVersion</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>,
+            <span style="color:#a6e22e">isSatisfied</span>,
+          });
+        })
+      );
+    }
+  }
+}
+</code></pre></div><h3 id="yarn中的hoisting">yarn中的hoisting</h3>
+<p>yarn中的hoist则作为一个独立的包存在: <a href="https://github.com/yarnpkg/yarn/blob/98d51d8831/src/package-hoister.js">package-hoister</a>。</p>
+<p>其中的PackageHoister这个类来负责依赖信息的管理，在解析依赖与处理提升方面主要进行了三步：</p>
+<ol>
+<li>统计最常出现的版本</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">prepass</span>(<span style="color:#a6e22e">patterns</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span>) {
+  <span style="color:#a6e22e">patterns</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">resolver</span>.<span style="color:#a6e22e">dedupePatterns</span>(<span style="color:#a6e22e">patterns</span>).<span style="color:#a6e22e">sort</span>();
+  <span style="color:#75715e">// 1. 根据传入的pattern解析出现的依赖
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">occurences</span> <span style="color:#f92672">=</span> {};
+
+  <span style="color:#75715e">// 2. 解析根节点的依赖
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">rootPackageNames</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Set</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Set</span>();
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pattern</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">patterns</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pkg</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">resolver</span>.<span style="color:#a6e22e">getStrictResolvedPattern</span>(<span style="color:#a6e22e">pattern</span>);
+    <span style="color:#a6e22e">rootPackageNames</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">pkg</span>.<span style="color:#a6e22e">name</span>);
+    <span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">pattern</span>, [], []);
+  }
+  <span style="color:#75715e">// 3. 统计最常出现的依赖版本
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">packageName</span> <span style="color:#66d9ef">of</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#a6e22e">occurences</span>).<span style="color:#a6e22e">sort</span>()) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">versionOccurences</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">occurences</span>[<span style="color:#a6e22e">packageName</span>];
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">versions</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#a6e22e">versionOccurences</span>);
+
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">mostOccurenceCount</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">mostOccurencePattern</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">version</span> <span style="color:#66d9ef">of</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#a6e22e">versionOccurences</span>).<span style="color:#a6e22e">sort</span>()) {
+      <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">occurences</span>, <span style="color:#a6e22e">pattern</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">versionOccurences</span>[<span style="color:#a6e22e">version</span>];
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">occurenceCount</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">occurences</span>.<span style="color:#a6e22e">size</span>;
+
+      <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">mostOccurenceCount</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">occurenceCount</span> <span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">mostOccurenceCount</span>) {
+        <span style="color:#a6e22e">mostOccurenceCount</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">occurenceCount</span>;
+        <span style="color:#a6e22e">mostOccurencePattern</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">pattern</span>;
+      }
+    }
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">mostOccurenceCount</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span>) {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_seed</span>(<span style="color:#a6e22e">mostOccurencePattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>});
+    }
+  }
+}
+</code></pre></div><ol start="2">
+<li>
+<p>处理有序队列</p>
+<p>本质上处理的是一个依赖数组，之所以是有序是因为在yarn中处理依赖时，很注重依赖间的拓扑顺序，顺序的一致性是保证JS包管理上下文一致性中重要的一环，即<a href="https://yarnpkg.com/blog/2017/05/31/determinism/">determinism</a>，给予相同的<strong>package.json</strong>与**.lock**文件，总会得到相同的node_modules内容。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">seed</span>(<span style="color:#a6e22e">patterns</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span>) {
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">prepass</span>(<span style="color:#a6e22e">patterns</span>);
+  <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>) {
+    <span style="color:#75715e">// 在有序队列中优先提升不包含peer dependencies的依赖
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">sortedQueue</span> <span style="color:#f92672">=</span> [];
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">queue</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">levelQueue</span>;
+    <span style="color:#75715e">// 对queue进行排序，得到一个运行时的依赖顺序
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">queue</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">queue</span>.<span style="color:#a6e22e">sort</span>(([<span style="color:#a6e22e">aPattern</span>], [<span style="color:#a6e22e">bPattern</span>]) =&gt; {
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">sortAlpha</span>(<span style="color:#a6e22e">aPattern</span>, <span style="color:#a6e22e">bPattern</span>);
+    });
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">availableSet</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Set</span>();
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">hasChanged</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#75715e">// 处理依赖中的peerDependencies
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">queue</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">hasChanged</span>) {
+      <span style="color:#a6e22e">hasChanged</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">queueCopy</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">queue</span>;
+      <span style="color:#a6e22e">queue</span> <span style="color:#f92672">=</span> [];
+      <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">t</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">t</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">queueCopy</span>.<span style="color:#a6e22e">length</span>; <span style="color:#f92672">++</span><span style="color:#a6e22e">t</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">peerDependencies</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#a6e22e">pkg</span>.<span style="color:#a6e22e">peerDependencies</span> <span style="color:#f92672">||</span> {});
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">areDependenciesFulfilled</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">peerDependencies</span>.<span style="color:#a6e22e">every</span>(<span style="color:#a6e22e">peerDependency</span> =&gt; <span style="color:#a6e22e">availableSet</span>.<span style="color:#a6e22e">has</span>(<span style="color:#a6e22e">peerDependency</span>));
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">areDependenciesFulfilled</span>) {
+          <span style="color:#75715e">// 添加至有序队列中
+</span><span style="color:#75715e"></span>          <span style="color:#a6e22e">sortedQueue</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">queueItem</span>);
+          <span style="color:#a6e22e">hasChanged</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+        } <span style="color:#66d9ef">else</span> {
+          <span style="color:#a6e22e">queue</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">queueItem</span>);
+        }
+      }
+    }
+    <span style="color:#75715e">// 将包含peerDependencies的依赖添加到队尾，依次处理有序队列中的依赖
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">sortedQueue</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">sortedQueue</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">queue</span>);
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">pattern</span>, <span style="color:#a6e22e">parent</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">sortedQueue</span>) {
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">info</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_seed</span>(<span style="color:#a6e22e">pattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">parent</span>});
+      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">info</span>) { <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hoist</span>(<span style="color:#a6e22e">info</span>); }
+    }
+  }
+}
+</code></pre></div></li>
+<li>
+<p>更新提升后的依赖信息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">pattern</span>, <span style="color:#a6e22e">parent</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">sortedQueue</span>) {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">info</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_seed</span>(<span style="color:#a6e22e">pattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">parent</span>});
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">info</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hoist</span>(<span style="color:#a6e22e">info</span>);
+  }
+}
+...
+<span style="color:#a6e22e">hoist</span>() {
+  <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">key</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">oldKey</span>, <span style="color:#a6e22e">parts</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">rawParts</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">info</span>;
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">tree</span>.<span style="color:#66d9ef">delete</span>(<span style="color:#a6e22e">oldKey</span>);
+  <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">parts</span>, <span style="color:#a6e22e">duplicate</span>} <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getNewParts</span>(<span style="color:#a6e22e">oldKey</span>, <span style="color:#a6e22e">info</span>, <span style="color:#a6e22e">rawParts</span>.<span style="color:#a6e22e">slice</span>());
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newKey</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">implodeKey</span>(<span style="color:#a6e22e">parts</span>);
+  <span style="color:#75715e">// 更新新的数据信息，比如路径或者key
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">declareRename</span>(<span style="color:#a6e22e">info</span>, <span style="color:#a6e22e">rawParts</span>, <span style="color:#a6e22e">parts</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setKey</span>(<span style="color:#a6e22e">info</span>, <span style="color:#a6e22e">newKey</span>, <span style="color:#a6e22e">parts</span>);
+}
+</code></pre></div></li>
+</ol>
+<p>除此之外，yarn中还进行了大量其他处理，比如计算提升位置，构建依赖树，处理软链接等等。</p>
+<p>关于yarn hoisting中存在的问题及其nohoist，可以参考<a href="https://yarnpkg.com/blog/2018/02/15/nohoist/">nohoist in Workspaces</a></p>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/">http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/devops/study-on-lerna/">Lerna初探</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/lerna'>lerna</a></li>
+                
+                <li><a href='http://yrq110.me/tags/yarn'>yarn</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/playwright-have-fun/" title="源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析">源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

@@ -74,7 +74,7 @@
     </item>
     
     <item>
-      <title>puppeteer&#43;canvas的e2e测试实践</title>
+      <title>Puppeteer&#43;Canvas的E2E测试实践</title>
       <link>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</link>
       <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
       
@@ -134,7 +134,7 @@
     </item>
     
     <item>
-      <title>puppeteer常用API浅析</title>
+      <title>Puppeteer常用API浅析</title>
       <link>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</link>
       <pubDate>Fri, 19 Apr 2019 13:12:34 +0800</pubDate>
       
@@ -192,7 +192,7 @@
     </item>
     
     <item>
-      <title>可爱的puppeteer使用小技巧</title>
+      <title>可爱的Puppeteer使用小技巧</title>
       <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
       <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
       
@@ -228,7 +228,7 @@
     </item>
     
     <item>
-      <title>配置electron中puppeteer executablePath的正确姿势</title>
+      <title>配置Electron中Puppeteer executablePath的正确姿势</title>
       <link>http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</link>
       <pubDate>Sun, 06 Jan 2019 19:52:34 +0800</pubDate>
       

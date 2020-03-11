@@ -76,6 +76,34 @@
     <article class="post">
         <header>
             <h1 class="post-title">
+                <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/">Lerna的依赖管理及hoisting浅析</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年12月2日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='http://yrq110.me/categories/devops'>devops</a>
+            
+        </div>
+        
+        <div class="post-content">
+            <p>简单分析下lerna中依赖管理的部分</p>
+<ul>
+<li>在使用lerna时，若使用yarn作为npmClient并开启workspace功能，则bootstrap命令会代理给yarn执行</li>
+<li>相同的依赖通过提升(hoist)安装在根路径下，本地包之间的依赖通过软链接实现</li>
+<li>虽然在依赖处理部分yarn的底层具有较好的实现，但lerna提供的上层指令则方便了开发者的使用</li>
+</ul>……
+            <p class="readmore"><a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
                 <a href="http://yrq110.me/post/devops/overview-of-docker/">鸟瞰Docker</a>
             </h1>
         </header>
@@ -95,6 +123,81 @@
 <p>从镜像和容器到docker-compose、docker-machine、docker swarm等将docker相关的概念一网打尽，理解docker的组成与结构。</p>
 <p><em>相关配图没空P了&gt;_&lt;</em></p>……
             <p class="readmore"><a href="http://yrq110.me/post/devops/overview-of-docker/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http://yrq110.me/post/devops/git-rebase-submodule-and-flow/">git rebase/submodule/flow介绍</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年12月29日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='http://yrq110.me/categories/devops'>devops</a>
+            
+        </div>
+        
+        <div class="post-content">
+            <p>整理并学习几个git中的工具:</p>
+<ul>
+<li><a href="https://git-scm.com/docs/git-rebase">rebase</a> - 用于合并提交，重写历史，较<code>merge</code>更复杂</li>
+<li><a href="https://git-scm.com/docs/git-submodule">submodule</a> - 子模块功能，用于管理项目中包含的独立子模块</li>
+<li><a href="https://github.com/petervanderdoes/gitflow-avh">git-flow</a> - 一个工具，提供flow命令来简化符合<a href="https://nvie.com/posts/a-successful-git-branching-model/"><code>git branching model</code></a>中规范的操作</li>
+</ul>……
+            <p class="readmore"><a href="http://yrq110.me/post/devops/git-rebase-submodule-and-flow/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http://yrq110.me/post/devops/study-on-lerna/">Lerna初探</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年12月27日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='http://yrq110.me/categories/devops'>devops</a>
+            
+        </div>
+        
+        <div class="post-content">
+            <p><a href="https://github.com/lerna/lerna">lerna</a>是一个用于管理包含多个package结构的代码仓库的工具，优化工作流。新版的<a href="https://github.com/vuejs/vue-cli"><strong>vue-cli</strong></a>、<a href="https://github.com/nuxt/nuxt.js"><strong>nuxt</strong></a>与<a href="https://github.com/babel/babel"><strong>babel</strong></a>均使用lerna进行自身的package管理。</p>
+<p>package可理解为功能模块或子项目。</p>……
+            <p class="readmore"><a href="http://yrq110.me/post/devops/study-on-lerna/">阅读全文</a></p>
+        </div>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http://yrq110.me/post/devops/github-ssh-config/">配置SSH访问GitHub</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2016年8月18日
+        </date>
+        
+        <div class="post-meta meta-category">
+            |
+            
+            <a href='http://yrq110.me/categories/devops'>devops</a>
+            
+        </div>
+        
+        <div class="post-content">
+            <p><a href="https://help.github.com/categories/ssh">GitHub_SSH帮助文件</a></p>……
+            <p class="readmore"><a href="http://yrq110.me/post/devops/github-ssh-config/">阅读全文</a></p>
         </div>
     </article>
     
@@ -124,6 +227,10 @@
 <ul class="widget-list">
     
     <li>
+        <a href="http://yrq110.me/post/front-end/playwright-have-fun/" title="源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析">源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</a>
+    </li>
+    
+    <li>
         <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
     </li>
     
@@ -140,11 +247,11 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+        <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
     </li>
     
     <li>
@@ -159,10 +266,6 @@
         <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
     </li>
     
-    <li>
-        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
-    </li>
-    
 </ul>
     </section>
 
@@ -174,15 +277,13 @@
     
     <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
     
-    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
     <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
     <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
-    
-    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
     
 </ul>
     </section>
@@ -242,6 +343,8 @@
     <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
     
     <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
     
     <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
     

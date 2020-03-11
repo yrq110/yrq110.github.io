@@ -6,10 +6,37 @@
     <description>Recent content in Tags on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 19 Feb 2020 01:44:17 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 09 Mar 2020 13:49:15 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>node</title>
+      <link>http://yrq110.me/tags/node/</link>
+      <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/node/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>playwright</title>
+      <link>http://yrq110.me/tags/playwright/</link>
+      <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/playwright/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>puppeteer</title>
+      <link>http://yrq110.me/tags/puppeteer/</link>
+      <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/puppeteer/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>typescript</title>
@@ -62,15 +89,6 @@
       <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
       
       <guid>http://yrq110.me/tags/e2e/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>puppeteer</title>
-      <link>http://yrq110.me/tags/puppeteer/</link>
-      <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
-      
-      <guid>http://yrq110.me/tags/puppeteer/</guid>
       <description></description>
     </item>
     
@@ -179,15 +197,6 @@
       <pubDate>Mon, 16 Sep 2019 09:51:34 +0800</pubDate>
       
       <guid>http://yrq110.me/tags/skia/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>node</title>
-      <link>http://yrq110.me/tags/node/</link>
-      <pubDate>Fri, 19 Apr 2019 13:12:34 +0800</pubDate>
-      
-      <guid>http://yrq110.me/tags/node/</guid>
       <description></description>
     </item>
     

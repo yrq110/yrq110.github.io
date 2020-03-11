@@ -191,7 +191,7 @@
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">Published</span>,
   <span style="color:#a6e22e">Draft</span>,
 }
-</code></pre></div><p>笔者比较中意的ts-key-enum库中使用了TS的Enums来处理event.key值的引用，在版本3中变为了使用Const Enums来实现。由于笔记在其项目中使用了Babel来编译TS，因此无法使用利用了Const Enums的ts-key-enum，只能继续使用版本2。</p>
+</code></pre></div><p>笔者比较中意的ts-key-enum库中使用了TS的Enums来处理event.key值的引用，在版本3中变为了使用Const Enums来实现。由于笔者在其项目中使用了Babel来编译TS，因此无法使用利用了Const Enums的ts-key-enum，只能继续使用版本2。</p>
 <p>实际上@babel/preset-typescript所执行的仅仅是从TS文件中移除类型信息，不仅不会执行类型检查，还会产生之后所讲的Re-exports问题。</p>
 <h3 id="通过index文件简化模块引用">通过index文件简化模块引用</h3>
 <p>对于中等以上规模的应用，每个文件中的import语句和从其他文件中引用的模块数量会明显增多。因此，为了更方便地从外部引用某个目录内存在的文件，一般会创建一个index.ts的索引文件，在该文件中对模块进行再次导出，即执行Re-exports。</p>
@@ -695,6 +695,10 @@
 <ul class="widget-list">
     
     <li>
+        <a href="http://yrq110.me/post/front-end/playwright-have-fun/" title="源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析">源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</a>
+    </li>
+    
+    <li>
         <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
     </li>
     
@@ -711,11 +715,11 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="puppeteer&#43;canvas的e2e测试实践">puppeteer&#43;canvas的e2e测试实践</a>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+        <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
     </li>
     
     <li>
@@ -730,10 +734,6 @@
         <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
     </li>
     
-    <li>
-        <a href="http://yrq110.me/post/front-end/position-used-api-introduction/" title="从交互示例体验两类坐标相关DOM API">从交互示例体验两类坐标相关DOM API</a>
-    </li>
-    
 </ul>
     </section>
 
@@ -745,15 +745,13 @@
     
     <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
     
-    <li><a href="http://yrq110.me/categories/devops/">devops (1)</a></li>
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
     <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
     <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
-    
-    <li><a href="http://yrq110.me/categories/tool/">tool (4)</a></li>
     
 </ul>
     </section>
@@ -813,6 +811,8 @@
     <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
     
     <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
     
     <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
     

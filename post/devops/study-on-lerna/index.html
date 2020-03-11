@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Lerna初探 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Lerna初探 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2018-12-27T14:39:37&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2018-12-27T14:39:37&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Lerna初探">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/devops/study-on-lerna/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Lerna初探</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2018年12月27日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/devops'>devops</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p><a href="https://github.com/lerna/lerna">lerna</a>是一个用于管理包含多个package结构的代码仓库的工具，优化工作流。新版的<a href="https://github.com/vuejs/vue-cli"><strong>vue-cli</strong></a>、<a href="https://github.com/nuxt/nuxt.js"><strong>nuxt</strong></a>与<a href="https://github.com/babel/babel"><strong>babel</strong></a>均使用lerna进行自身的package管理。</p>
+<p>package可理解为功能模块或子项目。</p>
+<p>本文使用的lerna版本: <code>version 3.8.0</code></p>
+<h1 id="场景">场景</h1>
+<ul>
+<li>当存在一个含有多个package的monorepo</li>
+<li>管理这些package的版本与发布时</li>
+<li>管理package共用的代码规范等配置时</li>
+<li>管理package共用的依赖时</li>
+</ul>
+<!-- raw HTML omitted -->
+<h1 id="介绍">介绍</h1>
+<p>lerna的主要功能可以分为：<code>版本控制</code>与<code>发布</code>，需要与npm(或yarn)和git一同使用。</p>
+<h2 id="模式">模式</h2>
+<ul>
+<li>
+<p>fixed/locked(默认)</p>
+<p>固定模式。该模式为单版本号，在根目录中的<code>lerna.json</code>中设置。当使用<code>lerna publish</code>时，如果自从上次发布后有模块改动，那么将会更新到新发布的版本。</p>
+<p>这也是目前<a href="https://github.com/babel/babel">Babel</a>用的模式，当你想要自动整合不同包的版本时使用这个模式。它的特点是任何package的major change均会导致所有包都会进行major version的更新。</p>
+</li>
+<li>
+<p>independent</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna init --independent
+</code></pre></div><p>独立模式。该模式中允许开发者独立管理多个包的版本更新。每次发布时，会得到针对每个包改动(patch, minor, major custom change)的提示。lerna会配合git，检查文件变动，只发布有改动的package。</p>
+<p>独立模式允许开发者更新指定package的版本。将<code>lerna.json</code>中的<code>version</code>键设为<code>independent</code>来启用独立模式。</p>
+</li>
+</ul>
+<h2 id="配置">配置</h2>
+<p>在项目根目录的<code>lerna.json</code>中设置lerna的相关配置。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+  <span style="color:#f92672">&#34;npmClient&#34;</span>: <span style="color:#e6db74">&#34;yarn&#34;</span>,
+  <span style="color:#f92672">&#34;command&#34;</span>: {
+    <span style="color:#f92672">&#34;publish&#34;</span>: {
+      <span style="color:#f92672">&#34;ignoreChanges&#34;</span>: [<span style="color:#e6db74">&#34;ignored-file&#34;</span>, <span style="color:#e6db74">&#34;*.md&#34;</span>]
+    }
+  },
+  <span style="color:#f92672">&#34;packages&#34;</span>: [
+    <span style="color:#e6db74">&#34;packages/*&#34;</span>
+  ]
+}
+</code></pre></div><p>常用的字段：</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>当前仓库版本，当设为<code>independent</code>时开启独立模式</td>
+</tr>
+<tr>
+<td><code>npmClient</code></td>
+<td>执行命令的client，默认为<code>npm</code>，可以设为<code>yarn</code></td>
+</tr>
+<tr>
+<td><code>command.publish.ignoreChanges</code></td>
+<td>设置不会包含进<code>lerna change/publish</code>操作的文件路径，使用它来避免一些非重要改动时的版本更新，比如更新<code>README.md</code>中的拼写错误</td>
+</tr>
+<tr>
+<td><code>packages</code></td>
+<td>用于定位package的文件路径</td>
+</tr>
+</tbody>
+</table>
+<h2 id="yarn-workspace">yarn workspace</h2>
+<p>lerna与yarn的<a href="https://yarnpkg.com/en/docs/workspaces"><code>workspace</code></a>特性很好的融合在了一起，前者负责<code>版本管理与发布</code>，后者负责<code>依赖管理</code>。</p>
+<p><code>workspace</code>的特点：在所有workspaces所匹配的项目路径下会执行统一的yarn命令，包含测试、安装依赖或执行脚本。</p>
+<p>在lerna中启用workspace：</p>
+<h3 id="lernajson中lerna的设置"><code>lerna.json</code>中lerna的设置</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#f92672">&#34;npmClient&#34;</span>: <span style="color:#e6db74">&#34;yarn&#34;</span>,
+    <span style="color:#f92672">&#34;useWorkspaces&#34;</span>: <span style="color:#66d9ef">true</span>,
+    <span style="color:#960050;background-color:#1e0010">...</span>
+}
+</code></pre></div><p>lerna与<code>yarn workspace</code>有很好的相性，设置<code>useWorkspaces</code>等价于使用<code>bootstrap</code>命令的<code>--use-workspaces</code>选项，详情见<a href="https://github.com/lerna/lerna/blob/master/commands/bootstrap/README.md#--use-workspaces">bootstrap</a></p>
+<h3 id="根目录下的packagejson">根目录下的<code>package.json</code></h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#f92672">&#34;private&#34;</span>: <span style="color:#66d9ef">true</span>,
+    <span style="color:#f92672">&#34;workspaces&#34;</span>: [
+    <span style="color:#e6db74">&#34;packages/*&#34;</span>
+    ],
+    <span style="color:#960050;background-color:#1e0010">...</span>
+}
+</code></pre></div><p><code>&quot;private&quot;: true</code>是必须的，<code>workspaces</code>为工作空间中所包含的项目路径，详见<a href="https://yarnpkg.com/en/docs/workspaces">workspace</a></p>
+<h3 id="注意事项">注意事项</h3>
+<p>需要注意的是，若开启了workspace功能，则lerna会将<code>package.json</code>中<code>workspaces</code>中所设置的项目路径作为<code>lerna packages</code>的路径，而不会使用<code>lerna.json</code>中的<code>packages</code>值。相关源码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">get</span> <span style="color:#a6e22e">packageConfigs</span>() {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">useWorkspaces</span>) {
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">workspaces</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">manifest</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#34;workspaces&#34;</span>);
+        ...
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">workspaces</span>.<span style="color:#a6e22e">packages</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">workspaces</span>;
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">packages</span> <span style="color:#f92672">||</span> [<span style="color:#a6e22e">Project</span>.<span style="color:#a6e22e">PACKAGE_GLOB</span>];
+  }
+</code></pre></div><p>也就是说，如果使用<code>workspace</code>时未开启<code>useWorkspaces</code>，则<code>yarn</code>与<code>lerna</code>会分别管理对应的项目路径。</p>
+<p>以<a href="https://github.com/vuejs/vue-cli">vue-cli</a>为例，它的<code>lerna.json</code>配置:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;npmClient&#34;</span>: <span style="color:#e6db74">&#34;yarn&#34;</span>,
+  <span style="color:#f92672">&#34;useWorkspaces&#34;</span>: <span style="color:#66d9ef">false</span>,
+  <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;3.2.1&#34;</span>,
+  <span style="color:#f92672">&#34;packages&#34;</span>: [
+    <span style="color:#e6db74">&#34;packages/@vue/babel-preset-app&#34;</span>,
+    <span style="color:#e6db74">&#34;packages/@vue/cli*&#34;</span>
+  ]
+}
+</code></pre></div><p>根目录下的<code>package.json</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;private&#34;</span>: <span style="color:#66d9ef">true</span>,
+  <span style="color:#f92672">&#34;workspaces&#34;</span>: [
+    <span style="color:#e6db74">&#34;packages/@vue/*&#34;</span>,
+    <span style="color:#e6db74">&#34;packages/test/*&#34;</span>,
+    <span style="color:#e6db74">&#34;packages/vue-cli-version-marker&#34;</span>
+  ],
+  <span style="color:#960050;background-color:#1e0010">...</span>
+}
+</code></pre></div><p>它将<code>useWorkspaces</code>设为了false，那么意味着使用<code>yarn</code>管理的是<code>package.json</code>中<code>workspaces</code>所对应的项目路径下的依赖，有<code>@vue</code>下的所有项目，<code>test</code>中的测试文件和<code>vue-cli-version-marker</code>。而<code>leran</code>管理的是<code>lerna.json</code>中<code>packages</code>所对应的<code>@vue/babel-preset-app</code>和<code>@vue/cli*</code>的版本与发布。</p>
+<p>而在<code>nuxt</code>中则是<code>lerna</code>与<code>yarn workspace</code>均采用了相同的package路径。</p>
+<h1 id="依赖管理与npm-script">依赖管理与<code>npm script</code></h1>
+<p>下面所操作的<code>lerna</code>项目默认开启了<code>useWorkspaces</code></p>
+<h2 id="初始化">初始化</h2>
+<h3 id="安装lerna与初始化lerna项目">安装lerna与初始化lerna项目</h3>
+<pre><code>```shell
+yarn global add lerna
+mkdir monorepo &amp;&amp; cd monorepo
+lerna init
+```
+</code></pre>
+<h3 id="创建package">创建package</h3>
+<pre><code>```shell
+cd packages
+mkdir module-a &amp;&amp; cd module-a
+yarn init
+```
+
+将package的`name`设置成统一的`@repo/module`的格式，在这里就是`@monorepo/module-a`
+</code></pre>
+<h2 id="依赖的安装与移除">依赖的安装与移除</h2>
+<h3 id="添加所有package中的依赖">添加所有package中的依赖</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna add dep-name
+</code></pre></div><p>会将<code>dep-name</code>包安装到packages所包含的package中。</p>
+<h3 id="移除所有package中的依赖">移除所有package中的依赖</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna exec -- yarn remove dep-name
+</code></pre></div><p>移除packages所包含的package中的<code>dep-name</code>包。</p>
+<h3 id="给指定package中添加依赖">给指定package中添加依赖</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna add dep-name --scope module-a
+</code></pre></div><p>在<code>module-a</code>package中添加的<code>dep-name</code>包，使用<code>--scope</code>命令限定目标package范围。</p>
+<h3 id="移除指定package中的依赖">移除指定package中的依赖</h3>
+<p>lerna目前并没有<code>remove</code>这种命令，需要在对应package的<code>package.json</code>中删除对应依赖，然后执行<code>lerna bootstrap</code>即可。</p>
+<h3 id="在package中引入相邻依赖">在package中引入相邻依赖</h3>
+<p>目前的项目结构如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">monorepo/
+    packages/
+        module-a/
+        module-b/
+</code></pre></div><p>如果想在<code>module-b</code>中引入<code>module-a</code>，执行如下命令即可</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna add @monorepo/module-a --scope @monorepo/module-b
+</code></pre></div><h2 id="执行npm-script">执行npm script</h2>
+<h3 id="执行所有package中的scripts命令">执行所有package中的<code>scripts</code>命令</h3>
+<p>使用lerna的<code>run</code>命令就可以在每个package中执行所包含的对应脚本，前提是需要先在package中写好公共的<code>scripts</code>。</p>
+<p>比如，若每个package均有<code>test</code>script</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#e6db74">&#34;name&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;@monorepo/module-a&#34;</span><span style="color:#960050;background-color:#1e0010">,</span>
+<span style="color:#e6db74">&#34;scripts&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> {
+    <span style="color:#f92672">&#34;test&#34;</span>: <span style="color:#e6db74">&#34;jest&#34;</span>
+}
+</code></pre></div><p>则使用如下命令即可在每个package内执行测试：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna run test --stream
+</code></pre></div><h3 id="执行指定package中的scripts命令">执行指定package中的scripts命令</h3>
+<p>需要使用<code>--scope</code>过滤器来限定作用范围</p>
+<p>比如，在project-alpha的<code>package.json</code>中：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;project-alpha&#34;</span>,
+    <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+    <span style="color:#f92672">&#34;main&#34;</span>: <span style="color:#e6db74">&#34;index.js&#34;</span>,
+    <span style="color:#f92672">&#34;scripts&#34;</span>: {
+    <span style="color:#f92672">&#34;dev&#34;</span>: <span style="color:#e6db74">&#34;node index.js&#34;</span>
+    }
+}
+</code></pre></div><p>运行它的<code>dev</code>命令需用下面的语句：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lerna exec --scope project-alpha -- yarn run dev
+</code></pre></div><h2 id="采用统一的规范配置">采用统一的规范配置</h2>
+<h3 id="以husky和prettier为例">以husky和prettier为例</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">yarn add --dev husky prettier lint-staged -W
+</code></pre></div><p>使用<code>-W</code>选项会将依赖安装到<code>workspace</code>的根目录下。</p>
+<h3 id="在根目录下正常设置相关配置文件">在根目录下正常设置相关配置文件</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">.prettierrc</span>
+{
+    <span style="color:#f92672">&#34;singleQuote&#34;</span>: <span style="color:#66d9ef">true</span>,
+    <span style="color:#f92672">&#34;jsxBracketSameLine&#34;</span>: <span style="color:#66d9ef">true</span>,
+    <span style="color:#f92672">&#34;bracketSpacing&#34;</span>: <span style="color:#66d9ef">true</span>,
+    <span style="color:#f92672">&#34;semi&#34;</span>: <span style="color:#66d9ef">true</span>,
+    <span style="color:#f92672">&#34;arrowParens&#34;</span>: <span style="color:#e6db74">&#34;always&#34;</span>,
+    <span style="color:#f92672">&#34;printWidth&#34;</span>: <span style="color:#ae81ff">120</span>
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">package.json</span>
+{
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#f92672">&#34;scripts&#34;</span>: {
+        <span style="color:#960050;background-color:#1e0010">...</span>
+        <span style="color:#f92672">&#34;precommit&#34;</span>: <span style="color:#e6db74">&#34;lint-staged&#34;</span>,
+        <span style="color:#960050;background-color:#1e0010">...</span>
+    },
+    <span style="color:#f92672">&#34;lint-staged&#34;</span>: {
+        <span style="color:#f92672">&#34;packages/**/*.{js,jsx}&#34;</span>: [
+            <span style="color:#e6db74">&#34;prettier --write&#34;</span>,
+            <span style="color:#e6db74">&#34;git add&#34;</span>
+        ]
+    },
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#f92672">&#34;devDependencies&#34;</span>: {
+        <span style="color:#f92672">&#34;husky&#34;</span>: <span style="color:#e6db74">&#34;^1.2.1&#34;</span>,
+        <span style="color:#f92672">&#34;lerna&#34;</span>: <span style="color:#e6db74">&#34;^3.8.0&#34;</span>,
+        <span style="color:#f92672">&#34;lint-staged&#34;</span>: <span style="color:#e6db74">&#34;^8.1.0&#34;</span>,
+        <span style="color:#f92672">&#34;prettier&#34;</span>: <span style="color:#e6db74">&#34;^1.15.3&#34;</span>
+    }
+}
+</code></pre></div><h3 id="测试">测试</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">git commit -m <span style="color:#e6db74">&#34;lint test&#34;</span>
+</code></pre></div><p>这样，每次在根目录下执行git命令时会对里面的所有package进行lint</p>
+<p><strong>共用的<code>devDependencies</code></strong></p>
+<p>多数package中共用的<code>devDependencies</code>类型的库都可以提升到项目根目录中，这样做的好处有：</p>
+<ol>
+<li>所有包使用相同版本的依赖，统一管理</li>
+<li>可使用自动化工具让根目录下的依赖保持更新</li>
+<li>减少依赖的安装时间，一次安装，多处使用</li>
+<li>节省存储空间，安装在根目录的<code>node_module</code>下</li>
+</ol>
+<h1 id="提交与发布">提交与发布</h1>
+<p>与<code>lerna</code>中版本控制及发布相关的概念与工具：</p>
+<ul>
+<li>
+<p><a href="https://www.conventionalcommits.org">Conventional Commits</a></p>
+<p><code>约定式提交</code>。一种源于<a href="https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits">AngularJS commit rules</a>的提交规则。</p>
+</li>
+<li>
+<p><a href="https://github.com/conventional-changelog/conventional-changelog">Conventional Changelog</a></p>
+<p>用于从git元数据中生成<code>CHANGELOG.md</code>的工具，该工具仅当遵循<code>Conventional Commits</code>规则时起作用。</p>
+</li>
+<li>
+<p><a href="https://github.com/semantic-release/semantic-release">Semantic Release</a></p>
+<p><code>lerna</code>中内置的一个工具，用于生成版本号、git标签、Conventional Changelog、发布的提交信息以及修改记录。可以在<code>lerna.json</code>中将<code>conventionalCommits</code>标记设为<code>true</code>开启，该工具仅当遵循<code>Conventional Commits</code>规则时起作用。</p>
+</li>
+<li>
+<p><a href="https://github.com/marionebl/commitlint">Commitlint</a></p>
+<p>一个遵循<code>Conventional Commits</code>的commit信息格式化工具</p>
+</li>
+</ul>
+<p>具体的操作与demo可查看这篇<a href="https://michaljanaszek.com/blog/lerna-conventional-commits">文章</a></p>
+<h1 id="命令">命令</h1>
+<table>
+<thead>
+<tr>
+<th>command</th>
+<th>value</th>
+<th>options</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lerna init</code></td>
+<td>创建一个新的lerna项目或将已存在项目改造为lerna项目</td>
+<td><code>--independent</code>/<code>-i</code></td>
+</tr>
+<tr>
+<td><code>lerna bootstrap</code></td>
+<td>当使用<code>yarn</code>并开启了<code>workspace</code>时等价于在根目录执行<code>yarn install</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>lerna import &lt;pathToRepo&gt;</code></td>
+<td>将本地路径<code>&lt;pathToRepo&gt;</code>中的包导入到<code>packages/&lt;directory-name&gt;</code>，并提交操作记录</td>
+<td></td>
+</tr>
+<tr>
+<td><code>lerna publish</code></td>
+<td>对更新后的包发布新版本；使用新版本号标记；升级所有npm和git中的库</td>
+<td><code>--npm-tag [tagname]</code>, <code>--canary/-c</code>, <code>--skip-git</code>, <code>--force-publish [packages]</code></td>
+</tr>
+<tr>
+<td><code>lerna change</code></td>
+<td>检查自上次发布以来改动的包</td>
+<td></td>
+</tr>
+<tr>
+<td><code>lerna diff [package?]</code></td>
+<td>比较自上次发布以来的所有或指定的包</td>
+<td></td>
+</tr>
+<tr>
+<td><code>lerna run [script]</code></td>
+<td>在每个包中执行一个npm script</td>
+<td></td>
+</tr>
+<tr>
+<td><code>lerna ls</code></td>
+<td>列出当前lerna项目中的public包</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="过滤器">过滤器</h2>
+<p>用来过滤命令执行时的范围，详见<a href="https://www.npmjs.com/package/@lerna/filter-options"><code>@lerna/filter-options</code></a></p>
+<table>
+<thead>
+<tr>
+<th>filter</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--scope &lt;glob&gt;</code></td>
+<td>仅包含glob所匹配到的package</td>
+</tr>
+<tr>
+<td><code>--ignore &lt;glob&gt;</code></td>
+<td>排除glob匹配到的package</td>
+</tr>
+<tr>
+<td><code>--no-private</code></td>
+<td>排除私有package，默认是包含的</td>
+</tr>
+</tbody>
+</table>
+<p>注意，如果package想要使用npm script执行本地的可执行文件需要自己单独设置依赖。并且，在package的<code>package.json</code>中，一般还需设置在runtime需要的依赖和一些公共的<code>scripts</code></p>
+<h1 id="其他">其他</h1>
+<ul>
+<li>跨项目本地开发</li>
+<li>TypeScript项目</li>
+</ul>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://lernajs.io/">lerna</a></li>
+<li><a href="https://github.com/lerna/lerna">lerna/lerna in Github</a></li>
+<li><a href="https://yarnpkg.com/en/docs/workspaces">Workspaces</a></li>
+<li><a href="https://medium.com/trabe/monorepo-setup-with-lerna-and-yarn-workspaces-5d747d7c0e91">Monorepo setup with Lerna and Yarn workspaces</a></li>
+<li><a href="https://medium.com/@jsilvax/a-workflow-guide-for-lerna-with-yarn-workspaces-60f97481149d">A Beginner&rsquo;s Guide to Lerna with Yarn Workspaces</a></li>
+<li><a href="https://blog.logrocket.com/setting-up-a-monorepo-with-lerna-for-a-typescript-project-b6a81fe8e4f8">Setting up a monorepo with Lerna for a TypeScript project</a></li>
+<li><a href="https://juejin.im/post/5a989fb451882555731b88c2">lerna管理前端packages的最佳实践 - 掘金</a></li>
+<li><a href="https://michaljanaszek.com/blog/lerna-conventional-commits">Semantic Release with Lerna and Conventional Commits</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/devops/study-on-lerna/">http://yrq110.me/post/devops/study-on-lerna/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/lerna'>lerna</a></li>
+                
+                <li><a href='http://yrq110.me/tags/git'>git</a></li>
+                
+                <li><a href='http://yrq110.me/tags/yarn'>yarn</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/playwright-have-fun/" title="源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析">源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

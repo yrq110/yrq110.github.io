@@ -6,10 +6,25 @@
     <description>Recent content on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 19 Feb 2020 01:44:17 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 09 Mar 2020 13:49:15 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</title>
+      <link>http://yrq110.me/post/front-end/playwright-have-fun/</link>
+      <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/playwright-have-fun/</guid>
+      <description>&lt;p&gt;从以下几个方面分析下Puppeteer的衍生项目&lt;strong&gt;Playwirght&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;基本介绍与使用示例&lt;/li&gt;
+&lt;li&gt;云原生：BrowserContext的隔离与增强&lt;/li&gt;
+&lt;li&gt;跨平台：不同平台通用的Client与Server实现&lt;/li&gt;
+&lt;li&gt;多选择器：内置与自定义选择器引擎&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
     
     <item>
       <title>使用TypeScript开发Web应用的最佳实践</title>
@@ -74,7 +89,7 @@
     </item>
     
     <item>
-      <title>puppeteer&#43;canvas的e2e测试实践</title>
+      <title>Puppeteer&#43;Canvas的E2E测试实践</title>
       <link>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</link>
       <pubDate>Tue, 17 Dec 2019 14:14:30 +0800</pubDate>
       
@@ -85,10 +100,10 @@
     
     <item>
       <title>Lerna的依赖管理及hoisting浅析</title>
-      <link>http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/</link>
+      <link>http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/</link>
       <pubDate>Mon, 02 Dec 2019 11:29:23 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/tool/how-lerna-manage-package-dependencies/</guid>
+      <guid>http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/</guid>
       <description>&lt;p&gt;简单分析下lerna中依赖管理的部分&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在使用lerna时，若使用yarn作为npmClient并开启workspace功能，则bootstrap命令会代理给yarn执行&lt;/li&gt;
@@ -167,7 +182,7 @@
     </item>
     
     <item>
-      <title>puppeteer常用API浅析</title>
+      <title>Puppeteer常用API浅析</title>
       <link>http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/</link>
       <pubDate>Fri, 19 Apr 2019 13:12:34 +0800</pubDate>
       
@@ -236,7 +251,7 @@
     </item>
     
     <item>
-      <title>可爱的puppeteer使用小技巧</title>
+      <title>可爱的Puppeteer使用小技巧</title>
       <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
       <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
       
@@ -272,7 +287,7 @@
     </item>
     
     <item>
-      <title>配置electron中puppeteer executablePath的正确姿势</title>
+      <title>配置Electron中Puppeteer executablePath的正确姿势</title>
       <link>http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/</link>
       <pubDate>Sun, 06 Jan 2019 19:52:34 +0800</pubDate>
       
@@ -286,10 +301,10 @@
     
     <item>
       <title>git rebase/submodule/flow介绍</title>
-      <link>http://yrq110.me/post/tool/git-rebase-submodule-and-flow/</link>
+      <link>http://yrq110.me/post/devops/git-rebase-submodule-and-flow/</link>
       <pubDate>Sat, 29 Dec 2018 10:23:52 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/tool/git-rebase-submodule-and-flow/</guid>
+      <guid>http://yrq110.me/post/devops/git-rebase-submodule-and-flow/</guid>
       <description>&lt;p&gt;整理并学习几个git中的工具:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://git-scm.com/docs/git-rebase&#34;&gt;rebase&lt;/a&gt; - 用于合并提交，重写历史，较&lt;code&gt;merge&lt;/code&gt;更复杂&lt;/li&gt;
@@ -315,10 +330,10 @@
     
     <item>
       <title>Lerna初探</title>
-      <link>http://yrq110.me/post/tool/study-on-lerna/</link>
+      <link>http://yrq110.me/post/devops/study-on-lerna/</link>
       <pubDate>Thu, 27 Dec 2018 14:39:37 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/tool/study-on-lerna/</guid>
+      <guid>http://yrq110.me/post/devops/study-on-lerna/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://github.com/lerna/lerna&#34;&gt;lerna&lt;/a&gt;是一个用于管理包含多个package结构的代码仓库的工具，优化工作流。新版的&lt;a href=&#34;https://github.com/vuejs/vue-cli&#34;&gt;&lt;strong&gt;vue-cli&lt;/strong&gt;&lt;/a&gt;、&lt;a href=&#34;https://github.com/nuxt/nuxt.js&#34;&gt;&lt;strong&gt;nuxt&lt;/strong&gt;&lt;/a&gt;与&lt;a href=&#34;https://github.com/babel/babel&#34;&gt;&lt;strong&gt;babel&lt;/strong&gt;&lt;/a&gt;均使用lerna进行自身的package管理。&lt;/p&gt;
 &lt;p&gt;package可理解为功能模块或子项目。&lt;/p&gt;</description>
     </item>
@@ -362,10 +377,10 @@
     
     <item>
       <title>配置SSH访问GitHub</title>
-      <link>http://yrq110.me/post/tool/github-ssh-config/</link>
+      <link>http://yrq110.me/post/devops/github-ssh-config/</link>
       <pubDate>Thu, 18 Aug 2016 22:25:39 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/tool/github-ssh-config/</guid>
+      <guid>http://yrq110.me/post/devops/github-ssh-config/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://help.github.com/categories/ssh&#34;&gt;GitHub_SSH帮助文件&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     

@@ -13,10 +13,10 @@
     
     <item>
       <title>git rebase/submodule/flow介绍</title>
-      <link>http://yrq110.me/post/tool/git-rebase-submodule-and-flow/</link>
+      <link>http://yrq110.me/post/devops/git-rebase-submodule-and-flow/</link>
       <pubDate>Sat, 29 Dec 2018 10:23:52 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/tool/git-rebase-submodule-and-flow/</guid>
+      <guid>http://yrq110.me/post/devops/git-rebase-submodule-and-flow/</guid>
       <description>&lt;p&gt;整理并学习几个git中的工具:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://git-scm.com/docs/git-rebase&#34;&gt;rebase&lt;/a&gt; - 用于合并提交，重写历史，较&lt;code&gt;merge&lt;/code&gt;更复杂&lt;/li&gt;
@@ -27,10 +27,10 @@
     
     <item>
       <title>Lerna初探</title>
-      <link>http://yrq110.me/post/tool/study-on-lerna/</link>
+      <link>http://yrq110.me/post/devops/study-on-lerna/</link>
       <pubDate>Thu, 27 Dec 2018 14:39:37 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/tool/study-on-lerna/</guid>
+      <guid>http://yrq110.me/post/devops/study-on-lerna/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://github.com/lerna/lerna&#34;&gt;lerna&lt;/a&gt;是一个用于管理包含多个package结构的代码仓库的工具，优化工作流。新版的&lt;a href=&#34;https://github.com/vuejs/vue-cli&#34;&gt;&lt;strong&gt;vue-cli&lt;/strong&gt;&lt;/a&gt;、&lt;a href=&#34;https://github.com/nuxt/nuxt.js&#34;&gt;&lt;strong&gt;nuxt&lt;/strong&gt;&lt;/a&gt;与&lt;a href=&#34;https://github.com/babel/babel&#34;&gt;&lt;strong&gt;babel&lt;/strong&gt;&lt;/a&gt;均使用lerna进行自身的package管理。&lt;/p&gt;
 &lt;p&gt;package可理解为功能模块或子项目。&lt;/p&gt;</description>
     </item>
