@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>下一代跨平台浏览器自动化工具？Playwright简析</title>
+      <title>跨平台的浏览器自动化工具Playwright简析</title>
       <link>http://yrq110.me/post/front-end/dive-into-playwright/</link>
       <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
       
@@ -40,6 +40,16 @@
 &lt;li&gt;其他使用技巧&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;译自：&lt;a href=&#34;https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&amp;amp;utm_campaign=db304f7430-Qiita_newsletter_399_02_12_2020&amp;amp;utm_medium=email&amp;amp;utm_term=0_e44feaa081-db304f7430-33396633&#34;&gt;TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得&lt;/a&gt; | &lt;a href=&#34;https://qiita.com/jagaapple&#34;&gt;@jagaapple&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Web中茴香豆的几种画法</title>
+      <link>http://yrq110.me/post/front-end/multi-ways-to-draw-graphic-primitives-in-web/</link>
+      <pubDate>Wed, 08 Jan 2020 16:14:20 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/multi-ways-to-draw-graphic-primitives-in-web/</guid>
+      <description>茴香豆的茴字有几种写法？四种。Web中画一个矩形或一条曲线有几种写法？四种。
+画一个矩形 Canvas WebGL SVG WebGPU </description>
     </item>
     
     <item>
