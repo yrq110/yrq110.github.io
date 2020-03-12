@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>下一代跨平台浏览器自动化工具？Playwright简析 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="下一代跨平台浏览器自动化工具？Playwright简析 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-03-09T13:49:15&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-03-09T13:49:15&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="下一代跨平台浏览器自动化工具？Playwright简析">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/dive-into-playwright/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">下一代跨平台浏览器自动化工具？Playwright简析</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年3月9日
+        </date>
+        
+        
+        
+        <div class="post-content">
+            <p>从以下几个方面分析下Puppeteer的衍生项目<strong>Playwirght</strong>：</p>
+<ul>
+<li>基本介绍与使用示例</li>
+<li>云原生：BrowserContext的隔离与增强</li>
+<li>跨平台：不同平台通用的Client与Server实现</li>
+<li>多选择器：内置与自定义选择器引擎</li>
+</ul>
+<p>之前使用并介绍过一个不错的浏览器自动化测试工具<a href="https://github.com/puppeteer/puppeteer"><strong>Puppeteer</strong></a>，具有API易于使用且有关Chrome浏览器自动化功能强大的特点。</p>
+<p>在最近出现了另一个浏览器自动化项目<a href="https://github.com/microsoft/playwright"><strong>Playwright</strong></a>，该项目支持多种内核(chromium, webkit, firefox)的浏览器自动化操作，弥补了Puppeteer本身无法跨平台的不足(虽存在puppeteer-firefox)，API风格与Puppeteer保持一致，一定程度上算是Puppeteer的衍生品。</p>
+<p>下面来尝尝鲜，看看它与puppeteer具体有什么不同，简要分析其原理与设计。</p>
+<h2 id="基本介绍">基本介绍</h2>
+<p>为何会产生这个项目，与Puppeteer有什么关系，在它的<a href="https://github.com/microsoft/playwright/blob/master/README.md#faq">README的faq</a>中有详细介绍。</p>
+<p>简要的说就是：</p>
+<ol>
+<li>弥补了Puppeteer的<strong>平台局限性</strong>，为所有热门渲染引擎提供类似的功能</li>
+<li>借鉴了Puppeteer<strong>测试友好的API设计</strong>(如click会等到元素可用并默认可见)</li>
+<li>目标<strong>云原生</strong>(cloud-native)，<strong>隔离了BrowserContext</strong>，使其不仅是一个页面而将它当做一个库来操作，可以在本地创建也可以作为服务提供</li>
+<li>这些改动会对Puppteer的<strong>API产生Breaking change</strong>，因此决定重启一个干净的项目</li>
+</ol>
+<p>其次Playwright完全采用TypeScript编写，利用类型优势的同时也便于在实现跨平台时进行统一的核心组件结构设计。需要使用Node 10或更高版本的环境才可运行。</p>
+<blockquote>
+<p>本文所用Playwright版本为<code>0.11.1</code>。目前Playwright的版本内容还处于不稳定的状态，下面展示的很多内容在未来可能都会发生改变</p>
+</blockquote>
+<h2 id="示例分析">示例分析</h2>
+<p>从官方文档中截图操作的示例来看下两种工具的API使用</p>
+<p><a href="https://github.com/puppeteer/puppeteer#usage">Puppeteer Page screenshot Example</a>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;puppeteer&#39;</span>);
+
+(<span style="color:#a6e22e">async</span> () =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
+  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://example.com&#39;</span>);
+  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({<span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;example.png&#39;</span>});
+
+  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+})();
+</code></pre></div><p><a href="https://github.com/microsoft/playwright#page-screenshot">Playwright Page screenshot Example</a>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">playwright</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;playwright&#39;</span>);
+
+(<span style="color:#a6e22e">async</span> () =&gt; {
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browserType</span> <span style="color:#66d9ef">of</span> [<span style="color:#e6db74">&#39;chromium&#39;</span>, <span style="color:#e6db74">&#39;firefox&#39;</span>, <span style="color:#e6db74">&#39;webkit&#39;</span>]) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">playwright</span>[<span style="color:#a6e22e">browserType</span>].<span style="color:#a6e22e">launch</span>();
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>();
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;http://whatsmyuseragent.org/&#39;</span>);
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({ <span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`example-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">browserType</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.png`</span> });
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+  }
+})();
+</code></pre></div><p>可以注意到有<strong>一处修改</strong>和<strong>一处新增</strong>：</p>
+<ul>
+<li>修改：首先在客户端启动时，由于跨平台特性需要在创建时使用指定平台的类<code>playwright[browserType]</code></li>
+<li>新增：Playwright的示例在创建新页面前需要先创建一个上下文，然后在context上创建页面</li>
+</ul>
+<p>熟悉Puppeteer的同学也许知道，<code>browser.newPage()</code>实际上也是执行内部默认BrowserContext实例上的newPage方法，至于BrowserContext的所处位置可以参考下面的Puppeteer架构图：</p>
+<p><img src="https://user-images.githubusercontent.com/746130/40333229-5df5480c-5d0c-11e8-83cb-c3e371de7374.png" alt=""></p>
+<p>在BrowserContext实例中管理会话对象与页面对象。</p>
+<p>实际上在Playwright中写成<code>browser.newPage()</code>也是可以的，但它的内部执行与Puppeteer不同：Puppeteer会在默认的context上创建页面，而Playwright会重新创建新的context并创建页面，具体过程会在之后看到。至于Playwright为什么在示例中通过这种显式的创建新的context方法，可能是为了故意体现这个特点。</p>
+<p>在Playwright中，Browser实例的默认context仅会当监听到targetCreated事件时不存在指定context时才会用到：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">Browser</span> {
+  <span style="color:#a6e22e">readonly</span> <span style="color:#a6e22e">_defaultContext</span>: <span style="color:#66d9ef">CRBrowserContext</span>;
+  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_targetCreated() {</span>
+    ...
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">browserContextId</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_contexts</span>.<span style="color:#a6e22e">has</span>(<span style="color:#a6e22e">browserContextId</span>)) <span style="color:#f92672">?</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_contexts</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">browserContextId</span>)<span style="color:#f92672">!</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>;
+    ...
+  }
+}
+</code></pre></div><h2 id="隔离与增强browsercontext---云原生">隔离与增强BrowserContext - 云原生</h2>
+<p>对开发者<em>目标云原生</em>的描述不做说明(<del>因为不怎么懂</del>)，仅关注下它所提到的对BrowserContext做出的改变，下面从一个例子开始。</p>
+<h3 id="创建一个页面">创建一个页面</h3>
+<p>来看看在两个框架在<em>通过Browser实例创建页面时</em>的<strong>内部执行流程</strong>有什么不同：</p>
+<p>Puppeteer中：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Browser.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Browser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
+  <span style="color:#75715e">/* 第一步 */</span>
+  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>() {
+    <span style="color:#75715e">// 利用默认context创建页面
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>.<span style="color:#a6e22e">newPage</span>();
+  }
+  <span style="color:#75715e">/* 第三步 */</span>
+  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#a6e22e">contextId</span>) {
+    <span style="color:#75715e">// 向远程浏览器发送createTarget消息
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
+  }
+}
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
+  <span style="color:#75715e">/* 第二步 */</span>
+  <span style="color:#a6e22e">newPage</span>() {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_id</span>);
+  }
+}
+</code></pre></div><p>在Playwright中：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// chromium/crBrowser.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">Browser</span> {
+  <span style="color:#75715e">/* 第一步 */</span>
+  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>(<span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">options</span>);
+  }
+}
+
+<span style="color:#75715e">// browser.ts
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 第二步 */</span>
+<span style="color:#66d9ef">export</span> <span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#a6e22e">browser</span>: <span style="color:#66d9ef">Browser</span>, <span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
+  <span style="color:#75715e">// 创建一个新的context来创建页面
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>(<span style="color:#a6e22e">options</span>);
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
+  <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">_ownedContext</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">context</span>;
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
+}
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">BrowserContext</span> {
+  <span style="color:#75715e">/* 第三步 */</span>
+  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#75715e">// 向远程浏览器发送createTarget消息
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">targetId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, { <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span>: <span style="color:#66d9ef">this._browserContextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span> });
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>)<span style="color:#f92672">!</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span><span style="color:#f92672">!</span>;
+  }
+}
+</code></pre></div><p>可以看出两个很大的变动，在Playwright中：</p>
+<ol>
+<li>消息的操作从<strong>Browser</strong>移动到了<strong>BrowserContext</strong>中</li>
+<li>对于每个新页面会<strong>新建context</strong>，而不是像Puppeteer使用默认的context</li>
+</ol>
+<h3 id="browsercontext的能力扩展">BrowserContext的能力扩展</h3>
+<p>从项目的多个PR中可以看出，开发者将将下游的Page一些属性和能力移到了BrowserContext中，并且实现了其他功能，如：</p>
+<ol>
+<li>Page提升至BrowserContext的能力</li>
+</ol>
+<ul>
+<li>Cookie管理<a href="https://github.com/microsoft/playwright/pull/82">#82</a></li>
+<li>认证配置<a href="https://github.com/microsoft/playwright/pull/1267">#1267</a>：Page.authenticate =&gt; BrowserContext.setHTTPCredentials</li>
+<li>离线模式<a href="https://github.com/microsoft/playwright/pull/1229">#1229</a>: Page.setOfflineMode =&gt; BrowserContext.setOffline</li>
+</ul>
+<ol start="2">
+<li>能力增强</li>
+</ol>
+<ul>
+<li>设置默认超时<a href="https://github.com/microsoft/playwright/pull/992">#992</a></li>
+<li>额外的HTTP Header配置<a href="https://github.com/microsoft/playwright/pull/1116">#1116</a>: BrowserContext.setDefaultHTTPHeaders</li>
+<li>Document中的脚本注入<a href="https://github.com/microsoft/playwright/pull/1136">#1136</a>: BrowserContext.evaluateOnNewDocument</li>
+<li>匹配URL的Route处理<a href="https://github.com/microsoft/playwright/pull/1295">#1295</a>: BrowserContext.route()</li>
+</ul>
+<ol start="3">
+<li>其他</li>
+</ol>
+<ul>
+<li>Browser中复用BrowserContext<a href="https://github.com/microsoft/playwright/pull/201">#201</a></li>
+</ul>
+<h2 id="各平台的client与server实现---跨平台">各平台的Client与Server实现 - 跨平台</h2>
+<p>为了实现跨平台，Playwright设计了一些通用的全局组件与实现统一标准的各平台组件来实现Client，供Node端使用，同时也提供了针对每种平台的用于远程调试的Server，通过Connection与Client通信，收发消息执行对应的自动化操作。</p>
+<h3 id="client组件">Client组件</h3>
+<p>三种平台均实现了下面这些Client核心组件</p>
+<ul>
+<li>客户端与页面: ：Browser, BrowserContext, Page</li>
+<li>连接与会话：Connection, Session</li>
+<li>执行上下文与注入脚本：ExecutionContext</li>
+<li>网络管理与请求：NetworkManager, InterceptableRequest</li>
+<li>用户输入：RawKeyboardImpl, RawMouseImpl</li>
+</ul>
+<p>通过分析源码整理出这些类之间的关系大致如下图所示：</p>
+<p><img src="/images/blog/front-end/playwright-have-fun/framework.png" alt=""></p>
+<p>可以看出这个结构与Puppeteer非常相似，在多个平台的实现中使用共同的组件与架构来实现跨平台的特性。</p>
+<p><strong>能力差异</strong></p>
+<p>目前chromium端的能力是最丰富的，这源于Puppeteer的基础和CDP提供的细粒度操作。不同平台的client相关文件对比如下图：</p>
+<p><img src="/images/blog/front-end/playwright-have-fun/client-files.png" alt=""></p>
+<p>所有平台的Browser实例通用API如下：</p>
+<ul>
+<li>event: &lsquo;disconnected&rsquo;</li>
+<li>browser.close()</li>
+<li>browser.contexts()</li>
+<li>browser.isConnected()</li>
+<li>browser.newContext([options])</li>
+<li>browser.newPage([options])</li>
+</ul>
+<p>其中ChromiumBrowser独有的能力有Tracing, ServiceWorker等。</p>
+<h3 id="server组件">Server组件</h3>
+<p>除了的可以处理事件、执行设置与操作常用对象能力的客户端外，还需要启动<strong>一个浏览器实例</strong>和建立<strong>一个用于信息交换的通道</strong>。</p>
+<p>即前述框图中的<strong>BrowserServer</strong>与<strong>Transport</strong>。</p>
+<p>Server中包含启动浏览器实例的子进程、WS端口信息与数据通道实例。以chromium server为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// src/server/chromium.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Chromium</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">BrowserType</span> {
+  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">launch() {</span>
+    <span style="color:#75715e">// 使用local模式启动server
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">browserServer</span>, <span style="color:#a6e22e">transport</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_launchServer</span>(<span style="color:#a6e22e">options</span>, <span style="color:#e6db74">&#39;local&#39;</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">CRBrowser</span>.<span style="color:#a6e22e">connect</span>(<span style="color:#a6e22e">transport</span><span style="color:#f92672">!</span>, <span style="color:#a6e22e">options</span>);
+    <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span> <span style="color:#f92672">=</span> () <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">browserServer</span>.<span style="color:#a6e22e">close</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">browser</span>;
+  }
+  <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_launchServer() {</span>
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">browserServer</span>: <span style="color:#66d9ef">BrowserServer</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>;
+    <span style="color:#75715e">/* 1. 启动Node子进程，运行浏览器实例 */</span>
+    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">gracefullyClose</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">launchProcess</span>({ ... })
+    <span style="color:#75715e">/* 2. 准备数据通道 */</span>
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">transport</span>: <span style="color:#66d9ef">ConnectionTransport</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>;
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">browserWSEndpoint</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">launchType</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;server&#39;</span>) {
+      ...
+      <span style="color:#75715e">// server模式会获取子进程暴露出的ws端口
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">match</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">waitForLine</span>(<span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">launchedProcess</span>.<span style="color:#a6e22e">stderr</span>, <span style="color:#e6db74">/^DevTools listening on (ws:\/\/.*)$/</span>, <span style="color:#a6e22e">timeout</span>, <span style="color:#a6e22e">timeoutError</span>);
+      <span style="color:#a6e22e">browserWSEndpoint</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">match</span>[<span style="color:#ae81ff">1</span>];
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#75715e">// local模式会利用子进程的标准端口创建数据通道
+</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">transport</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">PipeTransport</span>(<span style="color:#a6e22e">launchedProcess</span>.<span style="color:#a6e22e">stdio</span>[<span style="color:#ae81ff">3</span>] <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">NodeJS</span>.<span style="color:#a6e22e">WritableStream</span>, <span style="color:#a6e22e">launchedProcess</span>.<span style="color:#a6e22e">stdio</span>[<span style="color:#ae81ff">4</span>] <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">NodeJS</span>.<span style="color:#a6e22e">ReadableStream</span>);
+      <span style="color:#a6e22e">browserWSEndpoint</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+    }
+    <span style="color:#a6e22e">browserServer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">BrowserServer</span>(<span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">gracefullyClose</span>, <span style="color:#a6e22e">browserWSEndpoint</span>);
+    <span style="color:#75715e">/* 3. 返回server与transport通道，后续在browser上绑定server的close方法，使用transport通道创建Connection对象来管理所有Session会话 */</span>
+    <span style="color:#66d9ef">return</span> { <span style="color:#a6e22e">browserServer</span>, <span style="color:#a6e22e">transport</span> };
+  }
+}
+</code></pre></div><p>firefox和webkit的流程与chromium的launch流程类似，在创建transport与browserServer时的参数与内容略有不同。</p>
+<h2 id="选择器引擎---多选择器">选择器引擎 - 多选择器</h2>
+<p>选择器可以用在获取元素(ElementHandle)与交互事件等场合，在Puppeteer中仅支持默认的CSS选择器:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;div &gt; span#text&#39;</span>) <span style="color:#75715e">// =&gt; ElementHandle
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">$$</span>(<span style="color:#e6db74">&#39;.user-table&#39;</span>) <span style="color:#75715e">// =&gt; Array&lt;ElementHandle&gt;
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">click</span>(<span style="color:#e6db74">&#39;#button&#39;</span>)
+</code></pre></div><p>Playwright则通过引入多种Selector引擎实现了多种可用选择器，包含CSS、XPath、text、id等，并且可以自定义选择器引擎。</p>
+<p>由于同时支持多种选择器，因此其使用的选择器语句也进行了一定设计。</p>
+<h3 id="选择语句">选择语句</h3>
+<p>由<strong>子句</strong>与<strong><code>&gt;&gt;</code>分隔符</strong>组成。如<code>子句1 &gt;&gt; 子句2 &gt;&gt; 子句3</code>，当存在多个子句时，每个子句的源为前一子句的选择结果。</p>
+<p>子句的格式为<code>引擎=主体</code>。如<code>engine=body</code>。若body中需要使用<code>&gt;&gt;</code>的话需要字符串类型处理，避免被分割成两个子句，如<code>text=&quot;hello &gt;&gt; world&quot;</code>。</p>
+<p>例子：
+<code>css=div &gt;&gt; css=.form &gt; span &gt;&gt; css=input[attr=name]</code> 等价于</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">document
+  .<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;div&#39;</span>)
+  .<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;.form &gt; span&#39;</span>)
+  .<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;input[attr=name]&#39;</span>)
+</code></pre></div><p>格式转换：当格式错误或没有设置格式时，会根据内容尝试转换成正确格式：</p>
+<ul>
+<li>以<code>//</code>开头的选择器主体会被认为是<code>xpath=selector</code></li>
+<li>以<code>&quot;</code>开头的选择器主体会被认为是<code>text=selector</code></li>
+<li>其他情况会被人为是<code>css=selector</code></li>
+</ul>
+<h3 id="内置selector引擎">内置Selector引擎</h3>
+<ol>
+<li>
+<p>CSS</p>
+<p>等价于<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector">Document.querySelector</a></p>
+</li>
+<li>
+<p>XPath</p>
+<p>等价于<a href="https://developer.mozilla.org/en/docs/Web/API/Document/evaluate">Document.evaluate</a></p>
+</li>
+<li>
+<p>text</p>
+<p>找到包含传入文本的text node所在的元素。大小写不敏感，<code>text=Login</code>会匹配到<code>&lt;button&gt;loGIN &lt;/button&gt;</code></p>
+</li>
+<li>
+<p>id</p>
+<p>根据元素的attribute属性来选择。<code>data-test-id=foo</code>等价于<code>querySelector('*[data-test-id=foo]')</code></p>
+</li>
+</ol>
+<h3 id="选择器的实现与内部使用">选择器的实现与内部使用</h3>
+<h4 id="选择器引擎类">选择器引擎类</h4>
+<p>选择器引擎是可以<a href="https://github.com/microsoft/playwright/blob/master/docs/selectors.md#custom-selector-engines">自定义</a>，一般为如下结构：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 一个可以注入到选择器引擎实例中的函数
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createTagNameEngine</span> <span style="color:#f92672">=</span> () <span style="color:#f92672">=&gt;</span> ({
+  <span style="color:#75715e">// 创建一个从根元素到目标元素的选择器（利用选择器选择元素的反向操作）
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">target</span>) {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">tagName</span>) <span style="color:#f92672">===</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">target.tagName</span> : <span style="color:#66d9ef">undefined</span>;
+  },
+  <span style="color:#75715e">// 返回根元素子树上的第一个匹配元素
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">query</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">selector</span>) {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">selector</span>);
+  },
+  <span style="color:#75715e">// 返回根元素子树上的所有匹配元素
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">queryAll</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">selector</span>) {
+    <span style="color:#66d9ef">return</span> Array.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">querySelectorAll</span>(<span style="color:#a6e22e">selector</span>));
+  }
+});
+</code></pre></div><p>所有选择器引擎的本质都是<strong>解析特定的选择器语法，转换成querySelector或evaluate语句</strong>。</p>
+<h4 id="整合与打包">整合与打包</h4>
+<p>内置选择器引擎与配置文件在<code>src/injected</code>目录中，所有文件被整合进了<code>injected.ts</code>中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// src/injected/injected.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Injected</span> {
+  <span style="color:#a6e22e">readonly</span> <span style="color:#a6e22e">engines</span>: <span style="color:#66d9ef">Map</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">SelectorEngine</span><span style="color:#f92672">&gt;</span>;
+  <span style="color:#75715e">// 加载所有内置与自定义选择器引擎
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">constructor</span>(<span style="color:#a6e22e">customEngines</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">engine</span>: <span style="color:#66d9ef">SelectorEngine</span>}[]) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Map</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;css&#39;</span>, <span style="color:#a6e22e">CSSEngine</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;xpath&#39;</span>, <span style="color:#a6e22e">XPathEngine</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;text&#39;</span>, <span style="color:#a6e22e">TextEngine</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;id&#39;</span>, <span style="color:#a6e22e">createAttributeEngine</span>(<span style="color:#e6db74">&#39;id&#39;</span>));
+    ...
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>} <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">customEngines</span>)
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>);
+  }
+  <span style="color:#75715e">// 实现顶层的元素选择方法，递归调用
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">selector</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">root</span>: <span style="color:#66d9ef">Node</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Element</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">parsed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_parseSelector</span>(<span style="color:#a6e22e">selector</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">any</span>)[<span style="color:#e6db74">&#39;querySelector&#39;</span>])
+      <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">&#39;Node is not queryable.&#39;</span>);
+    <span style="color:#75715e">// 递归查找元素
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">SelectorRoot</span>, <span style="color:#a6e22e">parsed</span>, <span style="color:#ae81ff">0</span>);
+  }
+  <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">root</span>: <span style="color:#66d9ef">SelectorRoot</span>, <span style="color:#a6e22e">parsed</span>: <span style="color:#66d9ef">ParsedSelector</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Element</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">current</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">parsed</span>[<span style="color:#a6e22e">index</span>];
+    <span style="color:#a6e22e">root</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">Element</span>).<span style="color:#a6e22e">shadowRoot</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">root</span>;
+    <span style="color:#75715e">// 在根元素上使用当前引擎内置的query与queryAll方法查找元素
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">index</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">parsed</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">engine</span>.<span style="color:#a6e22e">query</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">selector</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">all</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">engine</span>.<span style="color:#a6e22e">queryAll</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">selector</span>);
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">next</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">all</span>) {
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">next</span>, <span style="color:#a6e22e">parsed</span>, <span style="color:#a6e22e">index</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>);
+      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">result</span>)
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">result</span>;
+    }
+  }
+  ...
+
+}
+</code></pre></div><p>至于为何这个类叫Injected，<strong>在playwright构建时会被webpack单独打包成一个inline module；在<code>dom.ts</code>中引入，当调用元素选择方法时，该injected module会被inject进浏览器的执行上下文中，调用其选择方法在Document上执行元素选择，返回经过处理的ElementHandle Promise</strong>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/injected/injected.webpack.config.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> {
+  ...
+  <span style="color:#a6e22e">output</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">filename</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;injectedSource.js&#39;</span>,
+    <span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">__dirname</span>, <span style="color:#e6db74">&#39;../../lib/injected/packed&#39;</span>)
+  },
+  <span style="color:#a6e22e">plugins</span><span style="color:#f92672">:</span> [
+    <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">InlineSource</span>(<span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">join</span>(<span style="color:#a6e22e">__dirname</span>, <span style="color:#e6db74">&#39;..&#39;</span>, <span style="color:#e6db74">&#39;generated&#39;</span>, <span style="color:#e6db74">&#39;injectedSource.ts&#39;</span>)),
+  ]
+}
+<span style="color:#75715e">// src/dom.ts
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">injectedSource</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./generated/injectedSource&#39;</span>;
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FrameExecutionContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">js</span>.<span style="color:#a6e22e">ExecutionContext</span> {
+  <span style="color:#75715e">// 注入所有选择器引擎代码并创建引擎实例
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">_injected</span>()<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">js</span>.<span style="color:#a6e22e">JSHandle</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">selectors</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Selectors</span>.<span style="color:#a6e22e">_instance</span>();
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedPromise</span>) {
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">custom</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>[] <span style="color:#f92672">=</span> [];
+      <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">source</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">selectors</span>.<span style="color:#a6e22e">_engines</span>)
+        <span style="color:#a6e22e">custom</span>.<span style="color:#a6e22e">push</span>(<span style="color:#e6db74">`{ name: &#39;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;, engine: (</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">source</span><span style="color:#e6db74">}</span><span style="color:#e6db74">) }`</span>);
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">source</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`
+</span><span style="color:#e6db74">        new (</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">injectedSource</span>.<span style="color:#a6e22e">source</span><span style="color:#e6db74">}</span><span style="color:#e6db74">)([
+</span><span style="color:#e6db74">          </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">custom</span>.<span style="color:#a6e22e">join</span>(<span style="color:#e6db74">&#39;,\n&#39;</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">        ])
+</span><span style="color:#e6db74">      `</span>;
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedPromise</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">evaluateHandle</span>(<span style="color:#a6e22e">source</span>);
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedGeneration</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">selectors</span>.<span style="color:#a6e22e">_generation</span>;
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedPromise</span>;
+  }
+  <span style="color:#75715e">// $()方法用于选择单个元素-ElementHandle
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_$</span>(<span style="color:#a6e22e">selector</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">scope</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">ElementHandle</span>)<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">ElementHandle</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Element</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">evaluateHandle</span>(
+      <span style="color:#75715e">// 调用injected执行元素选择
+</span><span style="color:#75715e"></span>      (<span style="color:#a6e22e">injected</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Injected</span>, <span style="color:#a6e22e">selector</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">scope</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">Node</span>) =&gt; <span style="color:#a6e22e">injected</span>.<span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">scope</span> <span style="color:#f92672">||</span> document),
+      <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injected</span>(), <span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">scope</span>
+    );
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">asElement</span>())
+      <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">asElement</span>() <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">ElementHandle</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Element</span><span style="color:#f92672">&gt;</span>;
+  }
+}
+</code></pre></div><p>基本上选择器的处理流程就如上所述了。</p>
+<h2 id="其他">其他</h2>
+<h3 id="-core版本">*-core版本</h3>
+<p>许多人在初次使用Puppeteer时都会遇到下载chromium速度过慢，导致安装失败的问题。为了解决这个问题，官方在之后提供了puppeteer-core库，可以指定本地的浏览器binary文件而无需再次下载。</p>
+<p>Playwright目前仍处于早期开发阶段，已经有了实现这种方案的计划并进行了初步实施，但目前还没有稳定版的chrome可以支持所有的Playwright特性，并且针对firefox和webkit的改动也没有完全同步，可以说是稍安勿躁了。具体可以参考这个<a href="https://github.com/microsoft/playwright/issues/666">issue</a></p>
+<h3 id="社区实践">社区实践</h3>
+<p><a href="https://github.com/microsoft/playwright/blob/master/docs/showcase.md">官方文档</a>中提供了多种类型的社区实践与代码示例：</p>
+<ul>
+<li>使用Playwright的用户</li>
+<li>工具</li>
+<li>集成测试框架</li>
+<li>代码示例</li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/dive-into-playwright/">http://yrq110.me/post/front-end/dive-into-playwright/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/swim-in-shallow-puppeteer-api/">Puppeteer常用API浅析</a></li>
+        
+        <li><a href="/post/front-end/some-tips-of-using-puppetter/">可爱的Puppeteer使用小技巧</a></li>
+        
+        <li><a href="/post/front-end/practice-in-e2e-test-with-puppeteer/">Puppeteer&#43;Canvas的E2E测试实践</a></li>
+        
+        <li><a href="/post/front-end/under-the-hood-at-event-loop/">当我们在说事件循环时，我们在说什么</a></li>
+        
+        <li><a href="/post/front-end/the-right-way-to-use-puppeteer-in-electron/">配置Electron中Puppeteer executablePath的正确姿势</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/playwright'>playwright</a></li>
+                
+                <li><a href='http://yrq110.me/tags/puppeteer'>puppeteer</a></li>
+                
+                <li><a href='http://yrq110.me/tags/node'>node</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="下一代跨平台浏览器自动化工具？Playwright简析">下一代跨平台浏览器自动化工具？Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/try-gpu-operations-in-web/" title="Web也要在GPU并行计算中分一杯羹？">Web也要在GPU并行计算中分一杯羹？</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/offscreen-canvas-practice/" title="Worker中的OffscreenCanvas渲染实践与浅析">Worker中的OffscreenCanvas渲染实践与浅析</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (18)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

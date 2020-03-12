@@ -12,11 +12,11 @@
     
     
     <item>
-      <title>源自Puppeteer的下一代跨平台浏览器自动化工具？Playwright简析</title>
-      <link>http://yrq110.me/post/front-end/playwright-have-fun/</link>
+      <title>下一代跨平台浏览器自动化工具？Playwright简析</title>
+      <link>http://yrq110.me/post/front-end/dive-into-playwright/</link>
       <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/front-end/playwright-have-fun/</guid>
+      <guid>http://yrq110.me/post/front-end/dive-into-playwright/</guid>
       <description>&lt;p&gt;从以下几个方面分析下Puppeteer的衍生项目&lt;strong&gt;Playwirght&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;基本介绍与使用示例&lt;/li&gt;
