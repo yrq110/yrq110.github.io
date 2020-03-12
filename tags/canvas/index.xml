@@ -6,20 +6,10 @@
     <description>Recent content in canvas on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 08 Jan 2020 16:14:20 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 30 Dec 2019 16:59:36 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/tags/canvas/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Web中茴香豆的几种画法</title>
-      <link>http://yrq110.me/post/front-end/multi-ways-to-draw-graphic-primitives-in-web/</link>
-      <pubDate>Wed, 08 Jan 2020 16:14:20 +0800</pubDate>
-      
-      <guid>http://yrq110.me/post/front-end/multi-ways-to-draw-graphic-primitives-in-web/</guid>
-      <description>茴香豆的茴字有几种写法？四种。Web中画一个矩形或一条曲线有几种写法？四种。
-画一个矩形 Canvas WebGL SVG WebGPU </description>
-    </item>
     
     <item>
       <title>Canvas2D渲染库简析:（三）Pixi</title>

@@ -50,27 +50,9 @@
     <item>
       <title>canvas</title>
       <link>http://yrq110.me/tags/canvas/</link>
-      <pubDate>Wed, 08 Jan 2020 16:14:20 +0800</pubDate>
+      <pubDate>Mon, 30 Dec 2019 16:59:36 +0800</pubDate>
       
       <guid>http://yrq110.me/tags/canvas/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>webgl</title>
-      <link>http://yrq110.me/tags/webgl/</link>
-      <pubDate>Wed, 08 Jan 2020 16:14:20 +0800</pubDate>
-      
-      <guid>http://yrq110.me/tags/webgl/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>webgpu</title>
-      <link>http://yrq110.me/tags/webgpu/</link>
-      <pubDate>Wed, 08 Jan 2020 16:14:20 +0800</pubDate>
-      
-      <guid>http://yrq110.me/tags/webgpu/</guid>
       <description></description>
     </item>
     
@@ -170,6 +152,15 @@
       <pubDate>Mon, 28 Oct 2019 20:44:07 +0800</pubDate>
       
       <guid>http://yrq110.me/tags/gpu/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>webgpu</title>
+      <link>http://yrq110.me/tags/webgpu/</link>
+      <pubDate>Mon, 28 Oct 2019 20:44:07 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/webgpu/</guid>
       <description></description>
     </item>
     
