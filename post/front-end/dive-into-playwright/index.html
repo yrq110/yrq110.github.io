@@ -151,62 +151,72 @@
 <h3 id="创建一个页面">创建一个页面</h3>
 <p>来看看在两个框架在<em>通过Browser实例创建页面时</em>的<strong>内部执行流程</strong>有什么不同：</p>
 <p>Puppeteer中：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Browser.js
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Browser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
-  <span style="color:#75715e">/* 第一步 */</span>
+<ol>
+<li>
+<p>利用默认context创建页面</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Browser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
   <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>() {
-    <span style="color:#75715e">// 利用默认context创建页面
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>.<span style="color:#a6e22e">newPage</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>.<span style="color:#a6e22e">newPage</span>();
   }
-  <span style="color:#75715e">/* 第三步 */</span>
+</code></pre></div></li>
+<li>
+<p>执行绑定浏览器实例的创建页面方法</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
+  <span style="color:#a6e22e">newPage</span>() {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_id</span>);
+  }
+}
+</code></pre></div></li>
+<li>
+<p>向远程浏览器发送createTarget消息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Browser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
   <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#a6e22e">contextId</span>) {
-    <span style="color:#75715e">// 向远程浏览器发送createTarget消息
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
+    <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>);
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
   }
 }
-
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
-  <span style="color:#75715e">/* 第二步 */</span>
-  <span style="color:#a6e22e">newPage</span>() {
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_id</span>);
+</code></pre></div></li>
+</ol>
+<p>在Playwright中：</p>
+<ol>
+<li>
+<p>调用独立方法创建页面</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts">  <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">Browser</span> {
+    <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>(<span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
+      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">options</span>);
+    }
   }
-}
-</code></pre></div><p>在Playwright中：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// chromium/crBrowser.ts
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">Browser</span> {
-  <span style="color:#75715e">/* 第一步 */</span>
-  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>(<span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">options</span>);
-  }
-}
-
-<span style="color:#75715e">// browser.ts
+</code></pre></div></li>
+<li>
+<p>创建一个新的context来创建页面</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// browser.ts
 </span><span style="color:#75715e"></span><span style="color:#75715e">/* 第二步 */</span>
 <span style="color:#66d9ef">export</span> <span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#a6e22e">browser</span>: <span style="color:#66d9ef">Browser</span>, <span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
-  <span style="color:#75715e">// 创建一个新的context来创建页面
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>(<span style="color:#a6e22e">options</span>);
+     
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>(<span style="color:#a6e22e">options</span>);
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
   <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">_ownedContext</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">context</span>;
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
 }
-
-<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">BrowserContext</span> {
-  <span style="color:#75715e">/* 第三步 */</span>
+</code></pre></div></li>
+<li>
+<p>向远程浏览器发送createTarget消息</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">BrowserContext</span> {
   <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
-    <span style="color:#75715e">// 向远程浏览器发送createTarget消息
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">targetId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, { <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span>: <span style="color:#66d9ef">this._browserContextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span> });
+    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">targetId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, { <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span>: <span style="color:#66d9ef">this._browserContextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span> });
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>)<span style="color:#f92672">!</span>;
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span><span style="color:#f92672">!</span>;
   }
 }
-</code></pre></div><p>可以看出两个很大的变动，在Playwright中：</p>
+</code></pre></div></li>
+</ol>
+<p>可以看到主要有如下变动，在Playwright中：</p>
 <ol>
-<li>消息的操作从<strong>Browser</strong>移动到了<strong>BrowserContext</strong>中</li>
-<li>对于每个新页面会<strong>新建context</strong>，而不是像Puppeteer使用默认的context</li>
+<li>将创建页面操作从<strong>Browser</strong>中分离出来，移至<strong>BrowserContext</strong>中</li>
+<li>对于每个新页面会<strong>新建一个context</strong>，而不是像Puppeteer使用<strong>默认的context</strong></li>
 </ol>
 <h3 id="browsercontext的能力扩展">BrowserContext的能力扩展</h3>
 <p>从项目的多个PR中可以看出，开发者将将下游的Page一些属性和能力移到了BrowserContext中，并且实现了其他功能，如：</p>
@@ -358,6 +368,7 @@
 </code></pre></div><p>所有选择器引擎的本质都是<strong>解析特定的选择器语法，转换成querySelector或evaluate语句</strong>。</p>
 <h4 id="整合与打包">整合与打包</h4>
 <p>内置选择器引擎与配置文件在<code>src/injected</code>目录中，所有文件被整合进了<code>injected.ts</code>中。</p>
+<p>在Injected类中会载入所有预置的选择器引擎及自定义的引擎：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// src/injected/injected.ts
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Injected</span> {
   <span style="color:#a6e22e">readonly</span> <span style="color:#a6e22e">engines</span>: <span style="color:#66d9ef">Map</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">SelectorEngine</span><span style="color:#f92672">&gt;</span>;
@@ -372,6 +383,8 @@
     <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>} <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">customEngines</span>)
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>);
   }
+</code></pre></div><p>提供与dom API命名一致的选择器顶层API：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Injected</span> {
   <span style="color:#75715e">// 实现顶层的元素选择方法，递归调用
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">selector</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">root</span>: <span style="color:#66d9ef">Node</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Element</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> {
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">parsed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_parseSelector</span>(<span style="color:#a6e22e">selector</span>);
@@ -380,6 +393,9 @@
     <span style="color:#75715e">// 递归查找元素
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">SelectorRoot</span>, <span style="color:#a6e22e">parsed</span>, <span style="color:#ae81ff">0</span>);
   }
+}
+</code></pre></div><p>在API内部调用当前引擎的query等方法执行元素选择：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Injected</span> {
   <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">root</span>: <span style="color:#66d9ef">SelectorRoot</span>, <span style="color:#a6e22e">parsed</span>: <span style="color:#66d9ef">ParsedSelector</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Element</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> {
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">current</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">parsed</span>[<span style="color:#a6e22e">index</span>];
     <span style="color:#a6e22e">root</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">Element</span>).<span style="color:#a6e22e">shadowRoot</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">root</span>;
@@ -393,10 +409,9 @@
         <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">result</span>;
     }
   }
-  ...
-
 }
-</code></pre></div><p>至于为何这个类叫Injected，<strong>在playwright构建时会被webpack单独打包成一个inline module；在<code>dom.ts</code>中引入，当调用元素选择方法时，该injected module会被inject进浏览器的执行上下文中，调用其选择方法在Document上执行元素选择，返回经过处理的ElementHandle Promise</strong>。</p>
+</code></pre></div><p>这个类会在playwright构建时被webpack单独打包成一个inline module并在<code>dom.ts</code>中引入。</p>
+<p>当在Node中调用需要元素选择的方法时，该模块会被注入到浏览器的执行上下文中，在Document上执行元素选择，返回经过处理的ElementHandle Promise。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/injected/injected.webpack.config.js
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> {
   ...
