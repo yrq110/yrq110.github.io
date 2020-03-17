@@ -6,10 +6,25 @@
     <description>Recent content in front-end on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 19 Feb 2020 01:44:17 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 10 Mar 2020 09:59:18 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/categories/front-end/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>TypeScript装饰器整理及用例介绍</title>
+      <link>http://yrq110.me/post/front-end/typescript-decorator-practice/</link>
+      <pubDate>Tue, 10 Mar 2020 09:59:18 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/typescript-decorator-practice/</guid>
+      <description>&lt;p&gt;整理下TS装饰器(Decorator)的相关内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;装饰器种类&lt;/li&gt;
+&lt;li&gt;装饰器工厂与组合使用&lt;/li&gt;
+&lt;li&gt;metadata reflecion API&lt;/li&gt;
+&lt;li&gt;开源库中的使用&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
     
     <item>
       <title>使用TypeScript开发Web应用的最佳实践</title>

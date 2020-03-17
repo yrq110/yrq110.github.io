@@ -12,6 +12,21 @@
     
     
     <item>
+      <title>TypeScript装饰器整理及用例介绍</title>
+      <link>http://yrq110.me/post/front-end/typescript-decorator-practice/</link>
+      <pubDate>Tue, 10 Mar 2020 09:59:18 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/typescript-decorator-practice/</guid>
+      <description>&lt;p&gt;整理下TS装饰器(Decorator)的相关内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;装饰器种类&lt;/li&gt;
+&lt;li&gt;装饰器工厂与组合使用&lt;/li&gt;
+&lt;li&gt;metadata reflecion API&lt;/li&gt;
+&lt;li&gt;开源库中的使用&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
       <title>跨平台的浏览器自动化工具Playwright简析</title>
       <link>http://yrq110.me/post/front-end/dive-into-playwright/</link>
       <pubDate>Mon, 09 Mar 2020 13:49:15 +0800</pubDate>
