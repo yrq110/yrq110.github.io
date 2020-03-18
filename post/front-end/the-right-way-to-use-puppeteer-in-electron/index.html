@@ -91,6 +91,42 @@
 <li>轻量, remote调用(使用本地chrome) =&gt; <code>puppeteer-core</code></li>
 <li>将chromium整合进安装包(需要asar打包时排除chromium), <strong>macOS下验证失败</strong> =&gt; <code>puppeteer</code></li>
 </ul>
+<p><code>2020.03.18更新</code> 现在要在electron中使用puppeteer的话可以使用<a href="https://github.com/TrevorSundberg/puppeteer-in-electron">puppeteer-in-electron</a>这个工具，让puppeteer连接到electron启动的chromium实例。代码示例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> {<span style="color:#a6e22e">BrowserWindow</span>, <span style="color:#a6e22e">app</span>} <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;electron&#34;</span>;
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">pie</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;puppeteer-in-electron&#34;</span>;
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;puppeteer-core&#34;</span>;
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">main</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> () <span style="color:#f92672">=&gt;</span> {
+  <span style="color:#75715e">// 初始化，开启的远程调试功能
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">pie</span>.<span style="color:#a6e22e">initialize</span>(<span style="color:#a6e22e">app</span>);
+  <span style="color:#75715e">// 返回一个puppeteer browser
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">pie</span>.<span style="color:#a6e22e">connect</span>(<span style="color:#a6e22e">app</span>, <span style="color:#a6e22e">puppeteer</span>);
+  <span style="color:#75715e">// 创建新的窗口对象进行测试
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> window <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">BrowserWindow</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;https://example.com/&#34;</span>;
+  <span style="color:#a6e22e">await</span> window.<span style="color:#a6e22e">loadURL</span>(<span style="color:#a6e22e">url</span>);
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">pie</span>.<span style="color:#a6e22e">getPage</span>(<span style="color:#a6e22e">browser</span>, window);
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">url</span>());
+  window.<span style="color:#a6e22e">destroy</span>();
+};
+
+<span style="color:#a6e22e">main</span>();
+</code></pre></div><p>核心源码:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// electron开启远程调试端口
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">commandLine</span>.<span style="color:#a6e22e">appendSwitch</span>(
+    <span style="color:#e6db74">&#34;remote-debugging-port&#34;</span>,
+    <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>
+);
+<span style="color:#75715e">// puppeteer-core通过ws地址连接到chromium实例
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">commandLine</span>.<span style="color:#a6e22e">getSwitchValue</span>(<span style="color:#e6db74">&#34;remote-debugging-port&#34;</span>);
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">retry</span>(() <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">`http://127.0.0.1:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/json/version`</span>));
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">json</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">json</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">connect</span>({
+    <span style="color:#a6e22e">browserWSEndpoint</span>: <span style="color:#66d9ef">json.webSocketDebuggerUrl</span>,
+    <span style="color:#a6e22e">defaultViewport</span>: <span style="color:#66d9ef">null</span>
+  });
+}
+</code></pre></div><h1 id="正文">正文</h1>
 <p>这个问题在我想在electron应用中使用puppeteer爬虫时出现，具体问题是如何引用正确的chromium/chrome位置，尤其是在打包后的环境下。</p>
 <p>在开始之前，首先需要的是配置<code>puppeteer.launch()</code>函数启动时的<code>executablePath</code>参数，一般情况下使用<code>puppeteer.executablePath()</code>获取默认引用的可执行chrome位置即可:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;puppeteer&#39;</span>
