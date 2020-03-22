@@ -12,6 +12,15 @@
     
     
     <item>
+      <title>Web通信中的跨文档通信</title>
+      <link>http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/</link>
+      <pubDate>Sun, 22 Mar 2020 14:32:39 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/</guid>
+      <description>&lt;p&gt;跨文档通信(cross-document messaging)与消息通道通信(channel messaging)简介&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>TypeScript装饰器整理及用例介绍</title>
       <link>http://yrq110.me/post/front-end/typescript-decorator-practice/</link>
       <pubDate>Tue, 10 Mar 2020 09:59:18 +0800</pubDate>

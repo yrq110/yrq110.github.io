@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>postMessage on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/postmessage/</link>
+    <description>Recent content in postMessage on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Sun, 22 Mar 2020 14:32:39 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/postmessage/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Web通信中的跨文档通信</title>
+      <link>http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/</link>
+      <pubDate>Sun, 22 Mar 2020 14:32:39 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/</guid>
+      <description>&lt;p&gt;跨文档通信(cross-document messaging)与消息通道通信(channel messaging)简介&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
