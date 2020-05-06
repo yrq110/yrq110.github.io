@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>computer-graphics on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/categories/computer-graphics/</link>
+    <description>Recent content in computer-graphics on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Tue, 05 May 2020 14:26:32 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/categories/computer-graphics/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>欧拉角、万向节死锁与四元数</title>
+      <link>http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/</link>
+      <pubDate>Tue, 05 May 2020 14:26:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/</guid>
+      <description>&lt;p&gt;简单整理下四元数旋转相关的一些概念：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;欧拉角：旋转顺序与内外旋&lt;/li&gt;
+&lt;li&gt;万向节死锁：旋转轴共面与自由度丢失&lt;/li&gt;
+&lt;li&gt;四元数：表示与计算、几何意义与球形插值&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

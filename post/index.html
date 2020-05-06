@@ -69,6 +69,66 @@
     <article class="post">
         <header>
             <h1 class="post-title">
+                <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/" title="深入了解Three.js核心对象之Object3D">深入了解Three.js核心对象之Object3D</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月6日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            <p>从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。首先来看看最基础的Object3D对象，内容包含：</p>
+<ul>
+<li>官方demo引入</li>
+<li>Object3D的主要属性</li>
+<li>Object3D的变换</li>
+</ul>……
+        </div>
+        <p class="readmore"><a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月5日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/computer-graphics'>computer-graphics</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            <p>简单整理下四元数旋转相关的一些概念：</p>
+<ul>
+<li>欧拉角：旋转顺序与内外旋</li>
+<li>万向节死锁：旋转轴共面与自由度丢失</li>
+<li>四元数：表示与计算、几何意义与球形插值</li>
+</ul>……
+        </div>
+        <p class="readmore"><a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
                 <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
             </h1>
         </header>
@@ -171,7 +231,7 @@
 <li>模块系统与自定义类型</li>
 <li>其他使用技巧</li>
 </ul>
-<p>译自：<a href="https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&amp;utm_campaign=db304f7430-Qiita_newsletter_399_02_12_2020&amp;utm_medium=email&amp;utm_term=0_e44feaa081-db304f7430-33396633">TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得</a> | <a href="https://qiita.com/jagaapple">@jagaapple</a></p>……
+<p>译自：<a href="https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f">TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得</a> | <a href="https://qiita.com/jagaapple">@jagaapple</a></p>……
         </div>
         <p class="readmore"><a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/">阅读全文</a></p>
     </article>
@@ -298,54 +358,6 @@
     
     
     
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2019年12月2日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='http://yrq110.me/categories/devops'>devops</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            <p>简单分析下lerna中依赖管理的部分</p>
-<ul>
-<li>在使用lerna时，若使用yarn作为npmClient并开启workspace功能，则bootstrap命令会代理给yarn执行</li>
-<li>相同的依赖通过提升(hoist)安装在根路径下，本地包之间的依赖通过软链接实现</li>
-<li>虽然在依赖处理部分yarn的底层具有较好的实现，但lerna提供的上层指令则方便了开发者的使用</li>
-</ul>……
-        </div>
-        <p class="readmore"><a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/">阅读全文</a></p>
-    </article>
-    
-    
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2019年11月6日
-        </date>
-        
-        <div class="post-content">
-            <p>介绍目前Chromium中渲染流水线中的主要阶段及其工作。</p>……
-        </div>
-        <p class="readmore"><a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/">阅读全文</a></p>
-    </article>
-    
-    
-    
 
 
 
@@ -398,6 +410,14 @@
 <ul class="widget-list">
     
     <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/" title="深入了解Three.js核心对象之Object3D">深入了解Three.js核心对象之Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
@@ -429,14 +449,6 @@
         <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
     </li>
     
-    <li>
-        <a href="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/" title="Lerna的依赖管理及hoisting浅析">Lerna的依赖管理及hoisting浅析</a>
-    </li>
-    
-    <li>
-        <a href="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/" title="一个像素的一生 - 剖析Chromium渲染流水线">一个像素的一生 - 剖析Chromium渲染流水线</a>
-    </li>
-    
 </ul>
     </section>
 
@@ -446,11 +458,13 @@
         <h3 class="widget-title">分类</h3>
 <ul class="widget-list">
     
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
     <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (20)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (21)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -525,13 +539,19 @@
     
     <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
     
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
     <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
     
     <a href="http://yrq110.me/tags/skia/">skia</a>
     
     <a href="http://yrq110.me/tags/ssh/">ssh</a>
     
     <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
     
     <a href="http://yrq110.me/tags/typescript/">typescript</a>
     

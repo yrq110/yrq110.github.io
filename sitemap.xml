@@ -4,27 +4,76 @@
   
   <url>
     <loc>http://yrq110.me/post/</loc>
-    <lastmod>2020-03-22T14:32:39+08:00</lastmod>
+    <lastmod>2020-05-06T19:15:03+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/categories/</loc>
-    <lastmod>2020-03-22T14:32:39+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>http://yrq110.me/tags/cross-document/</loc>
-    <lastmod>2020-03-22T14:32:39+08:00</lastmod>
+    <lastmod>2020-05-06T19:15:03+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/categories/front-end/</loc>
+    <lastmod>2020-05-06T19:15:03+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/</loc>
+    <lastmod>2020-05-06T19:15:03+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/threejs/</loc>
+    <lastmod>2020-05-06T19:15:03+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</loc>
+    <lastmod>2020-05-06T19:15:03+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/categories/computer-graphics/</loc>
+    <lastmod>2020-05-05T14:26:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/quaternion/</loc>
+    <lastmod>2020-05-05T14:26:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/rotation/</loc>
+    <lastmod>2020-05-05T14:26:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/</loc>
+    <lastmod>2020-05-05T14:26:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/cross-document/</loc>
     <lastmod>2020-03-22T14:32:39+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -39,13 +88,6 @@
   
   <url>
     <loc>http://yrq110.me/tags/postmessage/</loc>
-    <lastmod>2020-03-22T14:32:39+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>http://yrq110.me/tags/</loc>
     <lastmod>2020-03-22T14:32:39+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

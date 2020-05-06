@@ -6,10 +6,37 @@
     <description>Recent content in Tags on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sun, 22 Mar 2020 14:32:39 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 06 May 2020 19:15:03 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>threejs</title>
+      <link>http://yrq110.me/tags/threejs/</link>
+      <pubDate>Wed, 06 May 2020 19:15:03 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/threejs/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>quaternion</title>
+      <link>http://yrq110.me/tags/quaternion/</link>
+      <pubDate>Tue, 05 May 2020 14:26:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/quaternion/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>rotation</title>
+      <link>http://yrq110.me/tags/rotation/</link>
+      <pubDate>Tue, 05 May 2020 14:26:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/rotation/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>cross-document</title>

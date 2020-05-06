@@ -12,6 +12,34 @@
     
     
     <item>
+      <title>深入了解Three.js核心对象之Object3D</title>
+      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</link>
+      <pubDate>Wed, 06 May 2020 19:15:03 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</guid>
+      <description>&lt;p&gt;从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。首先来看看最基础的Object3D对象，内容包含：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;官方demo引入&lt;/li&gt;
+&lt;li&gt;Object3D的主要属性&lt;/li&gt;
+&lt;li&gt;Object3D的变换&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>欧拉角、万向节死锁与四元数</title>
+      <link>http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/</link>
+      <pubDate>Tue, 05 May 2020 14:26:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/</guid>
+      <description>&lt;p&gt;简单整理下四元数旋转相关的一些概念：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;欧拉角：旋转顺序与内外旋&lt;/li&gt;
+&lt;li&gt;万向节死锁：旋转轴共面与自由度丢失&lt;/li&gt;
+&lt;li&gt;四元数：表示与计算、几何意义与球形插值&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
       <title>Web通信中的跨文档通信</title>
       <link>http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/</link>
       <pubDate>Sun, 22 Mar 2020 14:32:39 +0800</pubDate>
@@ -63,7 +91,7 @@
 &lt;li&gt;模块系统与自定义类型&lt;/li&gt;
 &lt;li&gt;其他使用技巧&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;译自：&lt;a href=&#34;https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&amp;amp;utm_campaign=db304f7430-Qiita_newsletter_399_02_12_2020&amp;amp;utm_medium=email&amp;amp;utm_term=0_e44feaa081-db304f7430-33396633&#34;&gt;TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得&lt;/a&gt; | &lt;a href=&#34;https://qiita.com/jagaapple&#34;&gt;@jagaapple&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;译自：&lt;a href=&#34;https://qiita.com/jagaapple/items/ce0da04be28c35dc7d4f&#34;&gt;TypeScriptをプロダクト開発に使う上でのベストプラクティスと心得&lt;/a&gt; | &lt;a href=&#34;https://qiita.com/jagaapple&#34;&gt;@jagaapple&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
     <item>

@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>欧拉角、万向节死锁与四元数 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="欧拉角、万向节死锁与四元数 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-05-05T14:26:32&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-05-05T14:26:32&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="欧拉角、万向节死锁与四元数">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">欧拉角、万向节死锁与四元数</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月5日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/computer-graphics'>computer-graphics</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>简单整理下四元数旋转相关的一些概念：</p>
+<ul>
+<li>欧拉角：旋转顺序与内外旋</li>
+<li>万向节死锁：旋转轴共面与自由度丢失</li>
+<li>四元数：表示与计算、几何意义与球形插值</li>
+</ul>
+<h2 id="欧拉角euler-angles">欧拉角(Euler-Angles)</h2>
+<p>欧拉角使用$\alpha,\beta,\gamma$分别表示物体与坐标系(参考坐标系)中三个轴的夹角，来表示一个6自由度的旋转。</p>
+<p>但仅有一组<strong>欧拉角</strong>并不能确定一个物体(刚体)在空间中姿态，还需要确定<strong>旋转顺序(顺规)<strong>与</strong>参考坐标系(世界/物体)</strong>。</p>
+<h3 id="旋转顺序">旋转顺序</h3>
+<p>在各个轴上的旋转顺序(sequence, 即<strong>顺规</strong>)会影响最终的效果。</p>
+<p>举个例子，下面两种旋转后得到的姿态(世界坐标系下)是不同的：</p>
+<ol>
+<li>先绕x轴旋转$\alpha$度，再绕y轴旋转$\beta$度</li>
+<li>先绕y轴旋转$\beta$度，再绕x轴旋转$\alpha$度</li>
+</ol>
+<p>若从数学计算的角度来理解可以认为是由于<strong>矩阵乘法不满足交换律</strong>。</p>
+<p>在给定旋转角度后，根据选择的旋转轴(rotation axe)差异，可以分为两大类：</p>
+<ol>
+<li><strong>经典欧拉角</strong>(Proper Euler angles): 第一个旋转轴和最后一个旋转轴相同</li>
+<li><strong>泰特布莱恩角</strong>(Tait–Bryan angles): 参考三个不同的轴</li>
+</ol>
+<p>在满足<strong>任何两个连续的旋转，必须绕着不同的转动轴旋转</strong>的条件下，每种表示法中都各有六种顺规：</p>
+<ol>
+<li>经典欧拉角顺规: z-x-z, x-y-x, y-z-y, z-y-z, x-z-x, y-x-y</li>
+<li>泰特布莱恩角顺规: x-y-z, y-z-x, z-x-y, x-z-y, z-y-x, y-x-z</li>
+</ol>
+<p>车体、飞行器中常用的roll(横滚), pitch(俯仰), yaw(偏航)表示则对应Tait–Bryan angles中的xyz顺规。</p>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/File:Eulerangles.svg">Wiki:经典欧拉角zxz顺规示意图</a></li>
+<li><a href="https://en.wikipedia.org/wiki/File:Taitbrianzyx.svg">Wiki:泰特布莱恩角xyz顺规示意图</a></li>
+</ul>
+<h3 id="参考坐标系">参考坐标系</h3>
+<p>欧拉角的参考坐标系可以有两种：</p>
+<ol>
+<li>世界坐标系，保持不变</li>
+<li>固有坐标系，即物体自身坐标系</li>
+</ol>
+<p>一般使用xyz表示原始坐标系，使用XYZ表示旋转后的坐标系，使用N表示xy平面与XY平面的交点线。</p>
+<p>根据旋转坐标系的不同，分为：</p>
+<ol>
+<li><strong>内旋</strong>(intrinsic rotations): 采用物体固有坐标系，在每一次旋转时，物体的坐标系相对世界坐标系发生变化，也称为动态欧拉角。</li>
+<li><strong>外旋</strong>(extrinsic rotations): 采用世界坐标系，始终根据固定世界坐标系进行旋转，也称为静态欧拉角。</li>
+</ol>
+<p><strong>以zxz顺规的内旋为例（不分经典欧拉角还是泰特布莱恩角，下面同理）：</strong></p>
+<ol>
+<li>x-y-z(初始状态)</li>
+<li>x′-y′-z′(一次旋转后)</li>
+<li>x″-y″-z″(两次旋转后)</li>
+<li>X-Y-Z(最终状态)</li>
+</ol>
+<p>则欧拉角中的$\alpha,\beta,\gamma$分别对应与z轴、x′轴和z″轴的夹角</p>
+<p><strong>以zxz顺规的外旋为例：</strong></p>
+<p>由于采用固定世界坐标系，则xyz固定，XYZ初始状态与xyz相同。采用如下步骤进行旋转：</p>
+<ol>
+<li>XYZ系统绕z轴旋转$\gamma$，此时X轴与x轴夹角为$\gamma$</li>
+<li>XYZ系统绕x轴旋转$\beta$，此时Z轴与z轴夹角为$\beta$</li>
+<li>XYZ系统绕z轴旋转$\alpha$</li>
+</ol>
+<p>对于经典欧拉角来说，6种顺规对应的内外旋旋转轴：</p>
+<ul>
+<li>z1-x′-z2″ | z2-x-z1</li>
+<li>x1-y′-x2″ | x2-y-x1</li>
+<li>y1-z′-y2″ | y2-z-y1</li>
+<li>z1-y′-z2″ | z2-y-z1</li>
+<li>x1-z′-x2″ | x2-z-x1</li>
+<li>y1-x′-y2″ | y2-x-y1</li>
+</ul>
+<p>总结一下，使用欧拉角描述物体的旋转姿态时，为了确保唯一性，需要确定三个因素：</p>
+<ol>
+<li><strong>旋转角度</strong>: $\alpha,\beta,\gamma$</li>
+<li><strong>旋转顺序</strong>: 经典欧拉角与泰特布莱恩角</li>
+<li><strong>旋转方式</strong>: 内旋与外旋</li>
+</ol>
+<h2 id="万向节死锁gimbal-lock">万向节死锁(Gimbal lock)</h2>
+<p>Wiki上的相关介绍：</p>
+<blockquote>
+<p>The angles α, β and γ are uniquely determined except for the singular case that the xy and the XY planes are identical, i.e. when the z axis and the Z axis have the same or opposite directions. Indeed, if the z axis and the Z axis are the same, β = 0 and only (α + γ) is uniquely defined (not the individual values), and, similarly, if the z axis and the Z axis are opposite, β = π and only (α − γ) is uniquely defined (not the individual values). These ambiguities are known as gimbal lock in applications.</p>
+</blockquote>
+<p>火炮与飞机示例：</p>
+<p>若用平衡环(gimbal)来操作每个方向的旋转，则需要三个嵌套的环来模拟三维空间中的三个轴。当三个环相互垂直时，每个环的行为是独立的，控制各自的自由度。而当其中两个环共面时，则会丢失一个方向上的旋转自由度(Degree of Freedom)，即万向节死锁现象。</p>
+<p>总结一下：</p>
+<ul>
+<li>使用欧拉角出现的万向节死锁问题：<strong>两个旋转轴平面共面时，丢失一个方向的自由度</strong></li>
+<li>该问题的出现并不是说不能旋转了，而是旋转时不自然了</li>
+<li>可以通过调节顺规或使用四元数来规避该问题。</li>
+</ul>
+<h2 id="四元数quaternion">四元数(Quaternion)</h2>
+<h3 id="表示与运算">表示与运算</h3>
+<p>二维平面中的复数应该很熟悉，其表示形式为：$a+bi$。而四元数相当于四维空间中的复数，具有三个虚部，其表示为: $w+xi+yj+zk$，满足$i^2=j^2=k^2=ijk=-1$。</p>
+<p>虚部乘法表如下：</p>
+<table>
+<thead>
+<tr>
+<th>✖️</th>
+<th>i</th>
+<th>j</th>
+<th>k</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>i</td>
+<td>-1</td>
+<td><strong>k</strong></td>
+<td><strong>-j</strong></td>
+</tr>
+<tr>
+<td>j</td>
+<td><strong>-k</strong></td>
+<td>-1</td>
+<td><strong>i</strong></td>
+</tr>
+<tr>
+<td>k</td>
+<td><strong>j</strong></td>
+<td><strong>-i</strong></td>
+<td>-1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="几何意义">几何意义</h3>
+<p>三维空间的任意旋转，都可以用绕三维空间的某个轴旋转过某个角度来表示，即轴角表示(axis-angle)。空间中任一位置的轴角表示是唯一的，不存在使用欧拉角时的Ambiguity问题。</p>
+<p>在使用轴角表示方向时，需要4个参数，3个表示旋转轴的分量，1个表示旋转角度。若规定表示旋转轴的向量是单位向量，考虑到$\sqrt{x^2+y^2=z^2}=1$，则总共需要3个参数就可以（第三个分量通过计算得出）。</p>
+<p>二维空间中的复数，每个复数对应复平面中的一个点，当给这个复数乘以i，相等于将其绕原点旋转了90度。而四元数将虚部扩展成了三个，根据前面的乘法表有如下计算公式：</p>
+<ul>
+<li>$ij=k$, $ji=-k$</li>
+<li>$jk=i$, $kj=-i$</li>
+<li>$ki=j$, $ik=-j$</li>
+</ul>
+<p>可以将i,j,k视为三个方向的单位向量，则可以将上式理解为两个相互垂直的单位向量的叉乘等于垂直于它们的单位向量。</p>
+<p>若存在一个沿着旋转轴方向的单位向量$v=(\beta_x,\beta_y,\beta_z)$和旋转角度$\alpha$，可以通过下式计算四元数的各个分量：</p>
+<ul>
+<li>$w=cos(\alpha/2)$</li>
+<li>$x=sin(\alpha/2)*\beta_x$</li>
+<li>$y=sin(\alpha/2)*\beta_y$</li>
+<li>$z=sin(\alpha/2)*\beta_z$</li>
+</ul>
+<p>其中$\alpha$为绕旋转轴旋转的角度，$\beta_x$、$\beta_y$、$\beta_z$为旋转轴在x,y,z方向的分量（由此确定了旋转轴)。具体证明与推导可查阅相关资料。</p>
+<p><strong>为何要引入四元数？</strong></p>
+<p>四元数的引用是为了减少计算量和计算时存储占用的空间。</p>
+<ol>
+<li>3×3矩阵需要存储6个单位数据，四元数为4个</li>
+<li>在多重变换情况下，四元数可以利用3次易号运算代替n次四元数相乘运算，而欧拉角矩阵计算需要多个3×3矩阵相乘。</li>
+</ol>
+<p>对于三维空间的旋转，可以通过四元数乘法直接操作，与旋转矩阵操作可以等价，但是表示方式更加紧凑，计算量也可以小一些。</p>
+<p><strong>万向节死锁问题</strong></p>
+<p>由于该问题是在使用欧拉角时由于旋转轴共面才会出现的问题，而在使用四元数时不会丢失旋转自由度，因此不会出现该问题。</p>
+<p>需要注意的是，如果仅仅在欧拉角与旋转矩阵间中间表示的转换计算时使用四元数，则该问题依然存在。</p>
+<h3 id="球面插值---slerp">球面插值 - slerp</h3>
+<ul>
+<li>线性插值(lerp): 仅仅为距离插值</li>
+<li>球面插值(slerp): 将Vector3作为方向向量，返回的Vector3的长度是两点之前的距离插值，方向是两个向量之间的夹角度数的插值。</li>
+</ul>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Euler_angles">Euler angles - Wikipedia</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Quaternion">Quaternion - Wikipedia</a></li>
+<li><a href="https://www.cnblogs.com/xiaohutu/p/10979936.html">旋转的数学表达：欧拉角、轴向角、四元数与矩阵</a></li>
+<li><a href="https://v.qq.com/x/cover/e055516g79w/e055516g79w.html">欧拉角旋转以及万向节死锁_腾讯视频</a></li>
+<li><a href="https://www.zhihu.com/question/47736315/answer/236284413">如何通俗地解释欧拉角？之后为何要引入四元数？ - 知乎</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/quaternion'>quaternion</a></li>
+                
+                <li><a href='http://yrq110.me/tags/rotation'>rotation</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/" title="深入了解Three.js核心对象之Object3D">深入了解Three.js核心对象之Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/" title="Canvas2D渲染库简析:（一）Fabric">Canvas2D渲染库简析:（一）Fabric</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/" title="Puppeteer&#43;Canvas的E2E测试实践">Puppeteer&#43;Canvas的E2E测试实践</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (21)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

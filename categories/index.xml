@@ -6,7 +6,7 @@
     <description>Recent content in Categories on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sun, 22 Mar 2020 14:32:39 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 06 May 2020 19:15:03 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/categories/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,9 +14,18 @@
     <item>
       <title>front-end</title>
       <link>http://yrq110.me/categories/front-end/</link>
-      <pubDate>Sun, 22 Mar 2020 14:32:39 +0800</pubDate>
+      <pubDate>Wed, 06 May 2020 19:15:03 +0800</pubDate>
       
       <guid>http://yrq110.me/categories/front-end/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>computer-graphics</title>
+      <link>http://yrq110.me/categories/computer-graphics/</link>
+      <pubDate>Tue, 05 May 2020 14:26:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/categories/computer-graphics/</guid>
       <description></description>
     </item>
     

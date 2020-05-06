@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>threejs on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/threejs/</link>
+    <description>Recent content in threejs on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 06 May 2020 19:15:03 +0800</lastBuildDate>
+    
+	<atom:link href="http://yrq110.me/tags/threejs/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>深入了解Three.js核心对象之Object3D</title>
+      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</link>
+      <pubDate>Wed, 06 May 2020 19:15:03 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</guid>
+      <description>&lt;p&gt;从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。首先来看看最基础的Object3D对象，内容包含：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;官方demo引入&lt;/li&gt;
+&lt;li&gt;Object3D的主要属性&lt;/li&gt;
+&lt;li&gt;Object3D的变换&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
