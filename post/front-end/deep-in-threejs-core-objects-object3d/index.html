@@ -154,10 +154,10 @@
 <h4 id="旋转">旋转</h4>
 <p>Object3D对象提供<strong>旋转方法</strong>与<strong>修改旋转属性值</strong>两种方式来执行旋转操作:</p>
 <ul>
-<li>旋转方法：旋转内部的操作是<strong>构建新的四元数与当前姿态的四元数做乘法运算</strong>，物体当前姿态对应的四元数属性对象为<code>quaternion</code>，使用方法如<code>mesh.rotateX(Math.PI/2)</code>。</li>
-<li>修改旋转属性值：<strong>通过改变欧拉角的值来实现旋转</strong>，对应操作的属性对象为<code>rotation</code>，其中默认旋转顺规为XYZ(泰特布莱恩角)，参考坐标系为世界坐标系(外旋)。上面例子中的<code>mesh.rotation.x += 0.01</code>即为这种方式</li>
+<li>旋转方法：使用如<code>mesh.rotateX(Math.PI/2)</code>这样的旋转方法进行旋转，其内部的操作是<strong>构建新的四元数与当前姿态的四元数做乘法运算</strong>，物体当前姿态对应的四元数属性对象为<code>quaternion</code>。</li>
+<li>修改旋转属性值：上面例子中的<code>mesh.rotation.x += 0.01</code>即为这种方式，即<strong>通过改变欧拉角的值来实现旋转</strong>，对应操作的属性对象为<code>rotation</code>，其中默认旋转顺规为XYZ(泰特布莱恩角)，参考坐标系为世界坐标系(外旋)。</li>
 </ul>
-<p>关于四元数与欧拉角可以看看看下之前的简单总结: <a href="https://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">欧拉角、万向节死锁与四元数</a>。</p>
+<p>关于四元数与欧拉角可以看下之前的简单总结: <a href="https://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">欧拉角、万向节死锁与四元数</a>。</p>
 <p>Object3D的rotate相关方法，本质上是利用轴角+四元数的方式处理旋转，它提供了预置常规旋转轴单位向量的rotateX、rotateY等方便调用的方法，如下所示：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/core/Object3D.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
