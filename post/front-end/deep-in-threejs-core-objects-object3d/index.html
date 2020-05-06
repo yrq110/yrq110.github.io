@@ -109,15 +109,15 @@
 	<span style="color:#75715e">// 创建一个透视相机，定义视口比例、近裁面与远裁面
 </span><span style="color:#75715e"></span>	<span style="color:#a6e22e">camera</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">PerspectiveCamera</span>( <span style="color:#ae81ff">70</span>, window.<span style="color:#a6e22e">innerWidth</span> <span style="color:#f92672">/</span> window.<span style="color:#a6e22e">innerHeight</span>, <span style="color:#ae81ff">0.01</span>, <span style="color:#ae81ff">10</span> );
 	<span style="color:#a6e22e">camera</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">z</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-  <span style="color:#75715e">// 创建一个场景对象，存储需要渲染的模型、灯光等物体
+	<span style="color:#75715e">// 创建一个场景对象，存储需要渲染的模型、灯光等物体
 </span><span style="color:#75715e"></span>	<span style="color:#a6e22e">scene</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">Scene</span>();
-	<span style="color:#75715e">// 创建模型所需的几何体与材质属性，几何体影响vs中位置计算，材质影响fs中颜色计算
+	<span style="color:#75715e">// 创建模型所需的几何体与材质属性
 </span><span style="color:#75715e"></span>	<span style="color:#a6e22e">geometry</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">BoxGeometry</span>( <span style="color:#ae81ff">0.2</span>, <span style="color:#ae81ff">0.2</span>, <span style="color:#ae81ff">0.2</span> );
 	<span style="color:#a6e22e">material</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">MeshNormalMaterial</span>();
 
 	<span style="color:#a6e22e">mesh</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">Mesh</span>( <span style="color:#a6e22e">geometry</span>, <span style="color:#a6e22e">material</span> );
 	<span style="color:#a6e22e">scene</span>.<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">mesh</span> );
-	<span style="color:#75715e">// 初始化渲染器，设置导出dom元素，为渲染做准备
+	<span style="color:#75715e">// 初始化渲染器，导出dom元素，为渲染做准备
 </span><span style="color:#75715e"></span>	<span style="color:#a6e22e">renderer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">WebGLRenderer</span>( { <span style="color:#a6e22e">antialias</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span> } );
 	<span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">setSize</span>( window.<span style="color:#a6e22e">innerWidth</span>, window.<span style="color:#a6e22e">innerHeight</span> );
 	document.<span style="color:#a6e22e">body</span>.<span style="color:#a6e22e">appendChild</span>( <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">domElement</span> );
