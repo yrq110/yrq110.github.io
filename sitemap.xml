@@ -80,6 +80,20 @@
   </url>
   
   <url>
+    <loc>http://yrq110.me/post/front-end/arrow-function-in-class-proporties/</loc>
+    <lastmod>2020-04-02T15:06:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/javascript/</loc>
+    <lastmod>2020-04-02T15:06:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>http://yrq110.me/tags/cross-document/</loc>
     <lastmod>2020-03-22T14:32:39+08:00</lastmod>
     <changefreq>monthly</changefreq>

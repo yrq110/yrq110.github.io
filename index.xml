@@ -53,6 +53,15 @@
     </item>
     
     <item>
+      <title>class中的箭头函数会输出什么</title>
+      <link>http://yrq110.me/post/front-end/arrow-function-in-class-proporties/</link>
+      <pubDate>Thu, 02 Apr 2020 15:06:25 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/arrow-function-in-class-proporties/</guid>
+      <description>&lt;p&gt;记录由于自身太菜而让人产生很多问号的JS行为&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>Web通信中的跨文档通信</title>
       <link>http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/</link>
       <pubDate>Sun, 22 Mar 2020 14:32:39 +0800</pubDate>

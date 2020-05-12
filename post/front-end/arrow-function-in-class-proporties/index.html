@@ -6,21 +6,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>puppeteer | ￥ЯႭ1I0</title>
-    <meta property="og:title" content="puppeteer - ￥ЯႭ1I0">
+    <title>class中的箭头函数会输出什么 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="class中的箭头函数会输出什么 - ￥ЯႭ1I0">
     <meta property="og:type" content="article">
         
+    <meta property="article:published_time" content='2020-04-02T15:06:25&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-04-02T15:06:25&#43;08:00'>
         
     <meta name="Keywords" content="">
-    <meta name="description" content="puppeteer">
+    <meta name="description" content="class中的箭头函数会输出什么">
         
     <meta name="author" content="yrq110">
-    <meta property="og:url" content="http://yrq110.me/tags/puppeteer/">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <link rel="alternate" type="application/rss+xml+xml" href="http://yrq110.me/tags/puppeteer/index.xml" title="￥ЯႭ1I0" />
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
@@ -45,7 +48,7 @@
             </div>
             <div>
                 <nav id="nav-menu" class="clearfix">
-                    <a class="" href="http://yrq110.me/">首页</a>
+                    <a class="current" href="http://yrq110.me/">首页</a>
                     
                     <a  href="http://yrq110.me/archives/" title="归档">归档</a>
                     
@@ -65,145 +68,136 @@
                     
 <div class="res-cons">
     
-    <h3 class="archive-title">
-        包含标签
-        <span class="keyword">puppeteer</span>
-        的文章
-    </h3>
-    
-
-    
     <article class="post">
         <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/front-end/dive-into-playwright/">跨平台的浏览器自动化工具Playwright简析</a>
-            </h1>
+            <h1 class="post-title">class中的箭头函数会输出什么</h1>
         </header>
         <date class="post-meta meta-date">
-            2020年3月9日
+            2020年4月2日
         </date>
         
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
         <div class="post-content">
-            <p>从以下几个方面分析下Puppeteer的衍生项目<strong>Playwirght</strong>：</p>
-<ul>
-<li>基本介绍与使用示例</li>
-<li>云原生：BrowserContext的隔离与增强</li>
-<li>跨平台：不同平台通用的Client与Server实现</li>
-<li>多选择器：内置与自定义选择器引擎</li>
-</ul>……
-            <p class="readmore"><a href="http://yrq110.me/post/front-end/dive-into-playwright/">阅读全文</a></p>
+            <p>记录由于自身太菜而让人产生很多问号的JS行为</p>
+<p>看看下面的例子，猜猜会输出什么。</p>
+<h2 id="round1">Round1</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">l</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>
+window.<span style="color:#a6e22e">greeting</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;bye&#39;</span>
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">A</span> {
+  <span style="color:#a6e22e">greeting</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;hello&#39;</span>
+  <span style="color:#a6e22e">arrow_a</span> <span style="color:#f92672">=</span> () =&gt; { <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">greeting</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39; arrow&#39;</span>) }
+  <span style="color:#a6e22e">func_a</span>() { <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">greeting</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39; bind&#39;</span>) }
+}
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">A</span>.<span style="color:#a6e22e">prototype</span>)
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">A</span>()
+<span style="color:#66d9ef">let</span> {<span style="color:#a6e22e">arrow_a</span>, <span style="color:#a6e22e">func_a</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">a</span>
+<span style="color:#a6e22e">arrow_a</span>()
+<span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">arrow_a</span>() 
+<span style="color:#a6e22e">func_a</span>() 
+<span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">func_a</span>()
+</code></pre></div><p>输出:</p>
+<pre><code>{constructor: ƒ, func_a: ƒ}
+hello arrow
+hello arrow
+bind
+hello bind
+</code></pre><h2 id="round2">Round2</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">B</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">A</span> {
+  <span style="color:#a6e22e">arrow_b</span> <span style="color:#f92672">=</span> () =&gt; {
+    <span style="color:#66d9ef">super</span>.<span style="color:#a6e22e">arrow_a</span>()
+  }
+  <span style="color:#a6e22e">func_b</span>() {
+    <span style="color:#66d9ef">super</span>.<span style="color:#a6e22e">func_a</span>()
+  }
+}
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">B</span>.<span style="color:#a6e22e">prototype</span>) 
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">b</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">B</span>()
+<span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">arrow_b</span>()
+<span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">func_b</span>()
+</code></pre></div><p>输出:</p>
+<pre><code>A {constructor: ƒ, func_b: ƒ}
+Uncaught TypeError: (intermediate value).arrow_a is not a function
+hello bind
+</code></pre><h2 id="round3">Round3</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">C</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">A</span> {
+  <span style="color:#a6e22e">func_c</span>() {
+    <span style="color:#66d9ef">super</span>.<span style="color:#a6e22e">arrow_a</span>()
+  }
+  <span style="color:#a6e22e">arrow_a</span>() {
+    <span style="color:#66d9ef">super</span>.<span style="color:#a6e22e">arrow_a</span>()
+  }
+}
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">C</span>.<span style="color:#a6e22e">prototype</span>)
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">C</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">__proto__</span>)
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">c</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">C</span>()
+<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">arrow_a</span>()
+<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">func_c</span>()
+</code></pre></div><p>输出:</p>
+<pre><code>A {constructor: ƒ, func_c: ƒ, arrow_a: ƒ}
+{constructor: ƒ, func_a: ƒ}
+hello arrow
+Uncaught TypeError: (intermediate value).arrow_a is not a function
+</code></pre><h2 id="round4">Round4</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">D</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">A</span> {}
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">D</span>.<span style="color:#a6e22e">prototype</span>)
+<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">D</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">__proto__</span>)
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">d</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">D</span>()
+<span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">arrow_a</span>()
+</code></pre></div><p>输出:</p>
+<pre><code>A {constructor: ƒ}
+{constructor: ƒ, func_a: ƒ}
+hello arrow
+</code></pre>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/">http://yrq110.me/post/front-end/arrow-function-in-class-proporties/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/javascript'>javascript</a></li>
+                
+            </ul>
+            
         </div>
     </article>
     
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/">Puppeteer&#43;Canvas的E2E测试实践</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2019年12月17日
-        </date>
-        
-        <div class="post-meta meta-category">
-            |
-            
-            <a href='http://yrq110.me/categories/front-end'>front-end</a>
-            
-        </div>
-        
-        <div class="post-content">
-            <p>针对具有复杂canvas交互操作的e2e测试，尝试使用puppeteer模拟复杂canvas交互，自动执行相关测试用例，利于减少重复的人工验证和回归测试。</p>
-<p>主要做了<strong>封装通用操作</strong>，<strong>添加操作辅助类</strong>，<strong>与测试工具集成</strong>，<strong>结果验证</strong>等工作。</p>……
-            <p class="readmore"><a href="http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/">阅读全文</a></p>
-        </div>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/">Puppeteer常用API浅析</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2019年4月19日
-        </date>
-        
-        <div class="post-meta meta-category">
-            |
-            
-            <a href='http://yrq110.me/categories/front-end'>front-end</a>
-            
-        </div>
-        
-        <div class="post-content">
-            <p>从CDP与源码的角度简单分析下pptr中的常用API</p>……
-            <p class="readmore"><a href="http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/">阅读全文</a></p>
-        </div>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/front-end/some-tips-of-using-puppetter/">可爱的Puppeteer使用小技巧</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2019年1月23日
-        </date>
-        
-        <div class="post-meta meta-category">
-            |
-            
-            <a href='http://yrq110.me/categories/front-end'>front-end</a>
-            
-        </div>
-        
-        <div class="post-content">
-            <p>总结一些使用puppetter的小技巧，从下面几个角度：</p>
-<ul>
-<li>浏览器的启动与请求</li>
-<li>页面的加载与渲染</li>
-<li>执行优化与状态管理</li>
-</ul>……
-            <p class="readmore"><a href="http://yrq110.me/post/front-end/some-tips-of-using-puppetter/">阅读全文</a></p>
-        </div>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/">配置Electron中Puppeteer executablePath的正确姿势</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2019年1月6日
-        </date>
-        
-        <div class="post-meta meta-category">
-            |
-            
-            <a href='http://yrq110.me/categories/front-end'>front-end</a>
-            
-        </div>
-        
-        <div class="post-content">
-            <p>TL; NR</p>
-<ul>
-<li>轻量, remote调用(使用本地chrome) =&gt; <code>puppeteer-core</code></li>
-<li>将chromium整合进安装包(需要asar打包时排除chromium), <strong>macOS下验证失败</strong> =&gt; <code>puppeteer</code></li>
-</ul>……
-            <p class="readmore"><a href="http://yrq110.me/post/front-end/the-right-way-to-use-puppeteer-in-electron/">阅读全文</a></p>
-        </div>
-    </article>
     
 
     
-
-
-
-
-
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
 </div>
 
                 </div>
@@ -421,6 +415,17 @@
     </div>
 </footer>
 
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
 
 
 <a id="rocket" href="#top"></a>
