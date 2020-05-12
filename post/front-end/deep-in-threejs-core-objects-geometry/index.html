@@ -101,7 +101,7 @@
 <p>关于<strong>方法</strong>主要包含以下几类：</p>
 <ol>
 <li>基础变换: 几何体在模型空间发生变换时使用</li>
-<li>合并计算: 顶点合并与表面(Mesh)合并</li>
+<li>合并计算: 顶点合并与网格(Mesh)合并</li>
 <li>法线计算: 计算顶点法线、面法线、morph法线等</li>
 <li>包围盒/球计算: 传入顶点数组，计算包围盒/球</li>
 </ol>
@@ -278,21 +278,21 @@
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
 },
 </code></pre></div><h3 id="合并">合并</h3>
-<p>Geometry提供了合并相关的方法，用于表面合并与自身顶点合并。</p>
+<p>Geometry提供了合并相关的方法，用于网格合并与自身顶点合并。</p>
 <ul>
 <li>mergeMesh</li>
 <li>mergeVertices</li>
 </ul>
 <h4 id="mergemesh">mergeMesh</h4>
-<p>表面合并将当前的Geometry对象与传入的Mesh合并，会根据传入表面的geometry与matrix更新当前geometry的基础属性(顶点、颜色、表面、uv)。</p>
+<p>网格合并将当前的Geometry对象与传入的Mesh合并，会根据传入网格的geometry与matrix更新当前geometry的基础属性(顶点、颜色、面、uv)。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">mergeMesh</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>( <span style="color:#a6e22e">mesh</span> ) {
   <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">matrixAutoUpdate</span> ) <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">updateMatrix</span>();
   <span style="color:#75715e">// merge方法中执行具体的基础属性更新
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">merge</span>( <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">geometry</span>, <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">matrix</span> );
 },
-</code></pre></div><p>在<code>this.merge()</code>方法中，对于顶点、颜色与uv属性的合并会直接进行数组合并操作，对于表面会重新计算新表面的法线、颜色与材质索引后再更新表面数组。</p>
+</code></pre></div><p>在<code>this.merge()</code>方法中，对于顶点、颜色与uv属性的合并会直接进行数组合并操作，对于面会重新计算其法线。</p>
 <h4 id="mergevertices">mergeVertices</h4>
-<p>合并顶点是对于Geometry对象自身的操作。在合并顶点时会利用hashmap移除重复的顶点并在合并顶点后更新表面的顶点。</p>
+<p>合并顶点是对于Geometry对象自身的操作。在合并顶点时会利用hashmap移除重复的顶点并在合并顶点后更新面包含的顶点。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">mergeVertices</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>() {
   <span style="color:#75715e">// 利用hashmap过滤重复顶点
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
