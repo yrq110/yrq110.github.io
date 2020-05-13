@@ -86,13 +86,19 @@
         
         
         <div class="post-content">
-            <p>从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。首先来看看最基础的Object3D对象，内容包含：</p>
+            <p>从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。</p>
+<p>先来看看最基础的Object3D对象，内容包含：</p>
 <ul>
 <li>官方demo引入: 主要对象分析</li>
 <li>Object3D的属性: 位置、欧拉角、四元数、变换矩阵等</li>
 <li>Object3D的变换: 以世界空间或模型空间为参考系的基础变换</li>
 </ul>
 <p><em>本文所参考的Three.js版本为<code>0.116.1</code></em></p>
+<p>系列文章:</p>
+<ul>
+<li>深入学习Three.js核心对象之（一）Object3D</li>
+<li><a href="https://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/">深入学习Three.js核心对象之（二）Geometry</a></li>
+</ul>
 <h2 id="一个例子">一个例子</h2>
 <p>首先从Three.js官方README的示例入手，看下它所使用了哪些对象。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">THREE</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;js/three.module.js&#39;</span>;
@@ -256,7 +262,7 @@
 <li>通用方法: copy()、clone()、toJSON()等</li>
 <li>变换矩阵更新方法: updateMatrix()(更新模型空间变换矩阵)、updateMatrixWorld()(更新世界空间变换矩阵)、updateWorldMatrix()(更新父子元素的模型或世界空间变换矩阵)等</li>
 </ul>
-<p>这次就先到这里，下一步分析下构成模型的Geometry与Material对象。</p>
+<p>这次就先到这里，下一步分析下构成模型的<a href="https://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/">Geometry</a>与Material对象。</p>
 <h2 id="参考">参考</h2>
 <ul>
 <li><a href="https://github.com/mrdoob/three.js">mrdoob/three.js: JavaScript 3D library</a></li>
