@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>深入学习Three.js核心对象之（一）Object3D | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="深入学习Three.js核心对象之（一）Object3D - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-05-06T19:15:03&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-05-06T19:15:03&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="深入学习Three.js核心对象之（一）Object3D">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">深入学习Three.js核心对象之（一）Object3D</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月6日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。首先来看看最基础的Object3D对象，内容包含：</p>
+<ul>
+<li>官方demo引入: 主要对象分析</li>
+<li>Object3D的属性: 位置、欧拉角、四元数、变换矩阵等</li>
+<li>Object3D的变换: 以世界空间或模型空间为参考系的基础变换</li>
+</ul>
+<p><em>本文所参考的Three.js版本为<code>0.116.1</code></em></p>
+<h2 id="一个例子">一个例子</h2>
+<p>首先从Three.js官方README的示例入手，看下它所使用了哪些对象。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">THREE</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;js/three.module.js&#39;</span>;
+
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">camera</span>, <span style="color:#a6e22e">scene</span>, <span style="color:#a6e22e">renderer</span>;
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">geometry</span>, <span style="color:#a6e22e">material</span>, <span style="color:#a6e22e">mesh</span>;
+
+<span style="color:#a6e22e">init</span>();
+<span style="color:#a6e22e">animate</span>();
+
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">init</span>() {
+	<span style="color:#75715e">// 创建一个透视相机，定义视口比例、近裁面与远裁面
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">camera</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">PerspectiveCamera</span>( <span style="color:#ae81ff">70</span>, window.<span style="color:#a6e22e">innerWidth</span> <span style="color:#f92672">/</span> window.<span style="color:#a6e22e">innerHeight</span>, <span style="color:#ae81ff">0.01</span>, <span style="color:#ae81ff">10</span> );
+	<span style="color:#a6e22e">camera</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">z</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+	<span style="color:#75715e">// 创建一个场景对象，存储需要渲染的模型、灯光等物体
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">scene</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">Scene</span>();
+	<span style="color:#75715e">// 创建模型所需的几何体与材质属性
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">geometry</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">BoxGeometry</span>( <span style="color:#ae81ff">0.2</span>, <span style="color:#ae81ff">0.2</span>, <span style="color:#ae81ff">0.2</span> );
+	<span style="color:#a6e22e">material</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">MeshNormalMaterial</span>();
+
+	<span style="color:#a6e22e">mesh</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">Mesh</span>( <span style="color:#a6e22e">geometry</span>, <span style="color:#a6e22e">material</span> );
+	<span style="color:#a6e22e">scene</span>.<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">mesh</span> );
+	<span style="color:#75715e">// 初始化渲染器，导出dom元素，为渲染做准备
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">renderer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">THREE</span>.<span style="color:#a6e22e">WebGLRenderer</span>( { <span style="color:#a6e22e">antialias</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span> } );
+	<span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">setSize</span>( window.<span style="color:#a6e22e">innerWidth</span>, window.<span style="color:#a6e22e">innerHeight</span> );
+	document.<span style="color:#a6e22e">body</span>.<span style="color:#a6e22e">appendChild</span>( <span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">domElement</span> );
+
+}
+
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">animate</span>() {
+	<span style="color:#a6e22e">requestAnimationFrame</span>( <span style="color:#a6e22e">animate</span> );
+	<span style="color:#75715e">// 修改欧拉角的值来实现旋转
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">rotation</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">0.01</span>;<span style="color:#ae81ff">2</span>
+	<span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">rotation</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">0.02</span>;
+	<span style="color:#75715e">// 传入场景(世界空间)与相机(视口空间)执行渲染
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">renderer</span>.<span style="color:#a6e22e">render</span>( <span style="color:#a6e22e">scene</span>, <span style="color:#a6e22e">camera</span> );
+}
+</code></pre></div><p>看看上面所用的这些对象的内部继承关系</p>
+<ul>
+<li>PerspectiveCamera =&gt; Camera =&gt; Object3D</li>
+<li>Scene =&gt; Object3D</li>
+<li>BoxGeometry =&gt; Geometry</li>
+<li>MeshNormalMaterial =&gt; Meterial</li>
+<li>Mesh =&gt; Object3D</li>
+</ul>
+<p>可以看出，不管是交给render函数用来渲染的对象(scene, camera)，还是在scene中添加的对象(mesh)，本质上都是Object3D对象，下面来简单看下Object3D中都设置了哪些属性与方法。</p>
+<h2 id="object3d">Object3D</h2>
+<p>Object3D为框架中最核心的类，相机、模型等多个上层对象都继承自该类。它的属性与方法均具有一定的通用性，如空间变换、特性处理、矩阵计算等等。</p>
+<h3 id="主要属性">主要属性</h3>
+<ul>
+<li>数据相关: type(类型字符串)、uuid(唯一ID)、parent、children</li>
+<li>位置与变换相关: position(位置向量)、scale(缩放向量)、rotation(欧拉角)、quaternion(四元数)、up(上方向向量，用于lookAt时确定旋转姿态朝向的唯一性)、</li>
+<li>特性开关与自定义数据相关: visible(可视性)、castShadow&amp;receiveShadow(产生与接收阴影)、frustumCulled(视锥剔除)、renderOrder(渲染优先级)、userData(用户自定义数据)</li>
+<li>矩阵相关: matrix(模型空间)、matrixWorld(世界空间)、modelViewMatrix(模型视图矩阵，用于shader中的位置计算)、normalMatrix(法向矩阵，用于shader中的光照计算，可通过模型视图矩阵计算得出)</li>
+</ul>
+<h3 id="变换">变换</h3>
+<h4 id="旋转">旋转</h4>
+<p>Object3D对象提供<strong>旋转方法</strong>与<strong>修改旋转属性值</strong>两种方式来执行旋转操作:</p>
+<ul>
+<li>旋转方法：使用如<code>mesh.rotateX(Math.PI/2)</code>这样的旋转方法进行旋转，其内部的操作是<strong>构建新的四元数与当前姿态的四元数做乘法运算</strong>，物体当前姿态对应的四元数属性对象为<code>quaternion</code>。</li>
+<li>修改旋转属性值：上面例子中的<code>mesh.rotation.x += 0.01</code>即为这种方式，即<strong>通过改变欧拉角的值来实现旋转</strong>，对应操作的属性对象为<code>rotation</code>，其中默认旋转顺规为XYZ(泰特布莱恩角)，参考坐标系为世界坐标系(外旋)。</li>
+</ul>
+<p>关于四元数与欧拉角可以看下之前的简单总结: <a href="https://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">欧拉角、万向节死锁与四元数</a>。</p>
+<p>Object3D的rotate相关方法，本质上是利用轴角+四元数的方式处理旋转，它提供了预置常规旋转轴单位向量的rotateX、rotateY等方便调用的方法，如下所示：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/core/Object3D.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Object3D</span>() {
+	<span style="color:#a6e22e">rotateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">angle</span> ) {
+		<span style="color:#75715e">// 将内置的X旋转轴(模型空间)与指定角度传入按轴旋转方法
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">rotateOnAxis</span>( <span style="color:#a6e22e">_xAxis</span>, <span style="color:#a6e22e">angle</span> );
+	},
+	<span style="color:#75715e">// 通用轴角(axis-angle)旋转方法
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">rotateOnAxis</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">angle</span> ) {
+		<span style="color:#75715e">// axis为模型空间的旋转轴(应为单位向量)，angle为旋转角度
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">_q1</span>.<span style="color:#a6e22e">setFromAxisAngle</span>( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">angle</span> );
+		<span style="color:#75715e">// 将构建的四元数与之前的四元数相乘
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">quaternion</span>.<span style="color:#a6e22e">multiply</span>( <span style="color:#a6e22e">_q1</span> );
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+	},
+	<span style="color:#a6e22e">quaternion</span>.<span style="color:#a6e22e">_onChange</span>( <span style="color:#a6e22e">onQuaternionChange</span> );
+	<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">onQuaternionChange</span>() {
+		<span style="color:#75715e">// 模型四元数变化的同时更新欧拉角，同样当欧拉角变化时也会更新四元数
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">rotation</span>.<span style="color:#a6e22e">setFromQuaternion</span>( <span style="color:#a6e22e">quaternion</span>, <span style="color:#66d9ef">undefined</span>, <span style="color:#66d9ef">false</span> );
+	}
+}
+</code></pre></div><p>还有一点众所周知的是，使用四元数处理旋转可以避免欧拉角的<strong>万向节死锁</strong>问题。</p>
+<p>为了直观的体现这两种方式的不同，看看下面这个例子：如果有两个方块分别执行了下面两种旋转，想象一下渲染出来会是什么结果？</p>
+<ol>
+<li>
+<p>绿色方块使用内置方法执行旋转：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">rotateY</span>((<span style="color:#ae81ff">45</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>);
+<span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">rotateX</span>((<span style="color:#ae81ff">90</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>);
+</code></pre></div><p>``</p>
+</li>
+<li>
+<p>蓝色方块修改rotation属性执行旋转：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">rotation</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">+=</span> (<span style="color:#ae81ff">45</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>;
+<span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">rotation</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+=</span> (<span style="color:#ae81ff">90</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>;
+</code></pre></div><p>``</p>
+</li>
+</ol>
+<p>结果：</p>
+<p><img src="/images/blog/front-end/threejs/object3d/rotate.png" alt=""></p>
+<p>图中坐标轴及颜色：x(红)，y(绿), z(蓝)。背景的辅助线为世界坐标系，方块上的为各自的物体坐标系。</p>
+<p>看看跟你想的是否一致，产生这样效果的原因是参考系不同：使用旋转方法时，内部会根据<strong>物体空间</strong>中的轴进行旋转，而rotation欧拉角的值则会在<strong>世界空间</strong>中进行处理。</p>
+<p>使用<strong>xyz</strong>表示世界空间，<strong>XYZ</strong>表示物体空间。实际上两种操作是:</p>
+<ol>
+<li>绿色方块：先绕Y轴旋转45度(Y轴初始方向与y轴重合，旋转后XZ的方向发生了变化)，再绕X轴旋转90度(绕自身的X轴旋转90度看起来没有变化)</li>
+<li>蓝色方块：先绕y轴旋转45度，再绕x轴旋转90度</li>
+</ol>
+<p>下面来看看剩下两种变换：平移和缩放</p>
+<h4 id="平移">平移</h4>
+<p>平移与旋转类似，既可以使用内置了参考轴的方法来执行平移操作，也可以通过修改操<code>position</code>位置向量的值来实现。</p>
+<p>其中在物体空间平移的方法中利用四元数还原旋转姿态再进行平移：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/core/Object3D.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Object3D</span>() {
+	<span style="color:#a6e22e">translateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">distance</span> ) {
+		<span style="color:#75715e">// 将内置的X旋转轴(模型空间)与平移距离传入按轴平移方法
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">translateOnAxis</span>( <span style="color:#a6e22e">_xAxis</span>, <span style="color:#a6e22e">distance</span> );
+	},
+	<span style="color:#75715e">// 通用按轴平移方法
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">translateOnAxis</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">distance</span> ) {
+		<span style="color:#75715e">// 与轴角旋转方法同理，axis为模型空间的旋转轴(应为单位向量)
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// 根据旋转轴与旋转姿态计算平移朝向的方向向量
+</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">_v1</span>.<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">axis</span> ).<span style="color:#a6e22e">applyQuaternion</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">quaternion</span> );
+		<span style="color:#75715e">// 将方向向量乘以位移值并与position向量相加完成平移
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">_v1</span>.<span style="color:#a6e22e">multiplyScalar</span>( <span style="color:#a6e22e">distance</span> ) );
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+	}
+}
+</code></pre></div><p>在平移的实现中会①先按照参考轴与当前姿态四元数计算物体朝向的方向向量，②再乘以距离并与原始位置相加得到最终平移的位置。</p>
+<p>这里也给出一个例子：有两个方块先执行了一次旋转，接着通过两种方式进行了平移：</p>
+<ol>
+<li>
+<p>绿色方块使用内置方法执行旋转：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">rotateX</span>((<span style="color:#f92672">-</span><span style="color:#ae81ff">45</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>);
+<span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">translateZ</span>(<span style="color:#ae81ff">3</span>);
+<span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">translateX</span>(<span style="color:#ae81ff">3</span>);
+</code></pre></div><p>``</p>
+</li>
+<li>
+<p>蓝色方块修改rotation属性执行旋转：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">rotateX</span>((<span style="color:#f92672">-</span><span style="color:#ae81ff">45</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span>);
+<span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">z</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">3</span>;
+<span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">3</span>;
+</code></pre></div><p>``</p>
+</li>
+</ol>
+<p>结果：</p>
+<p><img src="/images/blog/front-end/threejs/object3d/translate.png" alt=""></p>
+<h4 id="缩放">缩放</h4>
+<p>Object3D中没有提供缩放操作的方法，仅能通过修改<code>scale</code>向量的属性值来实现。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">scale</span>.<span style="color:#a6e22e">copy</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>(<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">1</span>));
+<span style="color:#75715e">// 或 cube.scale.x = 2;
+</span></code></pre></div><p><img src="/images/blog/front-end/threejs/object3d/scale.png" alt=""></p>
+<h3 id="其他">其他</h3>
+<p>除了主要属性与变换相关方法之外，还包含一些其他方法：</p>
+<ul>
+<li>数据操作方法: add()、remove()、attach()、getObjectById()、getWorldPosition()等</li>
+<li>通用方法: copy()、clone()、toJSON()等</li>
+<li>变换矩阵更新方法: updateMatrix()(更新模型空间变换矩阵)、updateMatrixWorld()(更新世界空间变换矩阵)、updateWorldMatrix()(更新父子元素的模型或世界空间变换矩阵)等</li>
+</ul>
+<p>这次就先到这里，下一步分析下构成模型的Geometry与Material对象。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://github.com/mrdoob/three.js">mrdoob/three.js: JavaScript 3D library</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/">http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/threejs'>threejs</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/" title="深入学习Three.js核心对象之（一）Object3D">深入学习Three.js核心对象之（一）Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (23)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/javascript/">javascript</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

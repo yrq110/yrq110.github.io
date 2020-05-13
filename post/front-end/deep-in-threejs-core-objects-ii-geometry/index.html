@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>深入学习Three.js核心对象之（二）Geometry | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="深入学习Three.js核心对象之（二）Geometry - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-05-11T10:38:16&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-05-11T10:38:16&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="深入学习Three.js核心对象之（二）Geometry">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">深入学习Three.js核心对象之（二）Geometry</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月11日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>分析构成模型对象的重要元素之一：Geometry（几何体）。</p>
+<ul>
+<li>Geometry的属性: 基础属性与动画属性</li>
+<li>Geometry的方法: 基础变换、Mesh与顶点合并、点面法线、包围盒/球计算</li>
+<li>BufferGeometry 与 DirectGeometry(Todo)</li>
+</ul>
+<p><em>本文所参考的Three.js版本为<code>0.116.1</code></em></p>
+<h2 id="geometry">Geometry</h2>
+<p>Geometry的<strong>属性</strong>主要可以分为两类：</p>
+<ol>
+<li>一类表示几何体的坐标、颜色、面等基础信息</li>
+<li>另一类存储morph与skin的相关数据，用于动画等操作</li>
+</ol>
+<p>关于<strong>方法</strong>主要包含以下几类：</p>
+<ol>
+<li>基础变换: 几何体在模型空间发生变换时使用</li>
+<li>合并计算: 顶点合并与网格(Mesh)合并</li>
+<li>法线计算: 计算顶点法线、面法线、morph法线等</li>
+<li>包围盒/球计算: 传入顶点数组，计算包围盒/球</li>
+</ol>
+<h3 id="属性">属性</h3>
+<h4 id="基础属性">基础属性</h4>
+<ul>
+<li>顶点(vertices): 核心属性，表示几何体的顶点位置，在构造面及计算法线等时使用</li>
+<li>颜色(colors): 用于着色时的颜色计算</li>
+<li>面(faces): 由不同顶点组成的面，包含顶点索引、面法线、面顶点法线等数据，一般为三角面(包含三个点的索引)</li>
+<li>uv(faceVertexUvs): uv层数组。其中的索引意义: geometry.faceVertexUvs[materialIndex][faceIndex][vertexIndex]</li>
+</ul>
+<h4 id="动画属性">动画属性</h4>
+<p>Three中可以通过两种方式实现动画:</p>
+<ul>
+<li>变形动画(morph animation): 每一帧的状态由指定的顶点数组决定，在动画中应用指定顶点位置数组插值后的值</li>
+<li>骨骼蒙皮动画(bones skin animation): 每一帧的状态中蒙皮(可理解为Mesh)的顶点位置由指定的不同骨骼及它们的权重决定</li>
+</ul>
+<p><strong>morph相关属性</strong></p>
+<ul>
+<li>morphTargets: morph对象数组，包含名称与顶点数组数据，一般为从外部传入.
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">morphTargets</span> <span style="color:#f92672">=</span> [
+  { <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;frame_1&#34;</span>, <span style="color:#a6e22e">vertices</span><span style="color:#f92672">:</span> [...] },
+  { <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;frame_2&#34;</span>, <span style="color:#a6e22e">vertices</span><span style="color:#f92672">:</span> [...] },
+  { <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;frame_3&#34;</span>, <span style="color:#a6e22e">vertices</span><span style="color:#f92672">:</span> [...] }
+]
+</code></pre></div></li>
+<li>morphNormals: morph对象法线。通过<code>computeMorphNormals()</code>方法计算得出，后续会介绍。</li>
+</ul>
+<p>真正实现morph动画还需要结合AnimationMixer与AnimationClip对象来对morph对象进行插值和其他处理。</p>
+<p>Three的一个morph例子:<a href="https://threejs.org/examples/webgl_morphtargets.html">demo</a></p>
+<p><strong>skin相关属性</strong></p>
+<p>skin相关属性用于骨骼蒙皮动画，在与SkinnedMesh共同使用时才会被用到:</p>
+<ul>
+<li>skinIndices: 一个Vector4数组，用来表示当前点受哪些骨骼控制。Three中一个顶点最多受4根骨头控制，因此skinIndices是一个Vector4数组。</li>
+<li>skinWeights: 也是一个Vector4数组，其中的数据和skinIndices数组一一对应，用来表示对应的骨骼影响该点的比重。</li>
+</ul>
+<p><a href="https://threejs.org/docs/#api/en/objects/SkinnedMesh">SkinnedMesh</a>中的处理（仅支持BufferGeometry）</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">boneTransform</span><span style="color:#f92672">:</span> ( <span style="color:#66d9ef">function</span> () {
+  <span style="color:#75715e">/*
+</span><span style="color:#75715e">   一些变量准备...
+</span><span style="color:#75715e">  */</span>
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">index</span>, <span style="color:#a6e22e">target</span> ) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">skeleton</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">skeleton</span>;
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">geometry</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">geometry</span>;
+    <span style="color:#75715e">// 获取BufferGeometry中的属性
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">skinIndex</span>.<span style="color:#a6e22e">fromBufferAttribute</span>( <span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">attributes</span>.<span style="color:#a6e22e">skinIndex</span>, <span style="color:#a6e22e">index</span> );
+    <span style="color:#a6e22e">skinWeight</span>.<span style="color:#a6e22e">fromBufferAttribute</span>( <span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">attributes</span>.<span style="color:#a6e22e">skinWeight</span>, <span style="color:#a6e22e">index</span> );
+    <span style="color:#a6e22e">basePosition</span>.<span style="color:#a6e22e">fromBufferAttribute</span>( <span style="color:#a6e22e">geometry</span>.<span style="color:#a6e22e">attributes</span>.<span style="color:#a6e22e">position</span>, <span style="color:#a6e22e">index</span> ).<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">bindMatrix</span> );
+    <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">set</span>( <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
+    <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+      <span style="color:#75715e">// 获取骨骼权重
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">weight</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">skinWeight</span>.<span style="color:#a6e22e">getComponent</span>( <span style="color:#a6e22e">i</span> );
+      <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">weight</span> <span style="color:#f92672">!==</span> <span style="color:#ae81ff">0</span> ) {
+        <span style="color:#75715e">// 获取骨骼索引
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">boneIndex</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">skinIndex</span>.<span style="color:#a6e22e">getComponent</span>( <span style="color:#a6e22e">i</span> );
+        <span style="color:#75715e">// 由于此部分个人理论较差不太确定，猜测为计算&#34;骨骼空间&#34;的矩阵
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">matrix</span>.<span style="color:#a6e22e">multiplyMatrices</span>( <span style="color:#a6e22e">skeleton</span>.<span style="color:#a6e22e">bones</span>[ <span style="color:#a6e22e">boneIndex</span> ].<span style="color:#a6e22e">matrixWorld</span>, <span style="color:#a6e22e">skeleton</span>.<span style="color:#a6e22e">boneInverses</span>[ <span style="color:#a6e22e">boneIndex</span> ] );
+        <span style="color:#75715e">// 在目标向量上结合基础位置、变换矩阵与权重进行计算
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">addScaledVector</span>( <span style="color:#a6e22e">vector</span>.<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">basePosition</span> ).<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#a6e22e">matrix</span> ), <span style="color:#a6e22e">weight</span> );
+      }
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">bindMatrixInverse</span> );
+  };
+}()
+</code></pre></div><h3 id="基础变换">基础变换</h3>
+<p>Geometry变换与Object3D变换在使用上的不同点用文档中的话来说就是: Geometry变换是一般一次性操作，不要用在渲染循环中，若想用在渲染循环中请使用Object3D对象的变换方法。</p>
+<p>Geometry对象的变换采用图形学中使用四维齐次矩阵表示的基础变换来进行计算。在所提供的API内部会根据基础变换类型，得到一个对应的变换矩阵参与后续计算，即下面的**_m1**:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_m1</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Matrix4</span>();
+...
+<span style="color:#a6e22e">rotateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">angle</span> ) {
+  <span style="color:#a6e22e">_m1</span>.<span style="color:#a6e22e">makeRotationX</span>( <span style="color:#a6e22e">angle</span> );
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#a6e22e">_m1</span> );
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+},
+<span style="color:#a6e22e">translate</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">z</span> ) {
+  <span style="color:#a6e22e">_m1</span>.<span style="color:#a6e22e">makeTranslation</span>( <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">z</span> );
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#a6e22e">_m1</span> );
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+},
+<span style="color:#a6e22e">scale</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">z</span> ) {
+  <span style="color:#a6e22e">_m1</span>.<span style="color:#a6e22e">makeScale</span>( <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">z</span> );
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#a6e22e">_m1</span> );
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+}
+</code></pre></div><p>可以看到最后都会将矩阵传入一个applyMatrix4方法，这个方法是做什么的？</p>
+<p>首先在烘焙(baking)顶点变换矩阵时，世界空间矩阵(world matrix)保持不变，而要改变几何体的<strong>顶点位置矩阵</strong>(vertices)。</p>
+<p>其次Three中在geometry发生变换的同时，不光要计算几何体<strong>顶点位置</strong>的变化，还要考虑由于该变化引起的<strong>顶点和面的法线变换</strong>(用于光照计算等)，以及<strong>包围盒/球</strong>的变化等，applyMatrix4即为当产生新变换时处理这些计算的通用方法:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">applyMatrix4</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">matrix</span> ) {
+  <span style="color:#75715e">// 计算变换矩阵的法向矩阵
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">normalMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Matrix3</span>().<span style="color:#a6e22e">getNormalMatrix</span>( <span style="color:#a6e22e">matrix</span> );
+  <span style="color:#75715e">// 变换顶点位置
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">vertex</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">i</span> ];
+    <span style="color:#a6e22e">vertex</span>.<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#a6e22e">matrix</span> );
+  }
+  <span style="color:#75715e">// 变换顶点及面的法线
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">face</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>[ <span style="color:#a6e22e">i</span> ];
+    <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span>.<span style="color:#a6e22e">applyMatrix3</span>( <span style="color:#a6e22e">normalMatrix</span> ).<span style="color:#a6e22e">normalize</span>();
+    <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">j</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">jl</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">j</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">jl</span>; <span style="color:#a6e22e">j</span> <span style="color:#f92672">++</span> ) {
+      <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#a6e22e">j</span> ].<span style="color:#a6e22e">applyMatrix3</span>( <span style="color:#a6e22e">normalMatrix</span> ).<span style="color:#a6e22e">normalize</span>();
+    }
+  }
+  <span style="color:#75715e">// 重新计算包围盒/球并重置标记
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> ( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingBox</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">null</span> ) <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">computeBoundingBox</span>();
+  <span style="color:#66d9ef">if</span> ( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingSphere</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">null</span> ) <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">computeBoundingSphere</span>();
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">verticesNeedUpdate</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">normalsNeedUpdate</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+}
+</code></pre></div><p>其中原始变换矩阵用于顶点位置的变换</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">vertex</span>.<span style="color:#a6e22e">applyMatrix4</span>( <span style="color:#a6e22e">matrix</span> );
+</code></pre></div><p>而计算得到的法线变换矩阵用于点面法线的变换，变换后还需要归一化操作:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">normalMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Matrix3</span>().<span style="color:#a6e22e">getNormalMatrix</span>( <span style="color:#a6e22e">matrix</span> );
+...
+<span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span>.<span style="color:#a6e22e">applyMatrix3</span>( <span style="color:#a6e22e">normalMatrix</span> ).<span style="color:#a6e22e">normalize</span>();
+...
+<span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#a6e22e">j</span> ].<span style="color:#a6e22e">applyMatrix3</span>( <span style="color:#a6e22e">normalMatrix</span> ).<span style="color:#a6e22e">normalize</span>();
+</code></pre></div><p>这个normalMatrix遵循图形学中常用的法线变换计算方法，即<strong>法线变换为原始变换矩阵逆的转置</strong>。若原始变换为$M$，则法线变换为$(M^{-1})^{T}$。从getNormalMatrix()的源码即可得知:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">getNormalMatrix</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">matrix4</span> ) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setFromMatrix4</span>( <span style="color:#a6e22e">matrix4</span> ).<span style="color:#a6e22e">getInverse</span>( <span style="color:#66d9ef">this</span> ).<span style="color:#a6e22e">transpose</span>();
+}
+</code></pre></div><h3 id="包围盒球">包围盒/球</h3>
+<p>Geometry的包围模型包含两种:</p>
+<ul>
+<li>boundingBox</li>
+<li>boundingSphere</li>
+</ul>
+<p>两种用于碰撞检测的包围模型计算都是基于几何体顶点的计算。</p>
+<p>首先会检测当前是否存在盒/球对象，否则创建初始的Box3D与Sphere模型。其次通过传入顶点对模型进行修正。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">computeBoundingBox</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> () {
+  <span style="color:#66d9ef">if</span> ( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingBox</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">null</span> ) <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingBox</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Box3</span>();
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingBox</span>.<span style="color:#a6e22e">setFromPoints</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span> );
+},
+<span style="color:#a6e22e">computeBoundingSphere</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> () {
+  <span style="color:#66d9ef">if</span> ( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingSphere</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">null</span> ) <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingSphere</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Sphere</span>();
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">boundingSphere</span>.<span style="color:#a6e22e">setFromPoints</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span> );
+}
+</code></pre></div><h4 id="boundingbox">boundingBox</h4>
+<p>包围盒的计算中会通过传入的顶点不断更新Box3D盒模型体对角线上的两个坐标(min，max)，通过这两个值可确定一个唯一的三维空间长方体，并参与其他方法中的计算。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/math/Box3.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">setFromPoints</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">points</span> ) {
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">makeEmpty</span>();
+  <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">expandByPoint</span>( <span style="color:#a6e22e">points</span>[ <span style="color:#a6e22e">i</span> ] );
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+},
+...
+<span style="color:#a6e22e">expandByPoint</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">point</span> ) {
+  <span style="color:#75715e">// this.min与this.max为Box体对角线两端的点
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">min</span>.<span style="color:#a6e22e">min</span>( <span style="color:#a6e22e">point</span> );
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">max</span>.<span style="color:#a6e22e">max</span>( <span style="color:#a6e22e">point</span> );
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+},
+</code></pre></div><h4 id="boundingsphere">boundingSphere</h4>
+<p>包围球的计算中会通过传入的顶点不断更新球的中点坐标及半径。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/math/Sphere.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">setFromPoints</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">points</span>, <span style="color:#a6e22e">optionalCenter</span> ) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">center</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">center</span>;
+  <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">optionalCenter</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">undefined</span> ) {
+    <span style="color:#75715e">// 将传入的中点设为新的中点
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">optionalCenter</span> );
+  } <span style="color:#66d9ef">else</span> {
+    <span style="color:#75715e">// 将根据传入顶点得到的Box3D模型中点作为新的球体中点
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">_box</span>.<span style="color:#a6e22e">setFromPoints</span>( <span style="color:#a6e22e">points</span> ).<span style="color:#a6e22e">getCenter</span>( <span style="color:#a6e22e">center</span> );
+  }
+  <span style="color:#75715e">// 将离中心点最远的顶点间距离作为球体半径
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">maxRadiusSq</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#a6e22e">maxRadiusSq</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">max</span>( <span style="color:#a6e22e">maxRadiusSq</span>, <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">distanceToSquared</span>( <span style="color:#a6e22e">points</span>[ <span style="color:#a6e22e">i</span> ] ) );
+  }
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">radius</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">sqrt</span>( <span style="color:#a6e22e">maxRadiusSq</span> );
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+},
+</code></pre></div><h3 id="合并">合并</h3>
+<p>Geometry提供了合并相关的方法，用于网格合并与自身顶点合并。</p>
+<ul>
+<li>mergeMesh</li>
+<li>mergeVertices</li>
+</ul>
+<h4 id="mergemesh">mergeMesh</h4>
+<p>网格合并将当前的Geometry对象与传入的Mesh合并，会根据传入网格的geometry与matrix更新当前geometry的基础属性(顶点、颜色、面、uv)。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">mergeMesh</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>( <span style="color:#a6e22e">mesh</span> ) {
+  <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">matrixAutoUpdate</span> ) <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">updateMatrix</span>();
+  <span style="color:#75715e">// merge方法中执行具体的基础属性更新
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">merge</span>( <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">geometry</span>, <span style="color:#a6e22e">mesh</span>.<span style="color:#a6e22e">matrix</span> );
+},
+</code></pre></div><p>在<code>this.merge()</code>方法中，对于顶点、颜色与uv属性的合并会直接进行数组合并操作，对于面会重新计算其法线。</p>
+<h4 id="mergevertices">mergeVertices</h4>
+<p>合并顶点是对于Geometry对象自身的操作。在合并顶点时会利用hashmap移除重复的顶点并在合并顶点后更新面包含的顶点。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">mergeVertices</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>() {
+  <span style="color:#75715e">// 利用hashmap过滤重复顶点
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#a6e22e">v</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">i</span> ];
+    <span style="color:#75715e">// 构建顶点key，用于检测在hashmap中是否存在
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">key</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">round</span>( <span style="color:#a6e22e">v</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">precision</span> ) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;_&#39;</span> <span style="color:#f92672">+</span> Math.<span style="color:#a6e22e">round</span>( <span style="color:#a6e22e">v</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">precision</span> ) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;_&#39;</span> <span style="color:#f92672">+</span> Math.<span style="color:#a6e22e">round</span>( <span style="color:#a6e22e">v</span>.<span style="color:#a6e22e">z</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">precision</span> );
+    <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">verticesMap</span>[ <span style="color:#a6e22e">key</span> ] <span style="color:#f92672">===</span> <span style="color:#66d9ef">undefined</span> ) {
+      <span style="color:#a6e22e">verticesMap</span>[ <span style="color:#a6e22e">key</span> ] <span style="color:#f92672">=</span> <span style="color:#a6e22e">i</span>;
+      <span style="color:#a6e22e">unique</span>.<span style="color:#a6e22e">push</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">i</span> ] );
+      <span style="color:#a6e22e">changes</span>[ <span style="color:#a6e22e">i</span> ] <span style="color:#f92672">=</span> <span style="color:#a6e22e">unique</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>;
+    } <span style="color:#66d9ef">else</span> {
+      <span style="color:#a6e22e">changes</span>[ <span style="color:#a6e22e">i</span> ] <span style="color:#f92672">=</span> <span style="color:#a6e22e">changes</span>[ <span style="color:#a6e22e">verticesMap</span>[ <span style="color:#a6e22e">key</span> ] ];
+    }
+  }
+  <span style="color:#75715e">// 在合并顶点后，对于包含重复顶点的表面需要被从geometry中移除
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">faceIndicesToRemove</span> <span style="color:#f92672">=</span> [];
+  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#a6e22e">face</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>[ <span style="color:#a6e22e">i</span> ];
+    <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">a</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">changes</span>[ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">a</span> ];
+    <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">b</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">changes</span>[ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">b</span> ];
+    <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">c</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">changes</span>[ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">c</span> ];
+    <span style="color:#a6e22e">indices</span> <span style="color:#f92672">=</span> [ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">c</span> ];
+    <span style="color:#75715e">// 若Face3对象中存在重复顶点，则需要移除
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> ( <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">n</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">n</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; <span style="color:#a6e22e">n</span> <span style="color:#f92672">++</span> ) {
+      <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">indices</span>[ <span style="color:#a6e22e">n</span> ] <span style="color:#f92672">===</span> <span style="color:#a6e22e">indices</span>[ ( <span style="color:#a6e22e">n</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> ) <span style="color:#f92672">%</span> <span style="color:#ae81ff">3</span> ] ) {
+        <span style="color:#a6e22e">faceIndicesToRemove</span>.<span style="color:#a6e22e">push</span>( <span style="color:#a6e22e">i</span> );
+        <span style="color:#66d9ef">break</span>;
+      }
+    }
+  }
+  <span style="color:#75715e">// 根据需要移除的表面索引数组倒序删除
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">faceIndicesToRemove</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">--</span> ) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">idx</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">faceIndicesToRemove</span>[ <span style="color:#a6e22e">i</span> ];
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>.<span style="color:#a6e22e">splice</span>( <span style="color:#a6e22e">idx</span>, <span style="color:#ae81ff">1</span> );
+    <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">j</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">jl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faceVertexUvs</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">j</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">jl</span>; <span style="color:#a6e22e">j</span> <span style="color:#f92672">++</span> ) {
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faceVertexUvs</span>[ <span style="color:#a6e22e">j</span> ].<span style="color:#a6e22e">splice</span>( <span style="color:#a6e22e">idx</span>, <span style="color:#ae81ff">1</span> );
+    }
+  }
+  <span style="color:#75715e">// 更新为无重复点的顶点数组
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">diff</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">unique</span>.<span style="color:#a6e22e">length</span>;
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">unique</span>;
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">diff</span>;
+}
+</code></pre></div><h3 id="法线计算">法线计算</h3>
+<p>Geometry中提供了多个用于计算顶点与表面等法线的方法</p>
+<ul>
+<li>面法线: computeFaceNormals</li>
+<li>顶点法线: computeVertexNormals</li>
+<li>平顶点法线?: computeFlatVertexNormals</li>
+<li>morph对象法线: computeMorphNormals</li>
+</ul>
+<h4 id="computefacenormals">computeFaceNormals</h4>
+<p>计算所有<a href="https://en.wikipedia.org/wiki/Normal_(geometry)">面的法线</a>(单位向量)，将相邻两边向量的叉乘归一化后得出。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cb</span>.<span style="color:#a6e22e">subVectors</span>( <span style="color:#a6e22e">vC</span>, <span style="color:#a6e22e">vB</span> );
+<span style="color:#a6e22e">ab</span>.<span style="color:#a6e22e">subVectors</span>( <span style="color:#a6e22e">vA</span>, <span style="color:#a6e22e">vB</span> );
+<span style="color:#a6e22e">cb</span>.<span style="color:#a6e22e">cross</span>( <span style="color:#a6e22e">ab</span> );
+<span style="color:#a6e22e">cb</span>.<span style="color:#a6e22e">normalize</span>();
+</code></pre></div><h4 id="computevertexnormals">computeVertexNormals</h4>
+<p>计算所有<a href="https://en.wikipedia.org/wiki/Vertex_normal">顶点的法线</a>(单位向量)，将顶点所在表面的法线向量叠加，并进行归一化得出。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 先计算面法线
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">computeFaceNormals</span>();
+<span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">f</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">fl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">f</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">fl</span>; <span style="color:#a6e22e">f</span> <span style="color:#f92672">++</span> ) {
+  <span style="color:#a6e22e">face</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>[ <span style="color:#a6e22e">f</span> ];
+  <span style="color:#75715e">// 叠加在每个顶点的向量上
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">a</span> ].<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+  <span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">b</span> ].<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+  <span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">c</span> ].<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+}
+<span style="color:#75715e">// 全部进行归一化，即为顶点法线
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">v</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">vl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">vertices</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">v</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">vl</span>; <span style="color:#a6e22e">v</span> <span style="color:#f92672">++</span> ) {
+  <span style="color:#a6e22e">vertices</span>[ <span style="color:#a6e22e">v</span> ].<span style="color:#a6e22e">normalize</span>();
+}
+<span style="color:#75715e">// 利用计算结果更新面所包含的顶点法线数据
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">vertexNormals</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>;
+<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">0</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">1</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">2</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+</code></pre></div><h4 id="computeflatvertexnormals">computeFlatVertexNormals</h4>
+<p>计算面的法线，将其作为面对象中存储的所包含的顶点法线数据(face.vertexNormals)，不修改几何体本身的顶点(vertices)。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 先计算面法线
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">computeFaceNormals</span>();
+...
+<span style="color:#75715e">// 直接将面法线作为面包含的顶点法线
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">vertexNormals</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>;
+<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">0</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">1</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">2</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+...
+</code></pre></div><h4 id="computemorphnormals">computeMorphNormals</h4>
+<p>计算morph对象的法线，调用前面的方法结合临时几何体得到morph对象的点面法线数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 缓存原始法线数据
+</span><span style="color:#75715e"></span>...
+<span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">__originalFaceNormal</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span>.<span style="color:#a6e22e">clone</span>();
+<span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">__originalVertexNormals</span>[ <span style="color:#a6e22e">i</span> ] <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#a6e22e">i</span> ].<span style="color:#a6e22e">clone</span>();
+<span style="color:#75715e">// 利用临时几何体计算morph对象的点面法线
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">tmpGeo</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Geometry</span>();
+<span style="color:#a6e22e">tmpGeo</span>.<span style="color:#a6e22e">faces</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>;
+<span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">il</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">morphTargets</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">il</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">++</span> ) {
+  <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">morphNormals</span>[ <span style="color:#a6e22e">i</span> ] ) {
+    ... <span style="color:#75715e">// 初次访问的初始化工作
+</span><span style="color:#75715e"></span>  }
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">morphNormals</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">morphNormals</span>[ <span style="color:#a6e22e">i</span> ];
+  <span style="color:#75715e">// 将morph对象顶点赋予临时几何体
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">tmpGeo</span>.<span style="color:#a6e22e">vertices</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">morphTargets</span>[ <span style="color:#a6e22e">i</span> ].<span style="color:#a6e22e">vertices</span>;
+  <span style="color:#75715e">// 计算morph对象法线
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">tmpGeo</span>.<span style="color:#a6e22e">computeFaceNormals</span>();
+  <span style="color:#a6e22e">tmpGeo</span>.<span style="color:#a6e22e">computeVertexNormals</span>();
+  <span style="color:#75715e">// 存储morph对象法线
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">faceNormal</span>, <span style="color:#a6e22e">vertexNormals</span>;
+  <span style="color:#66d9ef">for</span> ( <span style="color:#a6e22e">f</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">fl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">f</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">fl</span>; <span style="color:#a6e22e">f</span> <span style="color:#f92672">++</span> ) {
+    <span style="color:#a6e22e">face</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">faces</span>[ <span style="color:#a6e22e">f</span> ];
+    <span style="color:#a6e22e">morphNormals</span>.<span style="color:#a6e22e">faceNormals</span>[ <span style="color:#a6e22e">f</span> ].<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> );
+    <span style="color:#a6e22e">morphNormals</span>.<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#a6e22e">f</span> ].<span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span>[ <span style="color:#ae81ff">0</span> ] );
+    ...
+  }
+}
+<span style="color:#75715e">// 恢复几何体的原始法线数据
+</span><span style="color:#75715e"></span>...
+<span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">normal</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">__originalFaceNormal</span>;
+<span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">vertexNormals</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">face</span>.<span style="color:#a6e22e">__originalVertexNormals</span>;
+</code></pre></div><h2 id="buffergeometry--directgeometry">BufferGeometry &amp; DirectGeometry</h2>
+<p>Three中与Geometry相关的主要对象还有BufferGeometry与DirectGeometry。</p>
+<ul>
+<li>todo</li>
+</ul>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://threejs.org/docs/#api/en/core/Geometry">Geometry – three.js docs</a></li>
+<li><a href="https://discourse.threejs.org/t/idea-transforming-geometries-rather-than-meshes-and-their-children-in-a-render-loop/1021">Transforming Geometries rather than Meshes and their children, in a render loop</a></li>
+<li><a href="https://discourse.threejs.org/t/why-do-ao-and-lightmap-need-a-second-set-of-uvs/4178/7">Why do AO and LightMap need a second set of UVs?</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/96717729">图形学中的基本变换(Basic Transforms)</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/72734738">渲染管线中的法线变换矩阵</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/">http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/deep-in-threejs-core-objects-i-object3d/">深入学习Three.js核心对象之（一）Object3D</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/threejs'>threejs</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/" title="深入学习Three.js核心对象之（一）Object3D">深入学习Three.js核心对象之（一）Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (23)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/javascript/">javascript</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

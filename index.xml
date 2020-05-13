@@ -13,28 +13,29 @@
     
     <item>
       <title>深入学习Three.js核心对象之（二）Geometry</title>
-      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-geometry/</link>
+      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/</link>
       <pubDate>Mon, 11 May 2020 10:38:16 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-geometry/</guid>
-      <description>&lt;p&gt;分析构成模型对象的重要元素之一：几何体数据，即Geometry对象的相关实现原理。&lt;/p&gt;
+      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/</guid>
+      <description>&lt;p&gt;分析构成模型对象的重要元素之一：Geometry（几何体）。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Geometry的属性与方法&lt;/li&gt;
-&lt;li&gt;Geometry &amp;amp; BufferGeometry &amp;amp; DirectGeometry对比&lt;/li&gt;
+&lt;li&gt;Geometry的属性: 基础属性与动画属性&lt;/li&gt;
+&lt;li&gt;Geometry的方法: 基础变换、Mesh与顶点合并、点面法线、包围盒/球计算&lt;/li&gt;
+&lt;li&gt;BufferGeometry 与 DirectGeometry(Todo)&lt;/li&gt;
 &lt;/ul&gt;</description>
     </item>
     
     <item>
       <title>深入学习Three.js核心对象之（一）Object3D</title>
-      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</link>
+      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/</link>
       <pubDate>Wed, 06 May 2020 19:15:03 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-object3d/</guid>
+      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/</guid>
       <description>&lt;p&gt;从底层对象开始，看看Threejs如果利用图形学知识，通过各种数据对象构建场景，最终通过渲染器绘制出来。首先来看看最基础的Object3D对象，内容包含：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;官方demo引入&lt;/li&gt;
-&lt;li&gt;Object3D的主要属性&lt;/li&gt;
-&lt;li&gt;Object3D的变换&lt;/li&gt;
+&lt;li&gt;官方demo引入: 主要对象分析&lt;/li&gt;
+&lt;li&gt;Object3D的属性: 位置、欧拉角、四元数、变换矩阵等&lt;/li&gt;
+&lt;li&gt;Object3D的变换: 以世界空间或模型空间为参考系的基础变换&lt;/li&gt;
 &lt;/ul&gt;</description>
     </item>
     
