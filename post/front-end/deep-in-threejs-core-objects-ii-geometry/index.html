@@ -87,6 +87,7 @@
         
         <div class="post-content">
             <p>分析构成模型对象的重要元素之一：Geometry（几何体）。</p>
+<p>主要介绍:</p>
 <ul>
 <li>Geometry的属性: 基础属性与动画属性</li>
 <li>Geometry的方法: 基础变换、Mesh与顶点合并、点面法线、包围盒/球计算</li>
@@ -97,6 +98,7 @@
 <ul>
 <li><a href="https://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/">深入学习Three.js核心对象之（一）Object3D</a></li>
 <li>深入学习Three.js核心对象之（二）Geometry</li>
+<li><a href="https://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/">深入学习Three.js核心对象之（三）Material</a></li>
 </ul>
 <h2 id="geometry">Geometry</h2>
 <p>Geometry的<strong>属性</strong>主要可以分为两类：</p>
@@ -174,7 +176,7 @@
 }()
 </code></pre></div><h3 id="基础变换">基础变换</h3>
 <p>Geometry变换与Object3D变换在使用上的不同点用文档中的话来说就是: Geometry变换是一般一次性操作，不要用在渲染循环中，若想用在渲染循环中请使用Object3D对象的变换方法。</p>
-<p>Geometry对象的变换采用图形学中使用四维齐次矩阵表示的基础变换来进行计算。在所提供的API内部会根据基础变换类型，得到一个对应的变换矩阵参与后续计算，即下面的**_m1**:</p>
+<p>Geometry对象的变换采用图形学中使用四维齐次矩阵表示的基础变换来进行计算。在所提供的API内部会根据基础变换类型，得到一个对应的变换矩阵参与后续计算，即下面的 <strong>_m1</strong> :</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_m1</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Matrix4</span>();
 ...
 <span style="color:#a6e22e">rotateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">angle</span> ) {
@@ -502,6 +504,10 @@
 <ul class="widget-list">
     
     <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/" title="深入学习Three.js核心对象之（三）Material">深入学习Three.js核心对象之（三）Material</a>
+    </li>
+    
+    <li>
         <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
     </li>
     
@@ -537,10 +543,6 @@
         <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-iii-pixi/" title="Canvas2D渲染库简析:（三）Pixi">Canvas2D渲染库简析:（三）Pixi</a>
     </li>
     
-    <li>
-        <a href="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/" title="Canvas2D渲染库简析:（二）Konva">Canvas2D渲染库简析:（二）Konva</a>
-    </li>
-    
 </ul>
     </section>
 
@@ -556,7 +558,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (23)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (24)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     

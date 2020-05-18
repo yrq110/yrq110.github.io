@@ -12,12 +12,27 @@
     
     
     <item>
+      <title>深入学习Three.js核心对象之（三）Material</title>
+      <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/</link>
+      <pubDate>Wed, 13 May 2020 10:42:58 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/</guid>
+      <description>&lt;p&gt;分析构成模型对象的另一个重要元素：Material（材质）。&lt;/p&gt;
+&lt;p&gt;主要介绍:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Material的属性及WebGLRenderer的处理: 属性分类、预处理宏与自定义标记&lt;/li&gt;
+&lt;li&gt;部分属性解读(Todo): 融合属性、深度测试、模板测试、裁剪、多边形偏移等&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
       <title>深入学习Three.js核心对象之（二）Geometry</title>
       <link>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/</link>
       <pubDate>Mon, 11 May 2020 10:38:16 +0800</pubDate>
       
       <guid>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/</guid>
       <description>&lt;p&gt;分析构成模型对象的重要元素之一：Geometry（几何体）。&lt;/p&gt;
+&lt;p&gt;主要介绍:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Geometry的属性: 基础属性与动画属性&lt;/li&gt;
 &lt;li&gt;Geometry的方法: 基础变换、Mesh与顶点合并、点面法线、包围盒/球计算&lt;/li&gt;
