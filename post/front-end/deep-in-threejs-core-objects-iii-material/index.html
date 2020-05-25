@@ -175,13 +175,12 @@
         <span style="color:#e6db74">&#39;#define texture2D texture&#39;</span>
     ].<span style="color:#a6e22e">join</span>( <span style="color:#e6db74">&#39;\n&#39;</span> ) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">prefixVertex</span>;
 }
-</code></pre></div><p>``
-prefixVertex的来源搞清楚了，再来看看vertexShader从哪里来的。</p>
+</code></pre></div><p>``</p>
 </li>
 <li>
 <p>宏代码: ShaderChunk</p>
-<p>宏定义有了，那么对应的宏代码在哪里？</p>
-<p>Three在<code>src/renderers/shaders/ShaderChunk</code>路径下放置多个GLSL宏代码片段，并使用ShaderChunk对象来统一保存。</p>
+<p>此时宏定义已经准备好了，那么还需要对应的宏代码。</p>
+<p>Three在<code>src/renderers/shaders/ShaderChunk</code>路径下放置了多个GLSL宏代码片段，并使用ShaderChunk对象来统一管理。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/renderers/shaders/ShaderChunk.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">fog_vertex</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./ShaderChunk/fog_vertex.glsl.js&#39;</span>;
 <span style="color:#66d9ef">import</span> <span style="color:#a6e22e">fog_pars_vertex</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./ShaderChunk/fog_pars_vertex.glsl.js&#39;</span>;
@@ -196,7 +195,7 @@ prefixVertex的来源搞清楚了，再来看看vertexShader从哪里来的。</
     ...
 }
 </code></pre></div><p>``</p>
-<p>这些片段均为为单一功能提供的变量声明与相关计算处理。以雾化属性的片元着色器宏代码为例:</p>
+<p>这些片段均为为单一功能提供的变量声明与计算处理。以雾化属性的片元着色器宏代码为例:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">// fog_pars_fragment.glsl
 </span><span style="color:#75715e"></span><span style="color:#75715e">#ifdef USE_FOG
 </span><span style="color:#75715e"></span>    uniform vec3 fogColor;
@@ -218,12 +217,13 @@ prefixVertex的来源搞清楚了，再来看看vertexShader从哪里来的。</
 </span><span style="color:#75715e"></span>    gl_FragColor.rgb <span style="color:#f92672">=</span> mix( gl_FragColor.rgb, fogColor, fogFactor );
 <span style="color:#75715e">#endif
 </span></code></pre></div><p>``</p>
-<p>关于这里的代码段命名规则，经观察后应该是使用<code>{NAME}_{SHADER}</code>表示main函数中代码，使用<code>{NAME}_pars_{SHADER}</code>表示开头的变量声明。这里是如何package宏代码，那么这些代码是如何加载进来的？</p>
+<p>关于这里的代码段命名规则，经观察后应该是使用<code>{NAME}_{SHADER}</code>表示main函数中代码，使用<code>{NAME}_pars_{SHADER}</code>表示开头的变量声明。</p>
+<p>现在我们找到了宏定义与宏代码，还有一个问题就是这些宏代码是如何并且在哪里被加载进来的。</p>
 </li>
 <li>
-<p>预置功能方案: ShaderLib</p>
-<p>由于ShaderChunk提供的是比较细粒度的GLSL预处理代码，并不是真正的完整shader代码。</p>
-<p>Three将相对完整的功能或方案的着色器代码放在了<code>src/renderers/shaders/ShaderLib</code>路径下，这些代码也是使用ShaderChunk统一保存。 在外层使用一个ShaderLib对象来保存预置材质等的渲染方案(以lambert光照模型的材质为例):</p>
+<p>预置着色方案对象: ShaderLib</p>
+<p>我们可以看到ShaderChunk提供的是细粒度的GLSL预处理代码，距离最终完整的shader代码还差很远、</p>
+<p>Three将预置的着色方案代码放在了<code>src/renderers/shaders/ShaderLib</code>路径下，这些代码也是使用ShaderChunk统一保存。 在外层使用了一个ShaderLib对象来保存这些预置的着色方案(以lambert光照模型的材质为例):</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/renderers/shaders/ShaderLib.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ShaderLib</span> <span style="color:#f92672">=</span> {
     ...
@@ -300,7 +300,7 @@ varying vec3 vIndirectFront;
 </span></code></pre></div><p>那么通过正则会滤出<code>common</code>，并在ShaderChunk对象中根据该键寻找到对应的代码段(<code>ShaderChunk['common']</code>)，在此位置用该代码段替换该语句。</p>
 <p>这下就一目了然了，<strong><code>#include</code>是为了方便代码添加与管理的一种自定义标记，而不是能让GPU直接处理的命令</strong>，虚惊一场。</p>
 <h3 id="属性解读">属性解读</h3>
-<p>Todo</p>
+<p>Todo。通过一个扩展的自定义材质来测试这些属性的效果</p>
 <h4 id="融合属性">融合属性</h4>
 <h4 id="深度测试">深度测试</h4>
 <h4 id="模板测试">模板测试</h4>
