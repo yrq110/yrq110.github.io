@@ -449,7 +449,7 @@
     ...
 }
 </code></pre></div><h3 id="渲染区域">渲染区域</h3>
-<p>渲染区域指的是如果计算得出在屏幕中需要渲染的区域，主要是通过一个 <strong>coveringTiles()</strong> 函数来计算当前屏幕空间中需要渲染的瓦片(索引)。</p>
+<p>渲染区域指的是在屏幕中的目标渲染区域，主要是通过一个 <strong>coveringTiles()</strong> 函数来计算当前屏幕空间中需要渲染的瓦片(索引)。</p>
 <p>由于在3D空间中，相机在空间的任意位置指向地图形成的目标平面区域(即相机视锥体与地图平面相交的区域)可能是一个不规则多边形，通过计算得到这个多边形后，还需要进一步计算得出与其相交的瓦片，即为最终需要渲染的瓦片。</p>
 <p>mapbox所采用的方法是<strong>计算根瓦片的轴向包围盒与相机视锥体的相交情况，并结合四叉树空间索引来计算相交的瓦片ID及与中心点距离等数据</strong>。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/geo/transform
