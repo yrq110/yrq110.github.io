@@ -429,7 +429,7 @@
     }
 }
 </code></pre></div><p>在update中会检查_updatedLayers是否有值，这个值就是在_updateLayer中设置的。</p>
-<p>若存在需要更新的layerId，则会执行_updateWorkerLayers方法，在_updateWorkerLayers中会向style的worker线程池中广播了updateLayers事件，传入了需要更新和删除的layer数据。</p>
+<p>若存在需要更新的layerId，则会执行_updateWorkerLayers方法，该方法中会向style的worker线程池中广播updateLayers事件，传入需要更新和删除的layer对象进行图层数据的更新。</p>
 <p>即利用<strong>worker多线程异步更新所有需要更新和删除的layer</strong>，关于更新的具体做法是根据传入的新的layer数据重新生成图层对象直接根据id替换老数据。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/source/worker
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">updateLayers</span>(<span style="color:#a6e22e">mapId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">params</span><span style="color:#f92672">:</span> {<span style="color:#a6e22e">layers</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">LayerSpecification</span><span style="color:#f92672">&gt;</span>, <span style="color:#a6e22e">removedIds</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span>}, <span style="color:#a6e22e">callback</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">WorkerTileCallback</span>) {
