@@ -13,10 +13,10 @@
     
     <item>
       <title>MapboxGL简析(一)：map对象与渲染原理</title>
-      <link>http://yrq110.me/post/front-end/mapboxgl-i-map-and-render/</link>
+      <link>http://yrq110.me/post/front-end/mapboxgl-i-map-and-rendering/</link>
       <pubDate>Mon, 18 May 2020 20:29:37 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/front-end/mapboxgl-i-map-and-render/</guid>
+      <guid>http://yrq110.me/post/front-end/mapboxgl-i-map-and-rendering/</guid>
       <description>&lt;p&gt;简单分析下mapbox在渲染过程中都做了些什么，包括&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;map对象的html元素、事件与渲染器&lt;/li&gt;
