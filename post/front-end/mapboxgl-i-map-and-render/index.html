@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>MapboxGL简析(一)：map对象与渲染原理 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="MapboxGL简析(一)：map对象与渲染原理 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-05-18T20:29:37&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-05-18T20:29:37&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="MapboxGL简析(一)：map对象与渲染原理">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/mapboxgl-i-map-and-render/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">MapboxGL简析(一)：map对象与渲染原理</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月18日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>简单分析下mapbox在渲染过程中都做了些什么，包括</p>
+<ol>
+<li>map对象的html元素、事件与渲染器</li>
+<li>渲染原理相关的渲染器、渲染流程、渲染对象及目标区域</li>
+</ol>
+<p><em>本文所参考的mapbox-gl版本为<code>1.11.0</code></em></p>
+<h2 id="创建一个map时map在做什么">创建一个Map时Map在做什么</h2>
+<p>使用如下方式创建一个地图:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">mapboxgl</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;mapbox-gl&#39;</span>;
+<span style="color:#a6e22e">mapboxgl</span>.<span style="color:#a6e22e">accessToken</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;TOKEN&#39;</span>;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">map</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">mapboxgl</span>.<span style="color:#a6e22e">Map</span>({
+  <span style="color:#a6e22e">container</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;container&#39;</span>,
+  <span style="color:#a6e22e">style</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;mapbox://styles/mapbox/streets-v9&#39;</span>,
+  <span style="color:#a6e22e">center</span><span style="color:#f92672">:</span> [<span style="color:#f92672">-</span><span style="color:#ae81ff">74.50</span>, <span style="color:#ae81ff">40</span>],
+  <span style="color:#a6e22e">zoom</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">9</span>
+});
+</code></pre></div><p><img src="/images/blog/front-end/mapbox-intro/mb-start.jpg" alt=""></p>
+<p>在生成地图的过程中，Map对象在初始化时主要做了下面几件事:</p>
+<ol>
+<li>容器绑定与元素创建</li>
+<li>事件处理器绑定</li>
+<li>渲染器生成</li>
+</ol>
+<h3 id="容器绑定与元素创建">容器绑定与元素创建</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_setupContainer</span>() {
+    <span style="color:#75715e">// 根容器元素
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">container</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_container</span>;
+    <span style="color:#a6e22e">container</span>.<span style="color:#a6e22e">classList</span>.<span style="color:#a6e22e">add</span>(<span style="color:#e6db74">&#39;mapboxgl-map&#39;</span>);
+    <span style="color:#75715e">// 创建一个隐藏元素用来检测是否正常加载css文件
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">missingCSSCanary</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_missingCSSCanary</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canary&#39;</span>, <span style="color:#a6e22e">container</span>);
+    <span style="color:#a6e22e">missingCSSCanary</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">visibility</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;hidden&#39;</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_detectMissingCSS</span>();
+    <span style="color:#75715e">// 创建画布容器及画布元素
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">canvasContainer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvasContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canvas-container&#39;</span>, <span style="color:#a6e22e">container</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_interactive</span>) { <span style="color:#a6e22e">canvasContainer</span>.<span style="color:#a6e22e">classList</span>.<span style="color:#a6e22e">add</span>(<span style="color:#e6db74">&#39;mapboxgl-interactive&#39;</span>); }
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvas</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canvas&#39;</span>, <span style="color:#a6e22e">canvasContainer</span>);
+    <span style="color:#75715e">// 获取尺寸信息并调整
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dimensions</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_containerDimensions</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_resizeCanvas</span>(<span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">1</span>]);
+    <span style="color:#75715e">// 创建控制器容器
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">controlContainer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controlContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-control-container&#39;</span>, <span style="color:#a6e22e">container</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">positions</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controlPositions</span> <span style="color:#f92672">=</span> {};
+    [<span style="color:#e6db74">&#39;top-left&#39;</span>, <span style="color:#e6db74">&#39;top-right&#39;</span>, <span style="color:#e6db74">&#39;bottom-left&#39;</span>, <span style="color:#e6db74">&#39;bottom-right&#39;</span>].<span style="color:#a6e22e">forEach</span>((<span style="color:#a6e22e">positionName</span>) =&gt; {
+        <span style="color:#a6e22e">positions</span>[<span style="color:#a6e22e">positionName</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">`mapboxgl-ctrl-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">positionName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, <span style="color:#a6e22e">controlContainer</span>);
+    });
+}
+</code></pre></div><p>最终会生成这样一个html元素结构:</p>
+<ul>
+<li>div.mapboxgl-canary: CSS检测元素</li>
+<li>div.mapboxgl-canvas-container | mapboxgl-interactive: 画布容器
+<ul>
+<li>canvas.mapboxgl-canvas: 渲染画布</li>
+</ul>
+</li>
+<li>div.mapboxgl-control-container: 控制器容器
+<ul>
+<li>div.mapboxgl-ctrl-${position}: 控制器</li>
+</ul>
+</li>
+</ul>
+<h3 id="事件处理器绑定">事件处理器绑定</h3>
+<p>主要有三类事件:</p>
+<ol>
+<li>元素事件: online(window), resize(window), webglcontextlost(canvas), webglcontextrestored(canvas)</li>
+<li>交互事件: move, moveend, zoom</li>
+<li>资源加载事件: style.load, data, dataloading</li>
+</ol>
+<p><strong>_update()方法</strong></p>
+<p>当有需要改变地图内容的事件发生时，均会调用_update()方法:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_update</span>(<span style="color:#a6e22e">updateStyle</span><span style="color:#f92672">?:</span> <span style="color:#66d9ef">boolean</span>) {
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>) <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+  <span style="color:#75715e">// 更新样式与资源
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_styleDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_styleDirty</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">updateStyle</span>;
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sourcesDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#75715e">// 重绘，执行_render()
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">triggerRepaint</span>();
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+}
+</code></pre></div><p>map对象中渲染方法的调用流程: <code>_update()</code> =&gt; <code>triggerRepaint()</code> =&gt; <code>_render()</code> =&gt; <code>this.painter.render()</code></p>
+<p><strong>元素事件</strong></p>
+<ul>
+<li>window
+<ul>
+<li>online: 当窗口与网络准备好时，会调用_update()执行首次渲染</li>
+<li>resize: 窗口尺寸改变时，对应更新canvas, transform与painter的尺寸</li>
+</ul>
+</li>
+<li>canvas
+<ul>
+<li>webglcontextlost: 丢失上下文时停止当前执行的raf动画</li>
+<li>webglcontextrestored: 重获上下文时会重新配置渲染器，设置尺寸与执行_update()</li>
+</ul>
+</li>
+</ul>
+<p><strong>交互事件</strong></p>
+<p>监听到交互事件时，均会执行_update()方法，更新样式与资源并调用triggerRepaint()进行重绘</p>
+<p><strong>资源加载事件</strong></p>
+<ul>
+<li>data: 执行_update渲染，触发事件</li>
+<li>dataloading: 可自定义配置style或source加载完成后的行为</li>
+<li>style.load: 可自定义配置style加载完成后的行为，如添加新的source或layer</li>
+</ul>
+<h3 id="渲染器配置">渲染器配置</h3>
+<p>根据canvas画布的webgl context来创建painter渲染器，并封装render方法，绘制style对象。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/ui/map
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_setupPainter</span>() {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">gl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;webgl&#39;</span>, <span style="color:#a6e22e">attributes</span>) <span style="color:#f92672">||</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;experimental-webgl&#39;</span>, <span style="color:#a6e22e">attributes</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">painter</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Painter</span>(<span style="color:#a6e22e">gl</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>);
+}
+<span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">paintStartTimeStamp</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+  ...
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">render</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>, {<span style="color:#75715e">/*options*/</span>});
+}
+</code></pre></div><h2 id="渲染原理">渲染原理</h2>
+<p>分别从以下几个方面简要分析下mapbox的渲染原理:</p>
+<ol>
+<li>渲染器</li>
+<li>渲染流程</li>
+<li>渲染对象</li>
+<li>渲染区域</li>
+</ol>
+<h3 id="渲染器">渲染器</h3>
+<p>渲染器相关的文件在<code>src/render</code>路径下，其中painter为负责渲染的主要对象。</p>
+<p>painter负责如何绘制图层及上面的各类元素，其内容包含:</p>
+<ul>
+<li>program与shader处理</li>
+<li>WebGL各种功能封装(模板测试、深度测试等)</li>
+<li>提供针对图层上每种元素的drawFunction</li>
+<li>解析style对象得到的manager</li>
+</ul>
+<h3 id="渲染流程">渲染流程</h3>
+<p>看下painter的render方法，主要为执行分层绘制:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">render</span>(<span style="color:#a6e22e">style</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Style</span>, <span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">PainterOptions</span>) {
+    <span style="color:#75715e">/* 1. 对于支持离屏渲染/预渲染(hasOffscreenPass)的图层在FBO中进行绘制 */</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;offscreen&#39;</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layerId</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">layerIds</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">_layers</span>[<span style="color:#a6e22e">layerId</span>];
+        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">hasOffscreenPass</span>() <span style="color:#f92672">||</span> <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">isHidden</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>.<span style="color:#a6e22e">zoom</span>)) <span style="color:#66d9ef">continue</span>;
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">coords</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">coordsDescending</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>];
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;custom&#39;</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">coords</span>.<span style="color:#a6e22e">length</span>) <span style="color:#66d9ef">continue</span>;
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCaches</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>], <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
+    }
+    <span style="color:#75715e">// 所有离屏渲染层完成后解绑framebuffer
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">bindFramebuffer</span>.<span style="color:#a6e22e">set</span>(<span style="color:#66d9ef">null</span>);
+    <span style="color:#75715e">// 清空缓冲区，为绘制main framebuffer做准备
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">clear</span>({<span style="color:#a6e22e">color</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">showOverdrawInspector</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">Color</span>.<span style="color:#a6e22e">black</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">Color</span>.<span style="color:#a6e22e">transparent</span>, <span style="color:#a6e22e">depth</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>});
+    <span style="color:#75715e">/* 2. 绘制不透明图层 */</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;opaque&#39;</span>;
+    <span style="color:#75715e">// 由上至下依次绘制蒙版与图层
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layerIds</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span><span style="color:#f92672">--</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderTileClippingMasks</span>(<span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCache</span>, <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
+    }
+    <span style="color:#75715e">/* 3. 绘制半透明图层 */</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;translucent&#39;</span>;
+    <span style="color:#75715e">// 由下至上依次绘制蒙版与图层
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">layerIds</span>.<span style="color:#a6e22e">length</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span><span style="color:#f92672">++</span>) {
+        <span style="color:#75715e">// 为symbol元素层添加了特殊的瓦片数据，没有使用瓦片裁剪(tiles clipping)，因此也无需单独执行蒙版裁剪
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">coords</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;symbol&#39;</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">coordsDescendingSymbol</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">coordsDescending</span>)[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>];
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderTileClippingMasks</span>(<span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coordsAscending</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>]);
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCache</span>, <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
+    }
+}
+</code></pre></div><p>可以看出，painter在渲染过程中对于图层的渲染处理做了如下分类:</p>
+<ol>
+<li>offscreen pass: 离屏渲染层，在FBO中绘制</li>
+<li>opaque pass: 不透明层，从上至下绘制</li>
+<li>translucent pass: 透明层，从下至上绘制</li>
+</ol>
+<p>有一点需要说明的是，这里mapbox并不是直接遍历指定类型的层(opaque或translucent)来执行渲染的，而是根据执行到图层绘制方式中再进行判断:</p>
+<ol>
+<li>先设定当前的渲染通道类型(rednerPass)</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;translucent&#39;</span>;
+</code></pre></div><ol start="2">
+<li>再遍历所有层，在执行层的绘制方法时根据传入painter的渲染通道类型来决定是否渲染:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/render/painter.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">layerIds</span>.<span style="color:#a6e22e">length</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span><span style="color:#f92672">++</span>) {
+    <span style="color:#75715e">// 若为line图层则会执行drawLine执行渲染
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCache</span>, <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
+}
+<span style="color:#75715e">// src/render/draw_line.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">drawLine</span>(<span style="color:#a6e22e">painter</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Painter</span>, <span style="color:#a6e22e">sourceCache</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">SourceCache</span>, <span style="color:#a6e22e">layer</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">LineStyleLayer</span>, <span style="color:#a6e22e">coords</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">OverscaledTileID</span><span style="color:#f92672">&gt;</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;translucent&#39;</span>) <span style="color:#66d9ef">return</span>;
+    ...
+}
+</code></pre></div><p>基本上所有内置的图层都属于translucent渲染类型，即半透明图层，从下至上绘制。而自定义图层就不一定了，根据想要的效果自己定义渲染通道的类型，并且注意执行渲染的顺序: offscreen -&gt; opaque -&gt; translucent。</p>
+<p>了解了渲染器对象与渲染图层的流程之后，接下来看看具体渲染的对象是什么样的。</p>
+<h3 id="渲染对象">渲染对象</h3>
+<p>即具体渲染的图层及元素。图层与元素对象的相关文件在<code>src/style</code>路径下。</p>
+<h4 id="style对象">Style对象</h4>
+<p>地图的样式与图形信息主要保存在map的style属性中，它的主要属性:</p>
+<ul>
+<li>map: 对应的map对象</li>
+<li>stylesheet: Style的主要数据对象，符合StyleSpecification类型结构</li>
+<li>imageManager/glyphManager: 图片/字体元素管理器</li>
+</ul>
+<p>StyleSpecification主要属性:</p>
+<ul>
+<li>图层数据: layers</li>
+<li>相机属性: center, zoom, <a href="https://docs.mapbox.com/help/glossary/bearing/">bearing</a>, pitch</li>
+<li>&hellip;</li>
+</ul>
+<p>主要绘制内容为StyleLayer(style._layers)，也可以额外添加glyph(特殊字体)、image(图片)等类型的图形元素。</p>
+<h4 id="stylelayer">StyleLayer</h4>
+<p>每个StyleLayer都会有一个type属性，表示图层中包含的元素种类，主要下面几种:</p>
+<ol>
+<li>symbol: 图标或文本标签</li>
+<li>circle: 填充圆形</li>
+<li>heatmap: 热力图</li>
+<li>line: 描边</li>
+<li>fill: 可选描边的填充多边形</li>
+<li>raster: 光栅化的地图贴图，如卫星地图</li>
+</ol>
+<p>至于这些元素具体<strong>如何渲染</strong>取决于这两个属性: <strong>layout</strong>和<strong>paint</strong>。官方对于它们的说明:</p>
+<ul>
+<li>layout: 定义渲染器如何绘制并应用一个层的数据，应用在渲染流程的早期，可通过异步的layout步骤进行修改</li>
+<li>paint: 定义该层的样式数据，应用在渲染流程的后期，修改paint属性的成本较小且为同步操作</li>
+</ul>
+<p>看完这个描述不太清楚它们在渲染过程中的具体区别，遂看了下它内部的处理。</p>
+<h4 id="layout--paint">layout &amp;&amp; paint</h4>
+<p>简单的说就是:</p>
+<ul>
+<li>layout会在drawCall执行前，在Bucket对象构建时被提取出来用于顶点或索引数组(layoutVertexArray)的计算</li>
+<li>paint会在实际执行drawCall时被读取作为新的uniform属性</li>
+</ul>
+<h5 id="layout属性处理"><strong>layout属性处理</strong></h5>
+<p>layout属性会在绘制前构建Bucket对象时，被用来计算绘制所需的顶点与索引数组数据。</p>
+<p>Bucket对象是可以看做是一个将矢量瓦片等数据转换成WebGL渲染所需Buffer数据的对象。每个Bucket对象中都会保存该类型图层所需的顶点与索引数组数据。</p>
+<p>以LineBucket中处理layout数据的例子:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/data/bucket/line_bucket
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">addFeature</span>(<span style="color:#a6e22e">feature</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">BucketFeature</span>, <span style="color:#a6e22e">geometry</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span>Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Point</span><span style="color:#f92672">&gt;&gt;</span>, <span style="color:#a6e22e">index</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>, <span style="color:#a6e22e">canonical</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">CanonicalTileID</span>, <span style="color:#a6e22e">imagePositions</span><span style="color:#f92672">:</span> {[<span style="color:#a6e22e">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>]<span style="color:#f92672">:</span> <span style="color:#a6e22e">ImagePosition</span>}) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layout</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">layers</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">layout</span>;
+    <span style="color:#75715e">// 解析layout中的属性
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">join</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layout</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;line-join&#39;</span>).<span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">feature</span>, {});
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cap</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layout</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;line-cap&#39;</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">miterLimit</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layout</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;line-miter-limit&#39;</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">roundLimit</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layout</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;line-round-limit&#39;</span>);
+    <span style="color:#75715e">// 更新layoutVertexArray
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">line</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">geometry</span>) {
+        <span style="color:#75715e">// 根据layout样式属性计算顶点数据，更新顶点数组
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">addLine</span>(<span style="color:#a6e22e">line</span>, <span style="color:#a6e22e">feature</span>, <span style="color:#a6e22e">join</span>, <span style="color:#a6e22e">cap</span>, <span style="color:#a6e22e">miterLimit</span>, <span style="color:#a6e22e">roundLimit</span>);
+    }
+    <span style="color:#75715e">// 更新paintVertexArray
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">programConfigurations</span>.<span style="color:#a6e22e">populatePaintArrays</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">layoutVertexArray</span>.<span style="color:#a6e22e">length</span>, <span style="color:#a6e22e">feature</span>, <span style="color:#a6e22e">index</span>, <span style="color:#a6e22e">imagePositions</span>, <span style="color:#a6e22e">canonical</span>);
+}
+</code></pre></div><p>准备好的Bucket对象会在图层绘制时被用到(layoutVertexArray&amp;paintVertexArray)。</p>
+<h5 id="paint属性处理"><strong>paint属性处理</strong></h5>
+<p>paint中的数据会在drawCall执行时被用来更新当前的uniform属性，以line元素为例:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/render/draw_line
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">drawLine</span>(<span style="color:#a6e22e">painter</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Painter</span>, <span style="color:#a6e22e">sourceCache</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">SourceCache</span>, <span style="color:#a6e22e">layer</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">LineStyleLayer</span>, <span style="color:#a6e22e">coords</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">OverscaledTileID</span><span style="color:#f92672">&gt;</span>) {
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">coord</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">coords</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">bucket</span><span style="color:#f92672">:</span> <span style="color:#f92672">?</span><span style="color:#a6e22e">LineBucket</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">tile</span>.<span style="color:#a6e22e">getBucket</span>(<span style="color:#a6e22e">layer</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>);
+        <span style="color:#75715e">// 提取该图层的bucket配置
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">programConfiguration</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">bucket</span>.<span style="color:#a6e22e">programConfigurations</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">id</span>);
+        <span style="color:#75715e">// 利用各种上下文属性执行绘制，其中bucket.layoutVertexBuffer与layer.paint参数即为layout与paint的体现
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">program</span>.<span style="color:#a6e22e">draw</span>(<span style="color:#a6e22e">context</span>, <span style="color:#a6e22e">gl</span>.<span style="color:#a6e22e">TRIANGLES</span>, <span style="color:#a6e22e">depthMode</span>,
+            <span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">stencilModeForClipping</span>(<span style="color:#a6e22e">coord</span>), <span style="color:#a6e22e">colorMode</span>, <span style="color:#a6e22e">CullFaceMode</span>.<span style="color:#a6e22e">disabled</span>, <span style="color:#a6e22e">uniformValues</span>,
+            <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">id</span>, <span style="color:#a6e22e">bucket</span>.<span style="color:#a6e22e">layoutVertexBuffer</span>, <span style="color:#a6e22e">bucket</span>.<span style="color:#a6e22e">indexBuffer</span>, <span style="color:#a6e22e">bucket</span>.<span style="color:#a6e22e">segments</span>,
+            <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">paint</span>, <span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">transform</span>.<span style="color:#a6e22e">zoom</span>, <span style="color:#a6e22e">programConfiguration</span>);
+    }
+}
+<span style="color:#75715e">// src/render/program
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">draw</span>(...,
+  <span style="color:#a6e22e">currentProperties</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>, <span style="color:#75715e">// 即layer.paint
+</span><span style="color:#75715e"></span>  ...
+  <span style="color:#a6e22e">configuration</span><span style="color:#f92672">:</span> <span style="color:#f92672">?</span><span style="color:#a6e22e">ProgramConfiguration</span>) { <span style="color:#75715e">// 即programConfiguration
+</span><span style="color:#75715e"></span>    ...
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">configuration</span>) {
+        <span style="color:#75715e">// 利用传入的paint属性更新uniform属性
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">configuration</span>.<span style="color:#a6e22e">setUniforms</span>(<span style="color:#a6e22e">context</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">binderUniforms</span>, <span style="color:#a6e22e">currentProperties</span>, {<span style="color:#a6e22e">zoom</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">zoom</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>)});
+    }
+  }
+</code></pre></div><h5 id="修改layout与paint"><strong>修改layout与paint</strong></h5>
+<p>根据官方的描述，修改paint是<strong>同步</strong>操作，修改layout是<strong>异步</strong>操作，其原理长话短说就是:</p>
+<ul>
+<li>layout属性改变后会<strong>利用worker线程执行图层数据的更新操作</strong>，即异步操作</li>
+<li>多数paint属性改变后<strong>无需修改图层数据，仅影响之后的渲染操作</strong>，即同步操作。但部分paint属性改变(cross-faded)会导致layout的改变，因此也会走worker线程更新layer这一步</li>
+</ul>
+<p>如果感兴趣可以看看下面的详细分析:</p>
+<p>首先，调用map上的setLayoutProperty与setPaintProperty来修改layout与paint属性，实际上会执行其style属性的同名方法:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/style/style
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">setLayoutProperty</span>(<span style="color:#a6e22e">layerId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">value</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>,  <span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">StyleSetterOptions</span> <span style="color:#f92672">=</span> {}) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getLayer</span>(<span style="color:#a6e22e">layerId</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">deepEqual</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">getLayoutProperty</span>(<span style="color:#a6e22e">name</span>), <span style="color:#a6e22e">value</span>)) <span style="color:#66d9ef">return</span>;
+    <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">setLayoutProperty</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">options</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updateLayer</span>(<span style="color:#a6e22e">layer</span>);
+}
+
+<span style="color:#a6e22e">setPaintProperty</span>(<span style="color:#a6e22e">layerId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">value</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>, <span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">StyleSetterOptions</span> <span style="color:#f92672">=</span> {}) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getLayer</span>(<span style="color:#a6e22e">layerId</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">deepEqual</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">getPaintProperty</span>(<span style="color:#a6e22e">name</span>), <span style="color:#a6e22e">value</span>)) <span style="color:#66d9ef">return</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">requiresRelayout</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">setPaintProperty</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">options</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">requiresRelayout</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updateLayer</span>(<span style="color:#a6e22e">layer</span>);
+    }
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedPaintProps</span>[<span style="color:#a6e22e">layerId</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+}
+</code></pre></div><p>在这里style会更新对应layer上的layout与paint属性值，并且设置改动标记，在下一次渲染的update中执行更新。</p>
+<p>其中在layout改变时一定会执行_updateLayer方法，而当paint改变时若为需要重新布局的情况(cross-faded值等)，也会执行_updateLayer。</p>
+<p>_updateLayer中主要做了: 保存需要的更新layerId、更新source、设置标记。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/style/style
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_updateLayer</span>(<span style="color:#a6e22e">layer</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">StyleLayer</span>) {
+    <span style="color:#75715e">// 保存需要更新的图层id，在下一次update时处理
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedLayers</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedSources</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>] <span style="color:#f92672">&amp;&amp;</span>
+        <span style="color:#75715e">//Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">sourceCaches</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>].<span style="color:#a6e22e">getSource</span>().<span style="color:#a6e22e">type</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;raster&#39;</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedSources</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;reload&#39;</span>;
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">sourceCaches</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>].<span style="color:#a6e22e">pause</span>();
+    }
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+}
+</code></pre></div><p>现在回想一下最开始map的_render中方法，其实在执行painter的渲染方前会先根据缩放等属性更新当前style的属性与资源:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/ui/map
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">paintStartTimeStamp</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_styleDirty</span>) {
+        ...
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">parameters</span>);
+    }
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sourcesDirty</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sourcesDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">_updateSources</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>);
+    }
+    ...
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">render</span>()
+}
+</code></pre></div><p>在style的update中会更新图层数据并根据传入的缩放系数重新计算paint属性。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/style/style
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">parameters</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">EvaluationParameters</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changed</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updatedIds</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedLayers</span>);
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">removedIds</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_removedLayers</span>);
+        
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">updatedIds</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">removedIds</span>.<span style="color:#a6e22e">length</span>) {
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updateWorkerLayers</span>(<span style="color:#a6e22e">updatedIds</span>, <span style="color:#a6e22e">removedIds</span>);
+        } 
+    }
+}
+</code></pre></div><p>在update中会检查_updatedLayers是否有值，这个值就是在_updateLayer中设置的。</p>
+<p>若存在需要更新的layerId，则会执行_updateWorkerLayers方法，在_updateWorkerLayers中会向style的worker线程池中广播了updateLayers事件，传入了需要更新和删除的layer数据。</p>
+<p>即利用<strong>worker多线程异步更新所有需要更新和删除的layer</strong>，关于更新的具体做法是根据传入的新的layer数据重新生成图层对象直接根据id替换老数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/source/worker
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">updateLayers</span>(<span style="color:#a6e22e">mapId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">params</span><span style="color:#f92672">:</span> {<span style="color:#a6e22e">layers</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">LayerSpecification</span><span style="color:#f92672">&gt;</span>, <span style="color:#a6e22e">removedIds</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span>}, <span style="color:#a6e22e">callback</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">WorkerTileCallback</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getLayerIndex</span>(<span style="color:#a6e22e">mapId</span>).<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">params</span>.<span style="color:#a6e22e">layers</span>, <span style="color:#a6e22e">params</span>.<span style="color:#a6e22e">removedIds</span>);
+    <span style="color:#a6e22e">callback</span>();
+}
+<span style="color:#75715e">// src/style/style_layer_index
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">layerConfigs</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">LayerSpecification</span><span style="color:#f92672">&gt;</span>, <span style="color:#a6e22e">removedIds</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span>) {
+    <span style="color:#75715e">// layerConfigs为序列化后需要更新的layer数据
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layerConfig</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">layerConfigs</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_layerConfigs</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">layerConfig</span>;
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_layers</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">createStyleLayer</span>(<span style="color:#a6e22e">layerConfig</span>);
+        <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">_featureFilter</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">featureFilter</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">filter</span>);
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">keyCache</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>])
+            <span style="color:#66d9ef">delete</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">keyCache</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>];
+    }
+    ...
+}
+</code></pre></div><h3 id="渲染区域">渲染区域</h3>
+<p>渲染区域指的是如果计算得出在屏幕中需要渲染的区域，主要是通过一个 <strong>coveringTiles()</strong> 函数来计算当前屏幕空间中需要渲染的瓦片(索引)。</p>
+<p>由于在3D空间中，相机在空间的任意位置指向地图形成的目标平面区域(即相机视锥体与地图平面相交的区域)可能是一个不规则多边形，通过计算得到这个多边形后，还需要进一步计算得出与其相交的瓦片，即为最终需要渲染的瓦片。</p>
+<p>mapbox所采用的方法是<strong>计算根瓦片的轴向包围盒与相机视锥体的相交情况，并结合四叉树空间索引来计算相交的瓦片ID及与中心点距离等数据</strong>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/geo/transform
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">coveringTiles</span>()<span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">OverscaledTileID</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#75715e">// 计算缩放级别对应的瓦片数量、3D空间中心点坐标及相机视锥体等数据
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">centerCoord</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">MercatorCoordinate</span>.<span style="color:#a6e22e">fromLngLat</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">center</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">numTiles</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">pow</span>(<span style="color:#ae81ff">2</span>, <span style="color:#a6e22e">z</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">centerPoint</span> <span style="color:#f92672">=</span> [<span style="color:#a6e22e">numTiles</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">centerCoord</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">numTiles</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">centerCoord</span>.<span style="color:#a6e22e">y</span>, <span style="color:#ae81ff">0</span>];
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cameraFrustum</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Frustum</span>.<span style="color:#a6e22e">fromInvProjectionMatrix</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">invProjMatrix</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>, <span style="color:#a6e22e">z</span>);
+    <span style="color:#75715e">// 初始化根瓦片的方法
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newRootTile</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">wrap</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span> =&gt; {
+        <span style="color:#66d9ef">return</span> {
+            <span style="color:#a6e22e">aabb</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Aabb</span>([<span style="color:#a6e22e">wrap</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">numTiles</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], [(<span style="color:#a6e22e">wrap</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">numTiles</span>, <span style="color:#a6e22e">numTiles</span>, <span style="color:#ae81ff">0</span>]),
+            <span style="color:#a6e22e">zoom</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+            <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+            <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+            <span style="color:#a6e22e">wrap</span>,
+            <span style="color:#a6e22e">fullyVisible</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>
+        };
+    };
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">stack</span> <span style="color:#f92672">=</span> [];
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> [];
+    <span style="color:#75715e">// 添加初始的根瓦片
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderWorldCopies</span>) {
+        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">3</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+            <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">newRootTile</span>(<span style="color:#f92672">-</span><span style="color:#a6e22e">i</span>));
+            <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">newRootTile</span>(<span style="color:#a6e22e">i</span>));
+        }
+    }
+    <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">newRootTile</span>(<span style="color:#ae81ff">0</span>));
+    <span style="color:#75715e">// 主流程，寻找与包围盒与视椎体相交的瓦片
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">it</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">pop</span>();
+        <span style="color:#75715e">// 判断相机视椎体与轴向包围盒的相交情况，若不相交则跳过
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">fullyVisible</span>) {
+            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">intersectResult</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">aabb</span>.<span style="color:#a6e22e">intersects</span>(<span style="color:#a6e22e">cameraFrustum</span>);
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">intersectResult</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span>)
+                <span style="color:#66d9ef">continue</span>;
+            <span style="color:#a6e22e">fullyVisible</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">intersectResult</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">2</span>;
+        }
+        <span style="color:#75715e">// 计算中心点与轴向包围盒距离
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">distanceX</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">aabb</span>.<span style="color:#a6e22e">distanceX</span>(<span style="color:#a6e22e">centerPoint</span>);
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">distanceY</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">aabb</span>.<span style="color:#a6e22e">distanceY</span>(<span style="color:#a6e22e">centerPoint</span>);
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">longestDim</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">max</span>(Math.<span style="color:#a6e22e">abs</span>(<span style="color:#a6e22e">distanceX</span>), Math.<span style="color:#a6e22e">abs</span>(<span style="color:#a6e22e">distanceY</span>));
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">distToSplit</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">radiusOfMaxLvlLodInTiles</span> <span style="color:#f92672">+</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#a6e22e">maxZoom</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span>)) <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>;
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">maxZoom</span> <span style="color:#f92672">||</span> (<span style="color:#a6e22e">longestDim</span> <span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">distToSplit</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">&gt;=</span> <span style="color:#a6e22e">minZoom</span>)) {
+            <span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">push</span>({
+                <span style="color:#a6e22e">tileID</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">OverscaledTileID</span>(<span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">maxZoom</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">overscaledZ</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span>, <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">wrap</span>, <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span>, <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>),
+                <span style="color:#a6e22e">distanceSq</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">vec2</span>.<span style="color:#a6e22e">sqrLen</span>([<span style="color:#a6e22e">centerPoint</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">0.5</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">centerPoint</span>[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">0.5</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">y</span>])
+            });
+            <span style="color:#66d9ef">continue</span>;
+        }
+        <span style="color:#75715e">// 将包围盒切分更细粒度的四叉树空间，即下一层缩放级别
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">childX</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">x</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">+</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">2</span>);
+            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">childY</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">y</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">+</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">1</span>);
+            <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">push</span>({<span style="color:#a6e22e">aabb</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">aabb</span>.<span style="color:#a6e22e">quadrant</span>(<span style="color:#a6e22e">i</span>), <span style="color:#a6e22e">zoom</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">childX</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">childY</span>, <span style="color:#a6e22e">wrap</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">it</span>.<span style="color:#a6e22e">wrap</span>, <span style="color:#a6e22e">fullyVisible</span>});
+        }
+    }
+    <span style="color:#75715e">// 将瓦片距中心点由远及近进行排序
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">sort</span>((<span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span>) =&gt; <span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">distanceSq</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">distanceSq</span>).<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">a</span> =&gt; <span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">tileID</span>);
+}
+</code></pre></div><p>这大概就是mapbox计算目标渲染区域，即寻找目标瓦片的过程。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://github.com/mapbox/mapbox-gl-js">mapbox/mapbox-gl-js</a></li>
+<li><a href="https://docs.mapbox.com/help/glossary/layout-paint-property/">layout and paint properties</a></li>
+<li><a href="https://www.cnblogs.com/dojo-lzz/p/10165817.html">mapbox.gl源码解析——基本架构与数据渲染流程 - 木的树</a></li>
+<li><a href="https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/">Tiles à la Google Maps: Coordinates, Tile Bounds and Projection</a></li>
+<li><a href="https://www.cnblogs.com/dojo-lzz/p/9250637.html">Web地图呈现原理 - 木的树</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/mapboxgl-i-map-and-render/">http://yrq110.me/post/front-end/mapboxgl-i-map-and-render/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/mapbox'>mapbox</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-i-map-and-render/" title="MapboxGL简析(一)：map对象与渲染原理">MapboxGL简析(一)：map对象与渲染原理</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/" title="深入学习Three.js核心对象之（三）Material">深入学习Three.js核心对象之（三）Material</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/" title="深入学习Three.js核心对象之（一）Object3D">深入学习Three.js核心对象之（一）Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (25)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/javascript/">javascript</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/mapbox/">mapbox</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>
