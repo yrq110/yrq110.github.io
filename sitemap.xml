@@ -4,41 +4,48 @@
   
   <url>
     <loc>http://yrq110.me/post/</loc>
-    <lastmod>2020-05-18T20:29:37+08:00</lastmod>
+    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/categories/</loc>
-    <lastmod>2020-05-18T20:29:37+08:00</lastmod>
+    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/categories/front-end/</loc>
-    <lastmod>2020-05-18T20:29:37+08:00</lastmod>
+    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/tags/mapbox/</loc>
-    <lastmod>2020-05-18T20:29:37+08:00</lastmod>
+    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://yrq110.me/post/front-end/mapboxgl-i-map-and-rendering/</loc>
-    <lastmod>2020-05-18T20:29:37+08:00</lastmod>
+    <loc>http://yrq110.me/post/front-end/mapboxgl-ii-transform/</loc>
+    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/tags/</loc>
+    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/post/front-end/mapboxgl-i-rendering/</loc>
     <lastmod>2020-05-18T20:29:37+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

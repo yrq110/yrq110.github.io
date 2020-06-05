@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>MapboxGL简析(二)：变换 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="MapboxGL简析(二)：变换 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-05-19T17:06:26&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-05-19T17:06:26&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="MapboxGL简析(二)：变换">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/mapboxgl-ii-transform/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">MapboxGL简析(二)：变换</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年5月19日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>简要分析Mapbox中的两种变换:</p>
+<ol>
+<li><strong>相机变换</strong>: 姿态属性、操作及变换矩阵</li>
+<li><strong>坐标变换</strong>: 经纬度、3D墨卡托与矢量瓦片</li>
+</ol>
+<p><em>本文所参考的mapbox-gl版本为<code>1.11.0</code></em></p>
+<h2 id="相机变换">相机变换</h2>
+<p>主要从常用属性、属性方法及原理的角度来看相机的变换。</p>
+<h3 id="相机属性">相机属性</h3>
+<p>相机变换主要指的是在3D空间中对相机的各种操作引起的变换，主要属性包含四种:</p>
+<ol>
+<li>center  - 指向的中心点位置</li>
+<li>zoom    - 缩放级别</li>
+<li>pitch   - 俯仰角度，也叫倾斜度</li>
+<li>bearing - 上方向，类似指南针的方向</li>
+</ol>
+<p>相机姿态属性会直接影响渲染在屏幕上的效果，本质上是视椎体与地图平面的向</p>
+<p>实际上不管对哪种姿态属性进行修改，最终都会在进入一类处理属性变换的方法中操作，并修改Camera.transform对象上的对应属性值。</p>
+<h3 id="相机操作">相机操作</h3>
+<p>mapbox的camera提供了一些方便操作相机的方法，如:</p>
+<ol>
+<li>zoomTo/zoomIn</li>
+<li>panBy/panTo</li>
+<li>rotateTo/resetNorth</li>
+</ol>
+<p>这些方法的本质都是改变四种与相机姿态有关的属性值，而内部提供了三种不同的途径来让这些属性达到最终结果值:</p>
+<ol>
+<li>jumpTo: 直接赋值(without animation transition)</li>
+<li>easeTo: 渐变赋值(with animation transition)</li>
+<li>flyTo: 巡航渐变赋值(with animaton transiton along a curve that evokes flight)</li>
+</ol>
+<h4 id="直接赋值">直接赋值</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 无需动画渐变的姿态改变
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">jumpTo</span>(<span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">CameraOptions</span>, <span style="color:#a6e22e">eventData</span><span style="color:#f92672">?:</span> Object) {
+    <span style="color:#75715e">// 处理四种相机属性，更新transform对象
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">tr</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>;
+    <span style="color:#75715e">// 修改标记
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">zoomChanged</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>,
+        ...
+    <span style="color:#75715e">// 直接修改transform属性，其它三种属性同理
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#e6db74">&#39;zoom&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">options</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">!==</span> <span style="color:#f92672">+</span><span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">zoom</span>) {
+        <span style="color:#a6e22e">zoomChanged</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+        <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#f92672">+</span><span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">zoom</span>;
+    }
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Event</span>(<span style="color:#e6db74">&#39;movestart&#39;</span>, <span style="color:#a6e22e">eventData</span>))
+        .<span style="color:#a6e22e">fire</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Event</span>(<span style="color:#e6db74">&#39;move&#39;</span>, <span style="color:#a6e22e">eventData</span>));
+    <span style="color:#75715e">// 触发属性改变时机事件，由于无渐变因此同时触发。其它三种属性同理
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">zoomChanged</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fire</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Event</span>(<span style="color:#e6db74">&#39;zoomstart&#39;</span>, <span style="color:#a6e22e">eventData</span>))
+            .<span style="color:#a6e22e">fire</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Event</span>(<span style="color:#e6db74">&#39;zoom&#39;</span>, <span style="color:#a6e22e">eventData</span>))
+            .<span style="color:#a6e22e">fire</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Event</span>(<span style="color:#e6db74">&#39;zoomend&#39;</span>, <span style="color:#a6e22e">eventData</span>));
+    }
+}
+</code></pre></div><h4 id="渐变赋值">渐变赋值</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 带有动画渐变的姿态改变
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">easeTo</span>() {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">tr</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>,
+    <span style="color:#75715e">// 获取当前各属性的初始值
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">startZoom</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getZoom</span>(),
+    <span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;zoom&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">options</span> <span style="color:#f92672">?</span> <span style="color:#f92672">+</span><span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">startZoom</span>,
+    <span style="color:#75715e">// 触发属性开始变化事件
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_prepareEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">noMoveStart</span>, <span style="color:#a6e22e">currently</span>);
+    <span style="color:#75715e">// 执行封装的类rAF方法，在回调方法中进行姿态属性的插值，其中k为利用now计算的时间差除以设置中经过的时间duration得到的步进值t
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_ease</span>((<span style="color:#a6e22e">k</span>) =&gt; {
+        <span style="color:#75715e">// 对各属性进行插值，步进值k根据经过的时段比例计算
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_zooming</span>) {
+            <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">interpolate</span>(<span style="color:#a6e22e">startZoom</span>, <span style="color:#a6e22e">zoom</span>, <span style="color:#a6e22e">k</span>);
+        }
+        ...
+    }, (<span style="color:#a6e22e">interruptingEaseId</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">string</span>) =&gt; {
+        <span style="color:#75715e">// 触发属性结束变化事件
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_afterEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">interruptingEaseId</span>);
+    }, <span style="color:#a6e22e">options</span><span style="color:#960050;background-color:#1e0010">）</span>
+    <span style="color:#75715e">// 封装对于渐变属性的事件触发
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_prepareEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">noMoveStart</span>, <span style="color:#a6e22e">currently</span>);
+}
+</code></pre></div><h4 id="巡航赋值">巡航赋值</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 带有巡航效果的姿态改变
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">flyTo</span>() {
+    <span style="color:#75715e">/**
+</span><span style="color:#75715e">     * 该方法的核心是flight path的计算，代码中参考了一片论文中的方法来计算最优路径
+</span><span style="color:#75715e">     * Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
+</span><span style="color:#75715e">     *   ’03. pp. 15–22. &lt;https://www.win.tue.nl/~vanwijk/zoompan.pdf#page=5&gt;.
+</span><span style="color:#75715e">     * 简单的说就是该方法实现了在视图切换时的一种平滑路径，在uw空间中计算
+</span><span style="color:#75715e">    */</span>
+    <span style="color:#75715e">// 整条巡航路线的长度
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">S</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">r</span>(<span style="color:#ae81ff">1</span>) <span style="color:#f92672">-</span> <span style="color:#a6e22e">r0</span>) <span style="color:#f92672">/</span> <span style="color:#a6e22e">rho</span>;
+    <span style="color:#75715e">// 返回地平面的可见范围
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">w</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) =&gt; <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">s</span>) {
+        <span style="color:#66d9ef">return</span> (<span style="color:#a6e22e">cosh</span>(<span style="color:#a6e22e">r0</span>) <span style="color:#f92672">/</span> <span style="color:#a6e22e">cosh</span>(<span style="color:#a6e22e">r0</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">rho</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">s</span>));
+    };
+    <span style="color:#75715e">// 返回巡航路线与地平面的距离
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">u</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) =&gt; <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">s</span>) {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">w0</span> <span style="color:#f92672">*</span> ((<span style="color:#a6e22e">cosh</span>(<span style="color:#a6e22e">r0</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">tanh</span>(<span style="color:#a6e22e">r0</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">rho</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">s</span>) <span style="color:#f92672">-</span> <span style="color:#a6e22e">sinh</span>(<span style="color:#a6e22e">r0</span>)) <span style="color:#f92672">/</span> <span style="color:#a6e22e">rho2</span>) <span style="color:#f92672">/</span> <span style="color:#a6e22e">u1</span>;
+    };
+    <span style="color:#75715e">// S、w与u参与属性插值
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_ease</span>((<span style="color:#a6e22e">k</span>) =&gt; {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">k</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">S</span>;
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">scale</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">/</span> <span style="color:#a6e22e">w</span>(<span style="color:#a6e22e">s</span>);
+        <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">k</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">zoom</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">startZoom</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">scaleZoom</span>(<span style="color:#a6e22e">scale</span>);
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotating</span>) {
+            <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">bearing</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">interpolate</span>(<span style="color:#a6e22e">startBearing</span>, <span style="color:#a6e22e">bearing</span>, <span style="color:#a6e22e">k</span>);
+        }
+        ...
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newCenter</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">k</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">center</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">unproject</span>(<span style="color:#a6e22e">from</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">delta</span>.<span style="color:#a6e22e">mult</span>(<span style="color:#a6e22e">u</span>(<span style="color:#a6e22e">s</span>))).<span style="color:#a6e22e">mult</span>(<span style="color:#a6e22e">scale</span>));
+        <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">setLocationAtPoint</span>(<span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">renderWorldCopies</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">newCenter</span>.<span style="color:#a6e22e">wrap</span>() <span style="color:#f92672">:</span> <span style="color:#a6e22e">newCenter</span>, <span style="color:#a6e22e">pointAtOffset</span>);
+    }, () =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_afterEase</span>(<span style="color:#a6e22e">eventData</span>), <span style="color:#a6e22e">options</span>);
+}
+</code></pre></div><h3 id="相机变换-1">相机变换</h3>
+<p>可以看到，Camera类中对于任何改变姿态的操作都是通过修改transform对象上的属性实现，而transform对象是负责存储相机在3D空间中的各种变换矩阵与其他属性的一个对象。</p>
+<p>在Transform类中，设置了多种姿态属性的setter/getter拦截器，并且在每种属性的setter拦截器中，除了属性值的更新以外，都调用了 <strong>_calcMatrices()</strong> 来更新所有相关的变换矩阵。</p>
+<p>如zoom与bearing和center的setter属性拦截器：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">set</span> <span style="color:#a6e22e">pitch</span>(<span style="color:#a6e22e">pitch</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">clamp</span>(<span style="color:#a6e22e">pitch</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">minPitch</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">maxPitch</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">p</span>) <span style="color:#66d9ef">return</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_unmodified</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">p</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcMatrices</span>();
+}
+<span style="color:#a6e22e">set</span> <span style="color:#a6e22e">center</span>(<span style="color:#a6e22e">center</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">LngLat</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lat</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_center</span>.<span style="color:#a6e22e">lat</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lng</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_center</span>.<span style="color:#a6e22e">lng</span>) <span style="color:#66d9ef">return</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_unmodified</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_center</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">center</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_constrain</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcMatrices</span>();
+}
+</code></pre></div><p>下面来看看计算各种变换相关矩阵信息的函数 <strong>_calcMatrices()</strong> :</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_calcMatrices</span>() {
+    <span style="color:#75715e">/*
+</span><span style="color:#75715e">     * 计算投影矩阵
+</span><span style="color:#75715e">     */</span>
+    <span style="color:#75715e">// 计算相机的近裁面与远裁面距离
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">furthestDistance</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">cos</span>(Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">topHalfSurfaceDistance</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">cameraToCenterDistance</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">farZ</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">furthestDistance</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1.01</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">nearZ</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">50</span>;
+    <span style="color:#75715e">// 本地坐标系到GL坐标系的变换矩阵
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">m</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Float64Array</span>(<span style="color:#ae81ff">16</span>);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">perspective</span>(<span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_fov</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>, <span style="color:#a6e22e">nearZ</span>, <span style="color:#a6e22e">farZ</span>);
+    <span style="color:#a6e22e">m</span>[<span style="color:#ae81ff">8</span>] <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">offset</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span>;
+    <span style="color:#a6e22e">m</span>[<span style="color:#ae81ff">9</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">offset</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>;
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">scale</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#ae81ff">1</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>]);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">cameraToCenterDistance</span>]);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">rotateX</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span>);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">rotateZ</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">angle</span>);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#f92672">-</span><span style="color:#a6e22e">x</span>, <span style="color:#f92672">-</span><span style="color:#a6e22e">y</span>, <span style="color:#ae81ff">0</span>]);
+    <span style="color:#75715e">/*
+</span><span style="color:#75715e">     * 计算3D墨卡托变换矩阵，用于将点从墨卡托坐标系([0, 0] nw, [1, 1] se)转换到GL坐标系
+</span><span style="color:#75715e">     */</span>
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">mercatorMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">scale</span>([], <span style="color:#a6e22e">m</span>, [<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>]);
+    <span style="color:#75715e">// 处理z轴变量并保存投影矩阵及其逆阵
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">scale</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">mercatorZfromAltitude</span>(<span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lat</span>) <span style="color:#f92672">*</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>, <span style="color:#ae81ff">1</span>]);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">projMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">m</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">invProjMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">invert</span>([], <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">projMatrix</span>);
+    <span style="color:#75715e">// 计算轴向投影矩阵，为渲染光栅瓦片所准备
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">xShift</span> <span style="color:#f92672">=</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>, <span style="color:#a6e22e">yShift</span> <span style="color:#f92672">=</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>,
+        <span style="color:#a6e22e">angleCos</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">cos</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">angle</span>), <span style="color:#a6e22e">angleSin</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">sin</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">angle</span>),
+        <span style="color:#a6e22e">dx</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">x</span> <span style="color:#f92672">-</span> Math.<span style="color:#a6e22e">round</span>(<span style="color:#a6e22e">x</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">angleCos</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">xShift</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">angleSin</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">yShift</span>,
+        <span style="color:#a6e22e">dy</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">y</span> <span style="color:#f92672">-</span> Math.<span style="color:#a6e22e">round</span>(<span style="color:#a6e22e">y</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">angleCos</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">yShift</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">angleSin</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">xShift</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">alignedM</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Float64Array</span>(<span style="color:#a6e22e">m</span>);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">alignedM</span>, <span style="color:#a6e22e">alignedM</span>, [ <span style="color:#a6e22e">dx</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.5</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">dx</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">dx</span>, <span style="color:#a6e22e">dy</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.5</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">dy</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">dy</span>, <span style="color:#ae81ff">0</span> ]);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">alignedProjMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">alignedM</span>;
+    <span style="color:#75715e">// 标签平面在GL中的初始mv矩阵，无姿态变换，亦作为symbol的默认mv矩阵
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">m</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">create</span>();
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">scale</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">1</span>]);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#ae81ff">1</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>]);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">labelPlaneMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">m</span>;
+    <span style="color:#75715e">// 本地坐标系到屏幕坐标系的变换矩阵及其逆阵，即mvp矩阵，用于墨卡托与屏幕坐标互转等方法
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pixelMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">multiply</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Float64Array</span>(<span style="color:#ae81ff">16</span>), <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">labelPlaneMatrix</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">projMatrix</span>);
+    <span style="color:#a6e22e">m</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">invert</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Float64Array</span>(<span style="color:#ae81ff">16</span>), <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pixelMatrix</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">m</span>) <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">&#34;failed to invert matrix&#34;</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pixelMatrixInverse</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">m</span>;
+}
+</code></pre></div><h2 id="地理坐标变换">地理坐标变换</h2>
+<p>首先简单了解下mapbox中的地理坐标变换。</p>
+<p>一般在使用时会给地图传入一个经纬度的位置信息，这个信息经过内部的层层格式转换，会得到一个瓦片信息，即为该位置所在的矢量瓦片。这个过程在mapbox中包含以下几步:</p>
+<ol>
+<li>经纬度(Longitude and latitude) -&gt; Web墨卡托投影(Global projected coordinate)</li>
+<li>Web墨卡托投影 -&gt; 二维屏幕坐标(Pixel coordinate)</li>
+<li>二维屏幕坐标 -&gt; 矢量瓦片坐标(Tile coordinate)</li>
+</ol>
+<p>Transform中提供了用于不同坐标切换的方法:</p>
+<ul>
+<li>coordinateLocation/locationCoordinate: 经纬度与墨卡托互转</li>
+<li>pointCoordinate/coordinatePoint 墨卡托与屏幕坐标系互转</li>
+</ul>
+<p>对于上述的每一步转换都使用了封装好的对象及其方法来计算:</p>
+<ol>
+<li>
+<p>经纬度转web墨卡托</p>
+<p>mapbox将Web墨卡托坐标扩展到了三维空间，将海拔作为z值</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">mercatorXfromLng</span>(<span style="color:#a6e22e">lng</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+    <span style="color:#66d9ef">return</span> (<span style="color:#ae81ff">180</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">lng</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">360</span>;
+}
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">mercatorYfromLat</span>(<span style="color:#a6e22e">lat</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+    <span style="color:#66d9ef">return</span> (<span style="color:#ae81ff">180</span> <span style="color:#f92672">-</span> (<span style="color:#ae81ff">180</span> <span style="color:#f92672">/</span> Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">log</span>(Math.<span style="color:#a6e22e">tan</span>(Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">lat</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">360</span>)))) <span style="color:#f92672">/</span> <span style="color:#ae81ff">360</span>;
+}
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MercatorCoordinate</span> {
+    <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>;
+    <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>;
+    <span style="color:#a6e22e">z</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>;
+    ...
+    <span style="color:#66d9ef">static</span> <span style="color:#a6e22e">fromLngLat</span>(<span style="color:#a6e22e">lngLatLike</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">LngLatLike</span>, <span style="color:#a6e22e">altitude</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">lngLat</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">LngLat</span>.<span style="color:#a6e22e">convert</span>(<span style="color:#a6e22e">lngLatLike</span>);
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">MercatorCoordinate</span>(
+                <span style="color:#a6e22e">mercatorXfromLng</span>(<span style="color:#a6e22e">lngLat</span>.<span style="color:#a6e22e">lng</span>),
+                <span style="color:#a6e22e">mercatorYfromLat</span>(<span style="color:#a6e22e">lngLat</span>.<span style="color:#a6e22e">lat</span>),
+                <span style="color:#a6e22e">mercatorZfromAltitude</span>(<span style="color:#a6e22e">altitude</span>, <span style="color:#a6e22e">lngLat</span>.<span style="color:#a6e22e">lat</span>));
+    }
+}
+</code></pre></div></li>
+<li>
+<p>墨卡托投影转屏幕坐标</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Transform</span> {
+    ...
+    <span style="color:#75715e">// 计算屏幕坐标时，无需z轴数据
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">coordinatePoint</span>(<span style="color:#a6e22e">coord</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">MercatorCoordinate</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> [<span style="color:#a6e22e">coord</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>, <span style="color:#a6e22e">coord</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">worldSize</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>];
+        <span style="color:#75715e">// pixelMatrix即为前面_calcMatrices()得到的本地空间到GL空间的mvp矩阵
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">vec4</span>.<span style="color:#a6e22e">transformMat4</span>(<span style="color:#a6e22e">p</span>, <span style="color:#a6e22e">p</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">pixelMatrix</span>);
+        <span style="color:#75715e">// 将w分量转换为1
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Point</span>(<span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">/</span> <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">3</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">/</span> <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">3</span>]);
+    }
+}
+</code></pre></div></li>
+<li>
+<p>经纬度转矢量瓦片索引</p>
+<p>这个在<a href="">上一篇简析</a>的最后有介绍，mapbox使用一个coveringTiles方法，通过传入的经纬度位置，结合相机姿态等数据，来计算所覆盖的矢量瓦片信息。</p>
+</li>
+</ol>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/">Tiles à la Google Maps: Coordinates, Tile Bounds and Projection</a></li>
+<li><a href="https://www.cnblogs.com/dojo-lzz/p/9250637.html">Web地图呈现原理 - 木的树</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/mapboxgl-ii-transform/">http://yrq110.me/post/front-end/mapboxgl-ii-transform/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/mapboxgl-i-rendering/">MapboxGL简析(一)：渲染</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='http://yrq110.me/tags/mapbox'>mapbox</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-ii-transform/" title="MapboxGL简析(二)：变换">MapboxGL简析(二)：变换</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-i-rendering/" title="MapboxGL简析(一)：渲染">MapboxGL简析(一)：渲染</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/" title="深入学习Three.js核心对象之（三）Material">深入学习Three.js核心对象之（三）Material</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/" title="深入学习Three.js核心对象之（一）Object3D">深入学习Three.js核心对象之（一）Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/javascript/">javascript</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/mapbox/">mapbox</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

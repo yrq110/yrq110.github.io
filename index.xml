@@ -12,15 +12,28 @@
     
     
     <item>
-      <title>MapboxGL简析(一)：map对象与渲染原理</title>
-      <link>http://yrq110.me/post/front-end/mapboxgl-i-map-and-rendering/</link>
+      <title>MapboxGL简析(二)：变换</title>
+      <link>http://yrq110.me/post/front-end/mapboxgl-ii-transform/</link>
+      <pubDate>Tue, 19 May 2020 17:06:26 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/mapboxgl-ii-transform/</guid>
+      <description>&lt;p&gt;简要分析Mapbox中的两种变换:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;相机变换&lt;/strong&gt;: 姿态属性、操作及变换矩阵&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;坐标变换&lt;/strong&gt;: 经纬度、3D墨卡托与矢量瓦片&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+    <item>
+      <title>MapboxGL简析(一)：渲染</title>
+      <link>http://yrq110.me/post/front-end/mapboxgl-i-rendering/</link>
       <pubDate>Mon, 18 May 2020 20:29:37 +0800</pubDate>
       
-      <guid>http://yrq110.me/post/front-end/mapboxgl-i-map-and-rendering/</guid>
+      <guid>http://yrq110.me/post/front-end/mapboxgl-i-rendering/</guid>
       <description>&lt;p&gt;简单分析下mapbox在渲染过程中都做了些什么，包括&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;map对象的html元素、事件与渲染器&lt;/li&gt;
-&lt;li&gt;渲染原理相关的渲染器、渲染流程、渲染对象及目标区域&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;map对象&lt;/strong&gt;: html元素、事件与渲染器&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;渲染原理相关&lt;/strong&gt;: 渲染器、渲染流程、渲染对象及渲染区域&lt;/li&gt;
 &lt;/ol&gt;</description>
     </item>
     

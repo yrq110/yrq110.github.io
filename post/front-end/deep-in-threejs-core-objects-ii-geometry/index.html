@@ -175,8 +175,8 @@
   };
 }()
 </code></pre></div><h3 id="基础变换">基础变换</h3>
-<p>Geometry变换与Object3D变换在使用上的不同点用文档中的话来说就是: Geometry变换是一般一次性操作，不要用在渲染循环中，若想用在渲染循环中请使用Object3D对象的变换方法。</p>
-<p>Geometry对象的变换采用图形学中使用四维齐次矩阵表示的基础变换来进行计算。在所提供的API内部会根据基础变换类型，得到一个对应的变换矩阵参与后续计算，即下面的 <strong>_m1</strong> :</p>
+<p>Geometry变换与Object3D变换在使用上的不同点用文档中的话来说就是: Geometry变换一般是一次性操作，不要用在渲染循环中，若想用在渲染循环中执行变换请使用Object3D对象的变换方法。毕竟表示模型的Mesh对象为Object3D对象，若在渲染循环中变换Geometry的话还要重新构建Mesh，也是很耗性能的。</p>
+<p>Geometry对象的变换采用图形学中四维齐次矩阵表示的基础变换来计算。在提供的API方法内部会根据基础变换类型得到一个变换矩阵，参与后续计算，即下面的 <strong>_m1</strong> :</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_m1</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Matrix4</span>();
 ...
 <span style="color:#a6e22e">rotateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">angle</span> ) {
@@ -504,7 +504,11 @@
 <ul class="widget-list">
     
     <li>
-        <a href="http://yrq110.me/post/front-end/mapboxgl-i-map-and-rendering/" title="MapboxGL简析(一)：map对象与渲染原理">MapboxGL简析(一)：map对象与渲染原理</a>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-ii-transform/" title="MapboxGL简析(二)：变换">MapboxGL简析(二)：变换</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-i-rendering/" title="MapboxGL简析(一)：渲染">MapboxGL简析(一)：渲染</a>
     </li>
     
     <li>
@@ -539,10 +543,6 @@
         <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
-    <li>
-        <a href="http://yrq110.me/post/front-end/best-practice-of-typescript-in-webapp-developing/" title="使用TypeScript开发Web应用的最佳实践">使用TypeScript开发Web应用的最佳实践</a>
-    </li>
-    
 </ul>
     </section>
 
@@ -558,7 +558,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (25)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
