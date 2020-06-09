@@ -112,6 +112,7 @@
 <h3 id="worker全局域">worker全局域</h3>
 <p><strong>worker全局域</strong> 指的是一个worker js上下文的全局作用域(window是document中的JS全局域)，worker全局域在Web Worker标准中被定义为WorkerGlobalScope接口。</p>
 <p>WorkerGlobalScope接口暴露出了可用的Web worker API，但并不是所有的window域下的API在worker全局域都是可用的，有些API仅在worker中可用(<a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Functions_and_classes_available_to_workers">Web Worker可用API列表</a>)。</p>
+<h3 id="关系">关系</h3>
 <p>下面这张图表现出了worker上下文、worker线程、worker对象与worker全局念之间的关系:</p>
 <p><img src="/images/blog/front-end/blink-workers/terminology.png" alt=""></p>
 <h2 id="生命周期">生命周期</h2>
