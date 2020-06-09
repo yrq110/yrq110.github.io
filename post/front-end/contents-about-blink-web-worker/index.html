@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Blink Worker纸上谈兵 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="Blink Worker纸上谈兵 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-06-07T17:14:32&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-06-07T17:14:32&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Blink Worker纸上谈兵">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/front-end/contents-about-blink-web-worker/">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+
+
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Blink Worker纸上谈兵</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年6月7日
+        </date>
+        
+        
+        
+        <div class="post-content">
+            <p>简单看了下chromium文档中关于worker的除基本使用之外的部分内容，虽然没什么用</p>
+<ul>
+<li>worker类型</li>
+<li>生命周期</li>
+<li>进程与线程模型</li>
+<li>资源处理</li>
+</ul>
+<p>官方设计文档的优点是只言片语就能描述出核心内容。</p>
+<h2 id="blink中的web-workers">Blink中的Web Workers</h2>
+<p>Web Worker是一个Web特性，该特性提供一个后台JS上下文并允许在后台运行任意脚本，通常运行在与主UI线程分离的一个线程中。</p>
+<h3 id="html5-workers-dedicated-worker-与-shared-worker">HTML5 Workers: Dedicated Worker 与 Shared Worker</h3>
+<p>Dedicated worker 与 shared worker是两种&quot;标准&quot;worker，作为<a href="https://html.spec.whatwg.org/multipage/workers.html">HTML5标准</a>中的一部分，其他种类的worker都是基于这些worker设计的。</p>
+<p><strong>Dedicated worker</strong> 或直接称做“worker”，是最基础的worker，它会在与创建者文档绑定的后台上下文中，执行一个脚本。一个worker的生命周期基本上与其创建者的文档是一致的。</p>
+<p><strong>Shared worker</strong> 通过脚本的URL标识，可以由运行在同一域下的多个文档(站点)共享。当一个文档调用SharedWorker的构造器时，它会创建一个新的worker或连接至一个已存在的worker(若相同URL脚本的worker已经在运行)。worker上下文会在至少存在一个活跃文档的情况下保持存活。</p>
+<p><img src="/images/blog/front-end/blink-workers/workers.png" alt=""></p>
+<h3 id="service-workers">Service Workers</h3>
+<p><a href="https://w3c.github.io/ServiceWorker/"><strong>Service worker</strong></a>是一种强大的Web平台新特性，它允许脚本作为一个网络代理在后台运行，比如拦截一系列关联文档的请求。</p>
+<p>service worker有一点类似shared worker，它们都可以被运行在同一域下的多个文档共享，但service worker的生命周期并不与任何文档绑定。</p>
+<p>service worker以事件驱动的方式执行任务，即无论worker何时接收到事件，它都会启动(在之后被终止)</p>
+<h3 id="nested-workers">“Nested” Workers</h3>
+<p>即嵌套worker。HTML5 Worker(或其他worker，如service worker)可以由另一个worker创建与初始化，这些worker被称为<code>嵌套worker(nested workers)</code>。在2015年10月(ps:该文档撰写的时间)的Chromium/Blink中是不支持的(tracking bug: crbug.com/31666)。</p>
+<p>根据文档中的描述，一个负责worker上下文的js上下文(比如一个worker的创建者文档)会被简记为<code>父级文档</code>或<code>关联文档</code>，这个js上下文也可以是一个worker(在嵌套worker中的情况)。</p>
+<h2 id="术语">术语</h2>
+<h3 id="worker上下文">worker上下文</h3>
+<p><strong>worker上下文</strong> 通常是指一个后台的JS上下文，即worker运行的地方。一般worker上下文会运行在一个与主线程不同的线程，被称做“worker线程”。</p>
+<h3 id="worker线程">worker线程</h3>
+<p><strong>worker线程</strong> 指的是worker的js上下文(或称worker上下文)运行所在的线程。当一个新worker被创建时则worker线程即被创建，当worker关闭或被干掉时线程也会关闭。</p>
+<p>worker线程有时也指Blink中WorkerThread类，该者通常对应一个底层平台的线程(由Blink中的WebThread表示)，而有时则不是(比如compositor worker的情况)。下面会介绍worker不同的线程模型。</p>
+<h3 id="worker对象">worker对象</h3>
+<p><strong>worker对象</strong> 通常是指一个JS的“Worker”对象，通过该对象实现worker与其关联文档的通信。需要注意的事，worker对象是在worker的父级上下文(或关联上下文)中初始化的，这意味着它在父级上下文的线程中进行活动，该线程在多数情况下是主线程。</p>
+<h3 id="worker全局域">worker全局域</h3>
+<p><strong>worker全局域</strong> 指的是一个worker js上下文的全局作用域(window是document中的JS全局域)，worker全局域在Web Worker标准中被定义为WorkerGlobalScope接口。</p>
+<p>WorkerGlobalScope接口暴露出了可用的Web worker API，但并不是所有的window域下的API在worker全局域都是可用的，有些API仅在worker中可用(<a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Functions_and_classes_available_to_workers">Web Worker可用API列表</a>)。</p>
+<p>下面这张图表现出了worker上下文、worker线程、worker对象与worker全局念之间的关系:</p>
+<p><img src="/images/blog/front-end/blink-workers/terminology.png" alt=""></p>
+<h2 id="生命周期">生命周期</h2>
+<p>虽然不同类型的worker具有不同的生命周期及进程模型，不过一般都是以下面的过程启动的:</p>
+<ol>
+<li>文档创建一个新的worker对象，来实例化一个新的worker</li>
+<li>接着worker对象会加载worker脚本</li>
+<li>一旦脚本加载完成，则一个新的worker线程会被创建，该线程的主函数会配置一个新的worker全局作用域作为worker脚本的全局作用域</li>
+<li>worker线程会启动循环，并注入脚本</li>
+</ol>
+<p>对于不同类型的worker其终止行为也不同，当发现下列情况时HTML5 worker会被终止:</p>
+<ul>
+<li>worker显式地调用<a href="https://www.w3.org/TR/workers/#dom-workerglobalscope-close">WorkerGlobalScope#close</a>方法</li>
+<li>父级文档中调用<a href="https://www.w3.org/TR/workers/#dom-worker-terminate">Worker#terminate</a>方法(仅对于dedicated worker)</li>
+<li>所有关联文档均关闭或变为不活跃状态，或:</li>
+<li>若文档切断了与worker对象的引用，则worker上下文中将不存在任何等待的活动，并且GC会启动并收集该worker对象。</li>
+</ul>
+<p>除了第一种方法(WorkerGlobalScope#close)外，其他终止行为均由主线程触发，因此需要停止worker线程中的执行。</p>
+<p>更多的有关生命周期的规范可以参考<a href="https://www.w3.org/TR/workers/">标准文档</a>。</p>
+<h2 id="进程与线程模型">进程与线程模型</h2>
+<table>
+<thead>
+<tr>
+<th>&mdash;</th>
+<th>进程模型</th>
+<th>线程模型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dedicated Worker</td>
+<td>进程内</td>
+<td>运行在自身线程 (Worker上下文 : 线程数 = 1:1)</td>
+</tr>
+<tr>
+<td>Shared Worker</td>
+<td>进程外</td>
+<td>运行在自身线程 (Worker上下文 : 线程数 = 1:1)</td>
+</tr>
+<tr>
+<td>Service Worker</td>
+<td>进程外</td>
+<td>运行在自身线程 (Worker上下文 : 线程数 = 1:1)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="进程模型process-model">进程模型(Process Model)</h3>
+<p>Worker可以根据进程模型粗糙的分为两类: 进程内(in-process)worker与进程外(out-of-process)worker。</p>
+<ul>
+<li>进程内worker运行在与它们关联文档所在的同一进程中，因此它们仅需在文档中单纯的&quot;添加新的线程&rdquo;</li>
+<li>进程外worker可能运行在一个与他们关联文档不同的进程中。通常若一个worker需要由多个文档共享时，由于处在不同进程的不同文档均需要与同一个worker通信，Blink/Chromium一般会将其实现为一个进程外worker</li>
+</ul>
+<p>在实现方面，进程内worker与它们文档的通信可以在渲染进程中通过在worker线程与主线程之间上传任务来实现。而进程外worker则需要使用IPC来与它们的文档通信，不管这个worker是否运行在同一还是不同的进程中。</p>
+<h3 id="线程模型thread-model">线程模型(Thread Model)</h3>
+<p>几乎所有的worker都运行在它们自己的线程中(worker上下文 : worker线程 = 1:1的关系)，不过也有例外: Compositor Worker运行在一个上下文无关、与进程对应的单例线程中，因此其worker上下文与worker线程关系为N:1。而Houdini Worker在计划中是与文档运行在同一线程(即worker与文档共享同一线程)</p>
+<h2 id="非主线程资源拉取off-the-main-thread-fetch">非主线程资源拉取(Off-the-main-thread fetch)</h2>
+<p>所有worker子资源与一些顶级脚本，均在非主线程(比如worker/worklet线程)中拉取。</p>
+<p>在worker/worklet线程中存在两种网络资源fetch方式: insideSetting fetch与outsideSettings fetch。术语insideSettings与outsideSettings来自<a href="https://html.spec.whatwg.org/C/#worker-processing-model">HTML</a>与<a href="https://drafts.css-houdini.org/worklets/">Worklet</a>标准。</p>
+<h3 id="insidesettings-fetch">insideSettings fetch</h3>
+<p>insideSettings fetch指子资源拉取。</p>
+<p>在标准中，insideSettings对应WorkerOrWorkletGlobalScope中的<a href="https://html.spec.whatwg.org/multipage/workers.html#set-up-a-worker-environment-settings-object">worker环境配置对象</a>。</p>
+<p>在实现中，insideSettings直接对应了WorkerOrWorkletGlobalScope。WorkerOrWorkletGlobalScope::Fetcher()对应WorkerFetchContext，使用WorkerOrWorkletGlobalScope::GetContentSecurityPolicy()。</p>
+<p>目前所有的子资源拉取均为非主线程行为。</p>
+<h3 id="outsidesettings-fetch">outsideSettings fetch</h3>
+<p>outsideSettings fetch指非主线程的顶级worker/worklet脚本拉取。</p>
+<p>在标准中，outsideSettings为worker父级上下文的环境配置对象。</p>
+<p>在实现中，outsideSettings应该对应文档(或嵌套worker的WorkerOrWorkletGlobalScope)，但worker线程由于线程限制无法访问这些对象，因此我们会传递一个包含这些跨线程信息的快照FetchClientSettingsObjectSnapshot，并在worker线程中创建ResourceFetcher, WorkerFetchContext和ContentSecurityPolicy(分离在insideSettings fetch中使用的对象)。他们的行为类似父级上下文，通过WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher()使用。</p>
+<p>注意，在非主线程拉取不可用的场景下(如classic worker)，worker脚本会在主线程拉取，因此不会牵扯到WorkerOrWorkletGlobalScope与worker线程。</p>
+<h2 id="在worker中使用es模块">在Worker中使用ES模块</h2>
+<p>目前已知只有chrome的80版本后的dedicated worker中支持该特性。</p>
+<p>有三种方式可以在dedicated worker中使用ES模块</p>
+<ol>
+<li>Worker构造函数</li>
+</ol>
+<p>该方法在Worker构造器中的第二个参数设置type选项即可。将type设置为&rsquo;module'后，worker的顶级脚本(top-level srcipt, 即最先执行的脚本)会被作为Module Script执行。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;module-worker.js&#39;</span>, { <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;module&#39;</span> });
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><p>在上面的例子中，就不在/<!-- raw HTML omitted -->标签中设置<code>type='module'</code>也没有问题。</p>
+<ol start="2">
+<li>静态导入(static import)</li>
+</ol>
+<p>第二种是在worker内的静态导入方法</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// module-worker.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">module</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./hello-module.js&#39;</span>;
+<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">SayHello</span>();
+</code></pre></div><p>由于静态导入只能在Module Script中使用，因此需要结合第一种方法，将Module Script作为worker顶级脚本启动。下面是一个将Classic Script作为顶级脚本启动而静态导入失败的例子，当worker启动时自身会报错。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#75715e">// Worker会被当做普通脚本执行
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;module-worker.js&#39;</span>);
+<span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">onerror</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span> =&gt; {
+  <span style="color:#75715e">// 这里会触发错误事件处理器
+</span><span style="color:#75715e"></span>};
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><ol start="3">
+<li>动态导入(dynamic import)</li>
+</ol>
+<p>第三种是在worker内的动态导入方法</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// In module-worker.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span>(<span style="color:#e6db74">&#39;./hello-module.js&#39;</span>)
+  .<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">module</span> =&gt; <span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">SayHello</span>());
+</code></pre></div><p>动态导入在作为Classic Script启动的worker内也可以使用</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;module-worker.js&#39;</span>);
+<span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">onerror</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span> =&gt; {
+  <span style="color:#75715e">// 这里不会触发错误事件处理器
+</span><span style="color:#75715e"></span>};
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><h2 id="其他">其他</h2>
+<h3 id="行内脚本的使用方式">行内脚本的使用方式</h3>
+<p>针对dedicated worker</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;my_worker&#34;</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;javascript/worker&#34;</span>&gt;
+<span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#34;message&#34;</span>, <span style="color:#a6e22e">e</span> =&gt; {
+    <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> from worker!`</span>);
+});
+&lt;/<span style="color:#f92672">script</span>&gt;
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">blob</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Blob</span>([document.<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#39;#my_worker&#39;</span>).<span style="color:#a6e22e">textContent</span>]);
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(window.<span style="color:#a6e22e">URL</span>.<span style="color:#a6e22e">createObjectURL</span>(<span style="color:#a6e22e">blob</span>));
+<span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#34;message&#34;</span>, <span style="color:#a6e22e">e</span> =&gt; {
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#34;Received: &#34;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>);
+});
+<span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">postMessage</span>(<span style="color:#e6db74">&#34;hello&#34;</span>);
+</code></pre></div><h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://docs.google.com/document/d/1i3IA3TG00rpQ7MKlpNFYUF6EfLcV01_Cv3IYG_DjF7M">Blink Workers (Jul 2016)</a></li>
+<li><a href="https://docs.google.com/document/d/1VyYZnhjBdk-MzCRAcX37TM5-yjwTY40U_J9rWnEAo8c">Design of UseCounter for workers (Feb 14, 2017)</a></li>
+<li><a href="https://docs.google.com/presentation/d/1GZJ3VnLIO_Pw0jr9nRw6_-trg68ol-AkliMxJ6jo6Bo/">Worker / Worklet Internals (April 19, 2018)</a></li>
+<li><a href="https://docs.google.com/document/d/1IMGWAK7Wq37mLehwkbysNRBBnhQBo3z2MbYyMkViEnY/">ES Modules for Dedicated Workers (Mar 8, 2018)</a></li>
+<li><a href="">WorkerGlobalScope Initialization (April 1, 2019)</a></li>
+<li><a href="https://docs.google.com/document/d/1sSdYdSOLd5zvnNGeVNlBqfTZs_VRPIrrigV3SlMnWjg/">ES Modules for Shared Workers (Feb 19, 2020)</a></li>
+<li><a href="https://nhiroki.jp/2017/12/10/javascript-parallel-processing">JavaScript のスレッド並列実行環境</a></li>
+<li><a href="https://nhiroki.jp/2019/12/05/es-modules-for-dedicated-workers">Chrome 80 から Web Worker (Dedicated Worker) で ES Modules が使えます</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/front-end/contents-about-blink-web-worker/">http://yrq110.me/post/front-end/contents-about-blink-web-worker/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            没有标签
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/contents-about-blink-web-worker/" title="Blink Worker纸上谈兵">Blink Worker纸上谈兵</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-ii-transform/" title="MapboxGL简析(二)：变换">MapboxGL简析(二)：变换</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-i-rendering/" title="MapboxGL简析(一)：渲染">MapboxGL简析(一)：渲染</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/" title="深入学习Three.js核心对象之（三）Material">深入学习Three.js核心对象之（三）Material</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/" title="深入学习Three.js核心对象之（一）Object3D">深入学习Three.js核心对象之（一）Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">分类</h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title">标签</h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/javascript/">javascript</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/mapbox/">mapbox</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer">
+    <div class="container">
+        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
+        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
+        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
+        
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+</body>
+
+</html>

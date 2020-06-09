@@ -4,7 +4,14 @@
   
   <url>
     <loc>http://yrq110.me/post/</loc>
-    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
+    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</loc>
+    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

@@ -12,6 +12,21 @@
     
     
     <item>
+      <title>Blink Worker纸上谈兵</title>
+      <link>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</link>
+      <pubDate>Sun, 07 Jun 2020 17:14:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</guid>
+      <description>&lt;p&gt;简单看了下chromium文档中关于worker的除基本使用之外的部分内容，虽然没什么用&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;worker类型&lt;/li&gt;
+&lt;li&gt;生命周期&lt;/li&gt;
+&lt;li&gt;进程与线程模型&lt;/li&gt;
+&lt;li&gt;资源处理&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
       <title>MapboxGL简析(二)：变换</title>
       <link>http://yrq110.me/post/front-end/mapboxgl-ii-transform/</link>
       <pubDate>Tue, 19 May 2020 17:06:26 +0800</pubDate>
