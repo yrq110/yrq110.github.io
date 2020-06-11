@@ -6,10 +6,19 @@
     <description>Recent content in Tags on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 19 May 2020 17:06:26 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 07 Jun 2020 17:14:32 +0800</lastBuildDate>
     
 	<atom:link href="http://yrq110.me/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>web worker</title>
+      <link>http://yrq110.me/tags/web-worker/</link>
+      <pubDate>Sun, 07 Jun 2020 17:14:32 +0800</pubDate>
+      
+      <guid>http://yrq110.me/tags/web-worker/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>mapbox</title>
@@ -242,15 +251,6 @@
       <pubDate>Fri, 18 Oct 2019 09:49:05 +0800</pubDate>
       
       <guid>http://yrq110.me/tags/offscreen-canvas/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>web worker</title>
-      <link>http://yrq110.me/tags/web-worker/</link>
-      <pubDate>Fri, 18 Oct 2019 09:49:05 +0800</pubDate>
-      
-      <guid>http://yrq110.me/tags/web-worker/</guid>
       <description></description>
     </item>
     

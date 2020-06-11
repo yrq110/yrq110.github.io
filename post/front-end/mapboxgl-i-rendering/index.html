@@ -266,7 +266,7 @@
 </ol>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/render/painter.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">layerIds</span>.<span style="color:#a6e22e">length</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span><span style="color:#f92672">++</span>) {
-    <span style="color:#75715e">// 若为line图层则会执行drawLine执行渲染
+    <span style="color:#75715e">// 若为line元素图层则会在renderLayer中执行drawLine绘制元素
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCache</span>, <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
 }
 <span style="color:#75715e">// src/render/draw_line.js
@@ -634,7 +634,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     

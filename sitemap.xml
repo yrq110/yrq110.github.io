@@ -18,14 +18,28 @@
   
   <url>
     <loc>http://yrq110.me/categories/</loc>
-    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
+    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://yrq110.me/categories/front-end/</loc>
-    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
+    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/</loc>
+    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://yrq110.me/tags/web-worker/</loc>
+    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -39,13 +53,6 @@
   
   <url>
     <loc>http://yrq110.me/post/front-end/mapboxgl-ii-transform/</loc>
-    <lastmod>2020-05-19T17:06:26+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>http://yrq110.me/tags/</loc>
     <lastmod>2020-05-19T17:06:26+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -354,13 +361,6 @@
   
   <url>
     <loc>http://yrq110.me/tags/offscreen-canvas/</loc>
-    <lastmod>2019-10-18T09:49:05+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>http://yrq110.me/tags/web-worker/</loc>
     <lastmod>2019-10-18T09:49:05+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
