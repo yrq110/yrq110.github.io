@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Blink Worker纸上谈兵 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Blink Worker纸上谈兵 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/contents-about-blink-web-worker/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,14 +81,14 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
         
         
         <div class="post-content">
-            <p>简单看了下chromium文档中关于worker的除基本使用之外的部分内容，<del>虽然没什么用</del></p>
+            <p>简单看了下chromium文档中关于worker的除基本使用之外的部分内容。</p>
 <ul>
 <li>worker类型</li>
 <li>生命周期</li>
@@ -100,7 +102,9 @@
 <p>Dedicated worker 与 shared worker是两种&quot;标准&quot;worker，作为<a href="https://html.spec.whatwg.org/multipage/workers.html">HTML5标准</a>中的一部分，其他种类的worker都是基于这些worker设计的。</p>
 <p><strong>Dedicated worker</strong> 或直接称做“worker”，是最基础的worker，它会在与创建者文档绑定的后台上下文中，执行一个脚本。一个worker的生命周期基本上与其创建者的文档是一致的。</p>
 <p><strong>Shared worker</strong> 通过脚本的URL标识，可以由运行在同一域下的多个文档(站点)共享。当一个文档调用SharedWorker的构造器时，它会创建一个新的worker或连接至一个已存在的worker(若相同URL脚本的worker已经在运行)。worker上下文会在至少存在一个活跃文档的情况下保持存活。</p>
-<p><img src="/images/blog/front-end/blink-workers/workers.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/blink-workers/workers.png" />   
+    </p>
 <h3 id="service-workers">Service Workers</h3>
 <p><a href="https://w3c.github.io/ServiceWorker/"><strong>Service worker</strong></a>是一种强大的Web平台新特性，它允许脚本作为一个网络代理在后台运行，比如拦截一系列关联文档的请求。</p>
 <p>service worker有一点类似shared worker，它们都可以被运行在同一域下的多个文档共享，但service worker的生命周期并不与任何文档绑定。</p>
@@ -121,7 +125,9 @@
 <p>WorkerGlobalScope接口暴露出了可用的Web worker API，但并不是所有的window域下的API在worker全局域都是可用的，有些API仅在worker中可用(<a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Functions_and_classes_available_to_workers">Web Worker可用API列表</a>)。</p>
 <h3 id="关系">关系</h3>
 <p>下面这张图表现出了worker上下文、worker线程、worker对象与worker全局念之间的关系:</p>
-<p><img src="/images/blog/front-end/blink-workers/terminology.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/blink-workers/terminology.png" />   
+    </p>
 <h2 id="生命周期">生命周期</h2>
 <p>虽然不同类型的worker具有不同的生命周期及进程模型，不过一般都是以下面的过程启动的:</p>
 <ol>
@@ -169,7 +175,7 @@
 <h3 id="进程模型process-model">进程模型(Process Model)</h3>
 <p>Worker可以根据进程模型粗糙的分为两类: 进程内(in-process)worker与进程外(out-of-process)worker。</p>
 <ul>
-<li>进程内worker运行在与它们关联文档所在的同一进程中，因此它们仅需在文档中单纯的&quot;添加新的线程&rdquo;</li>
+<li>进程内worker运行在与它们关联文档所在的同一进程中，因此它们仅需在文档中单纯的&quot;添加新的线程&quot;</li>
 <li>进程外worker可能运行在一个与他们关联文档不同的进程中。通常若一个worker需要由多个文档共享时，由于处在不同进程的不同文档均需要与同一个worker通信，Blink/Chromium一般会将其实现为一个进程外worker</li>
 </ul>
 <p>在实现方面，进程内worker与它们文档的通信可以在渲染进程中通过在worker线程与主线程之间上传任务来实现。而进程外worker则需要使用IPC来与它们的文档通信，不管这个worker是否运行在同一还是不同的进程中。</p>
@@ -194,7 +200,7 @@
 <ol>
 <li>Worker构造函数</li>
 </ol>
-<p>该方法在Worker构造器中的第二个参数设置type选项即可。将type设置为&rsquo;module'后，worker的顶级脚本(top-level srcipt, 即最先执行的脚本)会被作为Module Script执行。</p>
+<p>该方法在Worker构造器中的第二个参数设置type选项即可。将type设置为&rsquo;module&rsquo;后，worker的顶级脚本(top-level srcipt, 即最先执行的脚本)会被作为Module Script执行。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">script</span>&gt;
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;module-worker.js&#39;</span>, { <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;module&#39;</span> });
 &lt;/<span style="color:#f92672">script</span>&gt;
@@ -285,7 +291,7 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/web-worker'>web worker</a></li>
+                <li><a href='/tags/web-worker'>web worker</a></li>
                 
             </ul>
             
@@ -307,6 +313,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -353,15 +409,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -370,7 +426,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -379,7 +435,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -389,7 +445,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -429,8 +485,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -516,47 +570,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

@@ -6,18 +6,14 @@
     <description>Recent content on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Fri, 28 Dec 2018 14:14:44 +0800</lastBuildDate>
-    
-	<atom:link href="http://yrq110.me/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sun, 07 Jun 2020 17:14:32 +0800</lastBuildDate><atom:link href="http://yrq110.me/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Blink Worker纸上谈兵</title>
       <link>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</link>
       <pubDate>Sun, 07 Jun 2020 17:14:32 +0800</pubDate>
       
       <guid>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</guid>
-      <description>&lt;p&gt;简单看了下chromium文档中关于worker的除基本使用之外的部分内容，&lt;del&gt;虽然没什么用&lt;/del&gt;&lt;/p&gt;
+      <description>&lt;p&gt;简单看了下chromium文档中关于worker的除基本使用之外的部分内容。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;worker类型&lt;/li&gt;
 &lt;li&gt;生命周期&lt;/li&gt;
@@ -108,15 +104,6 @@
 &lt;li&gt;万向节死锁：旋转轴共面与自由度丢失&lt;/li&gt;
 &lt;li&gt;四元数：表示与计算、几何意义与球形插值&lt;/li&gt;
 &lt;/ul&gt;</description>
-    </item>
-    
-    <item>
-      <title>class中的箭头函数会输出什么</title>
-      <link>http://yrq110.me/post/front-end/arrow-function-in-class-proporties/</link>
-      <pubDate>Thu, 02 Apr 2020 15:06:25 +0800</pubDate>
-      
-      <guid>http://yrq110.me/post/front-end/arrow-function-in-class-proporties/</guid>
-      <description>&lt;p&gt;记录由于自身太菜而让人产生很多问号的JS行为&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -383,7 +370,7 @@
     </item>
     
     <item>
-      <title>可爱的Puppeteer使用小技巧</title>
+      <title>几个Puppeteer使用小技巧</title>
       <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
       <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
       

@@ -6,11 +6,7 @@
     <description>Recent content in e2e on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 17 Dec 2019 14:14:30 +0800</lastBuildDate>
-    
-	<atom:link href="http://yrq110.me/tags/e2e/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 17 Dec 2019 14:14:30 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/e2e/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Puppeteer&#43;Canvas的E2E测试实践</title>
       <link>http://yrq110.me/post/front-end/practice-in-e2e-test-with-puppeteer/</link>

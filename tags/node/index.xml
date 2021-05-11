@@ -6,11 +6,7 @@
     <description>Recent content in node on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Mon, 09 Mar 2020 13:49:15 +0800</lastBuildDate>
-    
-	<atom:link href="http://yrq110.me/tags/node/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 09 Mar 2020 13:49:15 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/node/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>跨平台的浏览器自动化工具Playwright简析</title>
       <link>http://yrq110.me/post/front-end/dive-into-playwright/</link>
@@ -36,7 +32,7 @@
     </item>
     
     <item>
-      <title>可爱的Puppeteer使用小技巧</title>
+      <title>几个Puppeteer使用小技巧</title>
       <link>http://yrq110.me/post/front-end/some-tips-of-using-puppetter/</link>
       <pubDate>Wed, 23 Jan 2019 20:02:50 +0800</pubDate>
       

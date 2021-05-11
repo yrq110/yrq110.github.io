@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>一个像素的一生 - 剖析Chromium渲染流水线 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="一个像素的一生 - 剖析Chromium渲染流水线 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/chromium-rendering-pipeline-step-by-step/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -234,7 +236,7 @@
 <p>由于渲染并不是静态的，页面上可能存在交互操作、属性改变或执行的动画，这些情况下由于图形本身内容未发生改变，并且执行整个渲染流水线是比较耗时的，此时会进入<strong>合成阶段</strong>(composite)。</p>
 <ul>
 <li>一个页面可以分解成多个可以独立光栅化的层(layers)，在另一个线程来合并这些层。</li>
-<li>一般在主线程(main thread)中构建层，并提交(commit)到合成器线程(impl thread)中绘制层。此处的impl由于历史原因，起的名称不是那么的“好”(&ldquo;impl&quot;=Composite thread)</li>
+<li>一般在主线程(main thread)中构建层，并提交(commit)到合成器线程(impl thread)中绘制层。此处的impl由于历史原因，起的名称不是那么的“好”(&ldquo;impl&rdquo;=Composite thread)</li>
 </ul>
 <h4 id="图层变换">图层变换</h4>
 <p>常见的动画与交互操作都对应着图层的某些变换:</p>
@@ -257,7 +259,7 @@
   |_LayoutBlockFlow
     |-LayoutText
     |_LayoutBlockFlow
-</code></pre><p>其中PaintLayer是合成前的&quot;候补层&rdquo;，参与GraphicsLayer与最终图像的绘制。默认情况下布局树中的元素与其父元素共处同一图层。</p>
+</code></pre><p>其中PaintLayer是合成前的&quot;候补层&quot;，参与GraphicsLayer与最终图像的绘制。默认情况下布局树中的元素与其父元素共处同一图层。</p>
 <p>现在给其中一个块级元素添加CSS Animation动画，该过程就会变成:</p>
 <pre><code>LayoutView                         -&gt; PaintLayer -&gt; GraphicsLayer(cc::Layer) : 一颗图层树(layer tree)
 |-LayoutBlockFlow                     |               |
@@ -334,7 +336,9 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
 </ul>
 <p>最终绘制好的像素出现在了屏幕上。</p>
 <h3 id="渲染流水线总览">渲染流水线总览</h3>
-<p><img src="/images/blog/front-end/chromium-rendering-pipeline-step-by-step/pixel.jpg" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/chromium-rendering-pipeline-step-by-step/pixel.jpg" />   
+    </p>
 <h2 id="页面动画">页面动画</h2>
 <p>介绍完流水线，有了合成器的基础，了解各种动画的原理应该就比较轻松了，该部分引用一下文章<a href="https://zhuanlan.zhihu.com/p/30534023">浏览器渲染流水线解析与网页动画性能优化</a>的内容。</p>
 <h3 id="合成器动画">合成器动画</h3>
@@ -385,11 +389,11 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/chromium'>chromium</a></li>
+                <li><a href='/tags/chromium'>chromium</a></li>
                 
-                <li><a href='http://yrq110.me/tags/blink'>blink</a></li>
+                <li><a href='/tags/blink'>blink</a></li>
                 
-                <li><a href='http://yrq110.me/tags/rendering-pipeline'>rendering pipeline</a></li>
+                <li><a href='/tags/rendering-pipeline'>rendering pipeline</a></li>
                 
             </ul>
             
@@ -411,6 +415,56 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -457,15 +511,15 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -474,7 +528,7 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -483,7 +537,7 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -493,7 +547,7 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -533,8 +587,6 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -620,47 +672,6 @@ active tree:  LayerTreeImpl -------(draw)--------&gt; LayerTreeImpl(update) ---(
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>跨平台的浏览器自动化工具Playwright简析 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="跨平台的浏览器自动化工具Playwright简析 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/dive-into-playwright/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -106,25 +108,25 @@
 <p><a href="https://github.com/puppeteer/puppeteer#usage">Puppeteer Page screenshot Example</a>:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;puppeteer&#39;</span>);
 
-(<span style="color:#a6e22e">async</span> () =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>();
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://example.com&#39;</span>);
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({<span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;example.png&#39;</span>});
+(<span style="color:#66d9ef">async</span> () =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://example.com&#39;</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({<span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;example.png&#39;</span>});
 
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
 })();
 </code></pre></div><p><a href="https://github.com/microsoft/playwright#page-screenshot">Playwright Page screenshot Example</a>:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">playwright</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;playwright&#39;</span>);
 
-(<span style="color:#a6e22e">async</span> () =&gt; {
+(<span style="color:#66d9ef">async</span> () =&gt; {
   <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browserType</span> <span style="color:#66d9ef">of</span> [<span style="color:#e6db74">&#39;chromium&#39;</span>, <span style="color:#e6db74">&#39;firefox&#39;</span>, <span style="color:#e6db74">&#39;webkit&#39;</span>]) {
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">playwright</span>[<span style="color:#a6e22e">browserType</span>].<span style="color:#a6e22e">launch</span>();
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>();
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
-    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;http://whatsmyuseragent.org/&#39;</span>);
-    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({ <span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`example-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">browserType</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.png`</span> });
-    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">playwright</span>[<span style="color:#a6e22e">browserType</span>].<span style="color:#a6e22e">launch</span>();
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>();
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
+    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;http://whatsmyuseragent.org/&#39;</span>);
+    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({ <span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`example-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">browserType</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.png`</span> });
+    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
   }
 })();
 </code></pre></div><p>可以注意到有<strong>一处修改</strong>和<strong>一处新增</strong>：</p>
@@ -133,15 +135,17 @@
 <li>新增：Playwright的示例在创建新页面前需要先创建一个上下文，然后在context上创建页面</li>
 </ul>
 <p>熟悉Puppeteer的同学也许知道，<code>browser.newPage()</code>实际上也是执行内部默认BrowserContext实例上的newPage方法，至于BrowserContext的所处位置可以参考下面的Puppeteer架构图：</p>
-<p><img src="https://user-images.githubusercontent.com/746130/40333229-5df5480c-5d0c-11e8-83cb-c3e371de7374.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://user-images.githubusercontent.com/746130/40333229-5df5480c-5d0c-11e8-83cb-c3e371de7374.png" />   
+    </p>
 <p>在BrowserContext实例中管理会话对象与页面对象。</p>
 <p>实际上在Playwright中写成<code>browser.newPage()</code>也是可以的，但它的内部执行与Puppeteer不同：Puppeteer会在默认的context上创建页面，而Playwright会重新创建新的context并创建页面，具体过程会在之后看到。至于Playwright为什么在示例中通过这种显式的创建新的context方法，可能是为了故意体现这个特点。</p>
 <p>在Playwright中，Browser实例的默认context仅会当监听到targetCreated事件时不存在指定context时才会用到：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">Browser</span> {
-  <span style="color:#a6e22e">readonly</span> <span style="color:#a6e22e">_defaultContext</span>: <span style="color:#66d9ef">CRBrowserContext</span>;
-  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_targetCreated() {</span>
+  <span style="color:#66d9ef">readonly</span> <span style="color:#a6e22e">_defaultContext</span>: <span style="color:#66d9ef">CRBrowserContext</span>;
+  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">_targetCreated() {</span>
     ...
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">browserContextId</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_contexts</span>.<span style="color:#a6e22e">has</span>(<span style="color:#a6e22e">browserContextId</span>)) <span style="color:#f92672">?</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_contexts</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">browserContextId</span>)<span style="color:#f92672">!</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">browserContextId</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_contexts</span>.<span style="color:#a6e22e">has</span>(<span style="color:#a6e22e">browserContextId</span>)) <span style="color:#f92672">?</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_contexts</span>.<span style="color:#66d9ef">get</span>(<span style="color:#a6e22e">browserContextId</span>)<span style="color:#f92672">!</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>;
     ...
   }
 }
@@ -154,25 +158,25 @@
 <li>
 <p>利用默认context创建页面</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Browser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
-  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>() {
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_defaultContext</span>.<span style="color:#a6e22e">newPage</span>();
+  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">newPage</span>() {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">defaultContext</span>.<span style="color:#a6e22e">newPage</span>();
   }
 </code></pre></div></li>
 <li>
 <p>执行绑定浏览器实例的创建页面方法</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
   <span style="color:#a6e22e">newPage</span>() {
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_id</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">browser</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">createPageInContext</span>(<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">id</span>);
   }
 }
 </code></pre></div></li>
 <li>
 <p>向远程浏览器发送createTarget消息</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Browser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">EventEmitter</span> {
-  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#a6e22e">contextId</span>) {
-    <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>);
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
+  <span style="color:#66d9ef">async</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">createPageInContext</span>(<span style="color:#a6e22e">contextId</span>) {
+    <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
   }
 }
@@ -183,7 +187,7 @@
 <li>
 <p>调用独立方法创建页面</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts">  <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowser</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">Browser</span> {
-    <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>(<span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">newPage</span>(<span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Page</span>&gt; {
       <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">options</span>);
     }
   }
@@ -192,10 +196,10 @@
 <p>创建一个新的context来创建页面</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// browser.ts
 </span><span style="color:#75715e"></span><span style="color:#75715e">/* 第二步 */</span>
-<span style="color:#66d9ef">export</span> <span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#a6e22e">browser</span>: <span style="color:#66d9ef">Browser</span>, <span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
-     
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>(<span style="color:#a6e22e">options</span>);
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createPageInNewContext</span>(<span style="color:#a6e22e">browser</span>: <span style="color:#66d9ef">Browser</span>, <span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BrowserContextOptions</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Page</span>&gt; {
+
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newContext</span>(<span style="color:#a6e22e">options</span>);
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">newPage</span>();
   <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">_ownedContext</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">context</span>;
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
 }
@@ -203,10 +207,10 @@
 <li>
 <p>向远程浏览器发送createTarget消息</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CRBrowserContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">platform</span>.<span style="color:#a6e22e">EventEmitter</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">BrowserContext</span> {
-  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">newPage</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Page</span><span style="color:#f92672">&gt;</span> {
-    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">targetId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, { <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span>: <span style="color:#66d9ef">this._browserContextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span> });
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>)<span style="color:#f92672">!</span>;
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
+  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">newPage</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Page</span>&gt; {
+    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">targetId</span> } <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, { <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span>: <span style="color:#66d9ef">this._browserContextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span> });
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_browser</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#66d9ef">get</span>(<span style="color:#a6e22e">targetId</span>)<span style="color:#f92672">!</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span><span style="color:#f92672">!</span>;
   }
 }
@@ -254,11 +258,15 @@
 <li>用户输入：RawKeyboardImpl, RawMouseImpl</li>
 </ul>
 <p>通过分析源码整理出这些类之间的关系大致如下图所示：</p>
-<p><img src="/images/blog/front-end/playwright-have-fun/framework.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/playwright-have-fun/framework.png" />   
+    </p>
 <p>可以看出这个结构与Puppeteer非常相似，在多个平台的实现中使用共同的组件与架构来实现跨平台的特性。</p>
 <p><strong>能力差异</strong></p>
 <p>目前chromium端的能力是最丰富的，这源于Puppeteer的基础和CDP提供的细粒度操作。不同平台的client相关文件对比如下图：</p>
-<p><img src="/images/blog/front-end/playwright-have-fun/client-files.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/playwright-have-fun/client-files.png" />   
+    </p>
 <p>所有平台的Browser实例通用API如下：</p>
 <ul>
 <li>event: &lsquo;disconnected&rsquo;</li>
@@ -275,24 +283,24 @@
 <p>Server中包含启动浏览器实例的子进程、WS端口信息与数据通道实例。以chromium server为例：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// src/server/chromium.ts
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Chromium</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">BrowserType</span> {
-  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">launch() {</span>
+  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">launch() {</span>
     <span style="color:#75715e">// 使用local模式启动server
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">browserServer</span>, <span style="color:#a6e22e">transport</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_launchServer</span>(<span style="color:#a6e22e">options</span>, <span style="color:#e6db74">&#39;local&#39;</span>);
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">CRBrowser</span>.<span style="color:#a6e22e">connect</span>(<span style="color:#a6e22e">transport</span><span style="color:#f92672">!</span>, <span style="color:#a6e22e">options</span>);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">browserServer</span>, <span style="color:#a6e22e">transport</span> } <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_launchServer</span>(<span style="color:#a6e22e">options</span>, <span style="color:#e6db74">&#39;local&#39;</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">CRBrowser</span>.<span style="color:#a6e22e">connect</span>(<span style="color:#a6e22e">transport</span><span style="color:#f92672">!</span>, <span style="color:#a6e22e">options</span>);
     <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span> <span style="color:#f92672">=</span> () <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">browserServer</span>.<span style="color:#a6e22e">close</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">browser</span>;
   }
-  <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_launchServer() {</span>
+  <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">_launchServer() {</span>
     <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">browserServer</span>: <span style="color:#66d9ef">BrowserServer</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>;
     <span style="color:#75715e">/* 1. 启动Node子进程，运行浏览器实例 */</span>
-    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">gracefullyClose</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">launchProcess</span>({ ... })
+    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">gracefullyClose</span> } <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">launchProcess</span>({ ... })
     <span style="color:#75715e">/* 2. 准备数据通道 */</span>
     <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">transport</span>: <span style="color:#66d9ef">ConnectionTransport</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>;
     <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">browserWSEndpoint</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span>;
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">launchType</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;server&#39;</span>) {
       ...
       <span style="color:#75715e">// server模式会获取子进程暴露出的ws端口
-</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">match</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">waitForLine</span>(<span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">launchedProcess</span>.<span style="color:#a6e22e">stderr</span>, <span style="color:#e6db74">/^DevTools listening on (ws:\/\/.*)$/</span>, <span style="color:#a6e22e">timeout</span>, <span style="color:#a6e22e">timeoutError</span>);
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">match</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">waitForLine</span>(<span style="color:#a6e22e">launchedProcess</span>, <span style="color:#a6e22e">launchedProcess</span>.<span style="color:#a6e22e">stderr</span>, <span style="color:#e6db74">/^DevTools listening on (ws:\/\/.*)$/</span>, <span style="color:#a6e22e">timeout</span>, <span style="color:#a6e22e">timeoutError</span>);
       <span style="color:#a6e22e">browserWSEndpoint</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">match</span>[<span style="color:#ae81ff">1</span>];
     } <span style="color:#66d9ef">else</span> {
       <span style="color:#75715e">// local模式会利用子进程的标准端口创建数据通道
@@ -313,7 +321,7 @@
 </code></pre></div><p>Playwright则通过引入多种Selector引擎实现了多种可用选择器，包含CSS、XPath、text、id等，并且可以自定义选择器引擎。</p>
 <p>由于同时支持多种选择器，因此其使用的选择器语句也进行了一定设计。</p>
 <h3 id="选择语句">选择语句</h3>
-<p>由<strong>子句</strong>与<strong><code>&gt;&gt;</code>分隔符</strong>组成。如<code>子句1 &gt;&gt; 子句2 &gt;&gt; 子句3</code>，当存在多个子句时，每个子句的源为前一子句的选择结果。</p>
+<p>由<strong>子句</strong>与**<code>&gt;&gt;</code>分隔符**组成。如<code>子句1 &gt;&gt; 子句2 &gt;&gt; 子句3</code>，当存在多个子句时，每个子句的源为前一子句的选择结果。</p>
 <p>子句的格式为<code>引擎=主体</code>。如<code>engine=body</code>。若body中需要使用<code>&gt;&gt;</code>的话需要字符串类型处理，避免被分割成两个子句，如<code>text=&quot;hello &gt;&gt; world&quot;</code>。</p>
 <p>例子：
 <code>css=div &gt;&gt; css=.form &gt; span &gt;&gt; css=input[attr=name]</code> 等价于</p>
@@ -361,7 +369,7 @@
   },
   <span style="color:#75715e">// 返回根元素子树上的所有匹配元素
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">queryAll</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">selector</span>) {
-    <span style="color:#66d9ef">return</span> Array.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">querySelectorAll</span>(<span style="color:#a6e22e">selector</span>));
+    <span style="color:#66d9ef">return</span> Array.<span style="color:#66d9ef">from</span>(<span style="color:#a6e22e">root</span>.<span style="color:#a6e22e">querySelectorAll</span>(<span style="color:#a6e22e">selector</span>));
   }
 });
 </code></pre></div><p>所有选择器引擎的本质都是<strong>解析特定的选择器语法，转换成querySelector或evaluate语句</strong>。</p>
@@ -370,24 +378,24 @@
 <p>在Injected类中会载入所有预置的选择器引擎及自定义的引擎：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// src/injected/injected.ts
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Injected</span> {
-  <span style="color:#a6e22e">readonly</span> <span style="color:#a6e22e">engines</span>: <span style="color:#66d9ef">Map</span><span style="color:#f92672">&lt;</span><span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">SelectorEngine</span><span style="color:#f92672">&gt;</span>;
+  <span style="color:#66d9ef">readonly</span> <span style="color:#a6e22e">engines</span>: <span style="color:#66d9ef">Map</span>&lt;<span style="color:#f92672">string</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">SelectorEngine</span>&gt;;
   <span style="color:#75715e">// 加载所有内置与自定义选择器引擎
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">constructor</span>(<span style="color:#a6e22e">customEngines</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">engine</span>: <span style="color:#66d9ef">SelectorEngine</span>}[]) {
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Map</span>();
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;css&#39;</span>, <span style="color:#a6e22e">CSSEngine</span>);
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;xpath&#39;</span>, <span style="color:#a6e22e">XPathEngine</span>);
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;text&#39;</span>, <span style="color:#a6e22e">TextEngine</span>);
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;id&#39;</span>, <span style="color:#a6e22e">createAttributeEngine</span>(<span style="color:#e6db74">&#39;id&#39;</span>));
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#66d9ef">set</span>(<span style="color:#e6db74">&#39;css&#39;</span>, <span style="color:#a6e22e">CSSEngine</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#66d9ef">set</span>(<span style="color:#e6db74">&#39;xpath&#39;</span>, <span style="color:#a6e22e">XPathEngine</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#66d9ef">set</span>(<span style="color:#e6db74">&#39;text&#39;</span>, <span style="color:#a6e22e">TextEngine</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#66d9ef">set</span>(<span style="color:#e6db74">&#39;id&#39;</span>, <span style="color:#a6e22e">createAttributeEngine</span>(<span style="color:#e6db74">&#39;id&#39;</span>));
     ...
-    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>} <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">customEngines</span>)
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#a6e22e">set</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>);
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>} <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">customEngines</span>)
+      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">engines</span>.<span style="color:#66d9ef">set</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">engine</span>);
   }
 </code></pre></div><p>提供与dom API命名一致的选择器顶层API：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Injected</span> {
   <span style="color:#75715e">// 实现顶层的元素选择方法，递归调用
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">selector</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">root</span>: <span style="color:#66d9ef">Node</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Element</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span> {
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">parsed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_parseSelector</span>(<span style="color:#a6e22e">selector</span>);
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">any</span>)[<span style="color:#e6db74">&#39;querySelector&#39;</span>])
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">any</span>)[<span style="color:#e6db74">&#39;querySelector&#39;</span>])
       <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">&#39;Node is not queryable.&#39;</span>);
     <span style="color:#75715e">// 递归查找元素
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">root</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">SelectorRoot</span>, <span style="color:#a6e22e">parsed</span>, <span style="color:#ae81ff">0</span>);
@@ -402,7 +410,7 @@
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">index</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">parsed</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)
       <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">engine</span>.<span style="color:#a6e22e">query</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">selector</span>);
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">all</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">engine</span>.<span style="color:#a6e22e">queryAll</span>(<span style="color:#a6e22e">root</span>, <span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">selector</span>);
-    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">next</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">all</span>) {
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">next</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">all</span>) {
       <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_querySelectorRecursively</span>(<span style="color:#a6e22e">next</span>, <span style="color:#a6e22e">parsed</span>, <span style="color:#a6e22e">index</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>);
       <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">result</span>)
         <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">result</span>;
@@ -416,41 +424,41 @@
   ...
   <span style="color:#a6e22e">output</span><span style="color:#f92672">:</span> {
     <span style="color:#a6e22e">filename</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;injectedSource.js&#39;</span>,
-    <span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">__dirname</span>, <span style="color:#e6db74">&#39;../../lib/injected/packed&#39;</span>)
+    <span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">resolve</span>(<span style="color:#ae81ff">__</span><span style="color:#a6e22e">dirname</span>, <span style="color:#e6db74">&#39;../../lib/injected/packed&#39;</span>)
   },
   <span style="color:#a6e22e">plugins</span><span style="color:#f92672">:</span> [
-    <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">InlineSource</span>(<span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">join</span>(<span style="color:#a6e22e">__dirname</span>, <span style="color:#e6db74">&#39;..&#39;</span>, <span style="color:#e6db74">&#39;generated&#39;</span>, <span style="color:#e6db74">&#39;injectedSource.ts&#39;</span>)),
+    <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">InlineSource</span>(<span style="color:#a6e22e">path</span>.<span style="color:#a6e22e">join</span>(<span style="color:#ae81ff">__</span><span style="color:#a6e22e">dirname</span>, <span style="color:#e6db74">&#39;..&#39;</span>, <span style="color:#e6db74">&#39;generated&#39;</span>, <span style="color:#e6db74">&#39;injectedSource.ts&#39;</span>)),
   ]
 }
 <span style="color:#75715e">// src/dom.ts
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">injectedSource</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./generated/injectedSource&#39;</span>;
 <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FrameExecutionContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">js</span>.<span style="color:#a6e22e">ExecutionContext</span> {
   <span style="color:#75715e">// 注入所有选择器引擎代码并创建引擎实例
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">_injected</span>()<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">js</span>.<span style="color:#a6e22e">JSHandle</span><span style="color:#f92672">&gt;</span> {
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">selectors</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Selectors</span>.<span style="color:#a6e22e">_instance</span>();
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedPromise</span>) {
+</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">_</span><span style="color:#a6e22e">injected</span>()<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">js</span>.<span style="color:#a6e22e">JSHandle</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">selectors</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Selectors</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">instance</span>();
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">injectedPromise</span>) {
       <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">custom</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>[] <span style="color:#f92672">=</span> [];
-      <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">source</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">selectors</span>.<span style="color:#a6e22e">_engines</span>)
+      <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">source</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">selectors</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">engines</span>)
         <span style="color:#a6e22e">custom</span>.<span style="color:#a6e22e">push</span>(<span style="color:#e6db74">`{ name: &#39;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;, engine: (</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">source</span><span style="color:#e6db74">}</span><span style="color:#e6db74">) }`</span>);
       <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">source</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`
 </span><span style="color:#e6db74">        new (</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">injectedSource</span>.<span style="color:#a6e22e">source</span><span style="color:#e6db74">}</span><span style="color:#e6db74">)([
 </span><span style="color:#e6db74">          </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">custom</span>.<span style="color:#a6e22e">join</span>(<span style="color:#e6db74">&#39;,\n&#39;</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">
 </span><span style="color:#e6db74">        ])
 </span><span style="color:#e6db74">      `</span>;
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedPromise</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">evaluateHandle</span>(<span style="color:#a6e22e">source</span>);
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedGeneration</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">selectors</span>.<span style="color:#a6e22e">_generation</span>;
+      <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">injectedPromise</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">evaluateHandle</span>(<span style="color:#a6e22e">source</span>);
+      <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">injectedGeneration</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">selectors</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">generation</span>;
     }
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injectedPromise</span>;
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">injectedPromise</span>;
   }
   <span style="color:#75715e">// $()方法用于选择单个元素-ElementHandle
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_$</span>(<span style="color:#a6e22e">selector</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">scope</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">ElementHandle</span>)<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">ElementHandle</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Element</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">&gt;</span> {
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">evaluateHandle</span>(
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">async</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">scope</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">ElementHandle</span>)<span style="color:#f92672">:</span> Promise<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">ElementHandle</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Element</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">evaluateHandle</span>(
       <span style="color:#75715e">// 调用injected执行元素选择
 </span><span style="color:#75715e"></span>      (<span style="color:#a6e22e">injected</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">Injected</span>, <span style="color:#a6e22e">selector</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">scope</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">Node</span>) =&gt; <span style="color:#a6e22e">injected</span>.<span style="color:#a6e22e">querySelector</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">scope</span> <span style="color:#f92672">||</span> document),
-      <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_injected</span>(), <span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">scope</span>
+      <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">injected</span>(), <span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">scope</span>
     );
     <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">asElement</span>())
-      <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
+      <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">asElement</span>() <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">ElementHandle</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Element</span><span style="color:#f92672">&gt;</span>;
   }
 }
@@ -489,7 +497,7 @@
         
         <li><a href="/post/front-end/swim-in-shallow-puppeteer-api/">Puppeteer常用API浅析</a></li>
         
-        <li><a href="/post/front-end/some-tips-of-using-puppetter/">可爱的Puppeteer使用小技巧</a></li>
+        <li><a href="/post/front-end/some-tips-of-using-puppetter/">几个Puppeteer使用小技巧</a></li>
         
         <li><a href="/post/front-end/practice-in-e2e-test-with-puppeteer/">Puppeteer&#43;Canvas的E2E测试实践</a></li>
         
@@ -505,11 +513,11 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/playwright'>playwright</a></li>
+                <li><a href='/tags/playwright'>playwright</a></li>
                 
-                <li><a href='http://yrq110.me/tags/puppeteer'>puppeteer</a></li>
+                <li><a href='/tags/puppeteer'>puppeteer</a></li>
                 
-                <li><a href='http://yrq110.me/tags/node'>node</a></li>
+                <li><a href='/tags/node'>node</a></li>
                 
             </ul>
             
@@ -531,6 +539,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -577,15 +635,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -594,7 +652,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -603,7 +661,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -613,7 +671,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -653,8 +711,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -740,47 +796,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

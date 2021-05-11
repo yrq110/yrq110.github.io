@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>深入学习Three.js核心对象之（一）Object3D | ￥ЯႭ1I0</title>
     <meta property="og:title" content="深入学习Three.js核心对象之（一）Object3D - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -165,21 +167,21 @@
 <p>关于四元数与欧拉角可以看下之前的简单总结: <a href="https://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/">欧拉角、万向节死锁与四元数</a>。</p>
 <p>Object3D的rotate相关方法，本质上是利用轴角+四元数的方式处理旋转，它提供了预置常规旋转轴单位向量的rotateX、rotateY等方便调用的方法，如下所示：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/core/Object3D.js
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
 <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Object3D</span>() {
 	<span style="color:#a6e22e">rotateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">angle</span> ) {
 		<span style="color:#75715e">// 将内置的X旋转轴(模型空间)与指定角度传入按轴旋转方法
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">rotateOnAxis</span>( <span style="color:#a6e22e">_xAxis</span>, <span style="color:#a6e22e">angle</span> );
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">rotateOnAxis</span>( <span style="color:#ae81ff">_</span><span style="color:#a6e22e">xAxis</span>, <span style="color:#a6e22e">angle</span> );
 	},
 	<span style="color:#75715e">// 通用轴角(axis-angle)旋转方法
 </span><span style="color:#75715e"></span>	<span style="color:#a6e22e">rotateOnAxis</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">angle</span> ) {
 		<span style="color:#75715e">// axis为模型空间的旋转轴(应为单位向量)，angle为旋转角度
-</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">_q1</span>.<span style="color:#a6e22e">setFromAxisAngle</span>( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">angle</span> );
+</span><span style="color:#75715e"></span>		<span style="color:#ae81ff">_</span><span style="color:#a6e22e">q1</span>.<span style="color:#a6e22e">setFromAxisAngle</span>( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">angle</span> );
 		<span style="color:#75715e">// 将构建的四元数与之前的四元数相乘
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">quaternion</span>.<span style="color:#a6e22e">multiply</span>( <span style="color:#a6e22e">_q1</span> );
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">quaternion</span>.<span style="color:#a6e22e">multiply</span>( <span style="color:#ae81ff">_</span><span style="color:#a6e22e">q1</span> );
 		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
 	},
-	<span style="color:#a6e22e">quaternion</span>.<span style="color:#a6e22e">_onChange</span>( <span style="color:#a6e22e">onQuaternionChange</span> );
+	<span style="color:#a6e22e">quaternion</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">onChange</span>( <span style="color:#a6e22e">onQuaternionChange</span> );
 	<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">onQuaternionChange</span>() {
 		<span style="color:#75715e">// 模型四元数变化的同时更新欧拉角，同样当欧拉角变化时也会更新四元数
 </span><span style="color:#75715e"></span>		<span style="color:#a6e22e">rotation</span>.<span style="color:#a6e22e">setFromQuaternion</span>( <span style="color:#a6e22e">quaternion</span>, <span style="color:#66d9ef">undefined</span>, <span style="color:#66d9ef">false</span> );
@@ -202,7 +204,9 @@
 </li>
 </ol>
 <p>结果：</p>
-<p><img src="/images/blog/front-end/threejs/object3d/rotate.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/threejs/object3d/rotate.png" />   
+    </p>
 <p>图中坐标轴及颜色：x(红)，y(绿), z(蓝)。背景的辅助线为世界坐标系，方块上的为各自的物体坐标系。</p>
 <p>看看跟你想的是否一致，产生这样效果的原因是参考系不同：使用旋转方法时，内部会根据<strong>物体空间</strong>中的轴进行旋转，而rotation欧拉角的值则会在<strong>世界空间</strong>中进行处理。</p>
 <p>使用<strong>xyz</strong>表示世界空间，<strong>XYZ</strong>表示物体空间。实际上两种操作是:</p>
@@ -215,19 +219,19 @@
 <p>平移与旋转类似，既可以使用内置了参考轴的方法来执行平移操作，也可以通过修改操<code>position</code>位置向量的值来实现。</p>
 <p>其中在物体空间平移的方法中利用四元数还原旋转姿态再进行平移：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/core/Object3D.js
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">xAxis</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span> );
 <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Object3D</span>() {
 	<span style="color:#a6e22e">translateX</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">distance</span> ) {
 		<span style="color:#75715e">// 将内置的X旋转轴(模型空间)与平移距离传入按轴平移方法
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">translateOnAxis</span>( <span style="color:#a6e22e">_xAxis</span>, <span style="color:#a6e22e">distance</span> );
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">translateOnAxis</span>( <span style="color:#ae81ff">_</span><span style="color:#a6e22e">xAxis</span>, <span style="color:#a6e22e">distance</span> );
 	},
 	<span style="color:#75715e">// 通用按轴平移方法
 </span><span style="color:#75715e"></span>	<span style="color:#a6e22e">translateOnAxis</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> ( <span style="color:#a6e22e">axis</span>, <span style="color:#a6e22e">distance</span> ) {
 		<span style="color:#75715e">// 与轴角旋转方法同理，axis为模型空间的旋转轴(应为单位向量)
 </span><span style="color:#75715e"></span>		<span style="color:#75715e">// 根据旋转轴与旋转姿态计算平移朝向的方向向量
-</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">_v1</span>.<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">axis</span> ).<span style="color:#a6e22e">applyQuaternion</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">quaternion</span> );
+</span><span style="color:#75715e"></span>		<span style="color:#ae81ff">_</span><span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">copy</span>( <span style="color:#a6e22e">axis</span> ).<span style="color:#a6e22e">applyQuaternion</span>( <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">quaternion</span> );
 		<span style="color:#75715e">// 将方向向量乘以位移值并与position向量相加完成平移
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">add</span>( <span style="color:#a6e22e">_v1</span>.<span style="color:#a6e22e">multiplyScalar</span>( <span style="color:#a6e22e">distance</span> ) );
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">position</span>.<span style="color:#a6e22e">add</span>( <span style="color:#ae81ff">_</span><span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">multiplyScalar</span>( <span style="color:#a6e22e">distance</span> ) );
 		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
 	}
 }
@@ -250,12 +254,16 @@
 </li>
 </ol>
 <p>结果：</p>
-<p><img src="/images/blog/front-end/threejs/object3d/translate.png" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/threejs/object3d/translate.png" />   
+    </p>
 <h4 id="缩放">缩放</h4>
 <p>Object3D中没有提供缩放操作的方法，仅能通过修改<code>scale</code>向量的属性值来实现。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">cube</span>.<span style="color:#a6e22e">scale</span>.<span style="color:#a6e22e">copy</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Vector3</span>(<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">1</span>));
 <span style="color:#75715e">// 或 cube.scale.x = 2;
-</span></code></pre></div><p><img src="/images/blog/front-end/threejs/object3d/scale.png" alt=""></p>
+</span></code></pre></div><p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/threejs/object3d/scale.png" />   
+    </p>
 <h3 id="其他">其他</h3>
 <p>除了主要属性与变换相关方法之外，还包含一些其他方法：</p>
 <ul>
@@ -289,7 +297,7 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/threejs'>threejs</a></li>
+                <li><a href='/tags/threejs'>threejs</a></li>
                 
             </ul>
             
@@ -311,6 +319,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -357,15 +415,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -374,7 +432,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -383,7 +441,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -393,7 +451,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -433,8 +491,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -520,47 +576,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

@@ -6,11 +6,7 @@
     <description>Recent content in offscreen canvas on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Fri, 18 Oct 2019 09:49:05 +0800</lastBuildDate>
-    
-	<atom:link href="http://yrq110.me/tags/offscreen-canvas/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Fri, 18 Oct 2019 09:49:05 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/offscreen-canvas/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Worker中的OffscreenCanvas渲染实践与浅析</title>
       <link>http://yrq110.me/post/front-end/offscreen-canvas-practice/</link>

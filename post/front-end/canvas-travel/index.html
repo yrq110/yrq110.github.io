@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Canvas从小试牛刀到庖丁解牛 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Canvas从小试牛刀到庖丁解牛 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/canvas-travel/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -143,14 +145,14 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// fabric.js/src/brushes/pencil_brush.class.js
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">onMouseMove</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">pointer</span>, <span style="color:#a6e22e">options</span>) {
   ...
-  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">points</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_points</span>, <span style="color:#a6e22e">length</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span>, <span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">contextTop</span>;
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">points</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">points</span>, <span style="color:#a6e22e">length</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">points</span>.<span style="color:#a6e22e">length</span>, <span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">contextTop</span>;
   <span style="color:#75715e">// draw the curve update
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_saveAndTransform</span>(<span style="color:#a6e22e">ctx</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">saveAndTransform</span>(<span style="color:#a6e22e">ctx</span>);
   <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span>) {
     <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">beginPath</span>();
     <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">moveTo</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span>.<span style="color:#a6e22e">x</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span>.<span style="color:#a6e22e">y</span>);
   }
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_drawSegment</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>], <span style="color:#66d9ef">true</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">oldEnd</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">drawSegment</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">points</span>[<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>], <span style="color:#66d9ef">true</span>);
   <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">stroke</span>();
   <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">restore</span>();
   ...
@@ -165,7 +167,9 @@
 </blockquote>
 <p>通过在devtools中的观察，PC端Chrome中的实现是<strong>每一帧触发一次</strong>。</p>
 <p>在上述的例子中，如果查看每一帧内的Task，是这个样子：</p>
-<p><img src="/images/blog/front-end/canvas-travel/frame1.jpg" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/canvas-travel/frame1.jpg" />   
+    </p>
 <p>可以看到，先处理了mosuemove事件计算坐标，接着执行帧动画函数执行了渲染函数。</p>
 <h2 id="变换">变换</h2>
 <h3 id="context变换">context变换</h3>
@@ -532,9 +536,9 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                <li><a href='/tags/canvas'>canvas</a></li>
                 
-                <li><a href='http://yrq110.me/tags/skia'>skia</a></li>
+                <li><a href='/tags/skia'>skia</a></li>
                 
             </ul>
             
@@ -556,6 +560,56 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -602,15 +656,15 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -619,7 +673,7 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -628,7 +682,7 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -638,7 +692,7 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -678,8 +732,6 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -765,47 +817,6 @@ f(path, x, y)，结合(x,y)与传入的指定路径path进行判断</li>
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

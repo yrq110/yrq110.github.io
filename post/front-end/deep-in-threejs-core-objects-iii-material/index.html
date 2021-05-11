@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>深入学习Three.js核心对象之（三）Material | ￥ЯႭ1I0</title>
     <meta property="og:title" content="深入学习Three.js核心对象之（三）Material - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -165,21 +167,20 @@
 <p>可以看到，根据属性在保存宏定义前缀的字符串变量中(<strong>prefixVertex/prefixFragment</strong>)中添加对应的宏定义(<strong>#define USE_FOG</strong>):</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/renderers/webgl/WebGLProgram.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">WebGLProgram</span>( <span style="color:#a6e22e">renderer</span>, <span style="color:#a6e22e">cacheKey</span>, <span style="color:#a6e22e">parameters</span> ) {
-    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">prefixVertex</span>, <span style="color:#a6e22e">prefixFragment</span>;
-    ...
-    <span style="color:#75715e">// prefixFragment包含类似的操作
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">prefixVertex</span> <span style="color:#f92672">=</span> [
+    <span style="color:#a6e22e">prefixVertex</span>, <span style="color:#a6e22e">prefixFragment</span>;
+        <span style="color:#a6e22e">refixFragment包含类似的操作</span>
+    <span style="color:#a6e22e">ixVertex</span> <span style="color:#f92672">=</span> [
         ...
         ( <span style="color:#a6e22e">parameters</span>.<span style="color:#a6e22e">useFog</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">parameters</span>.<span style="color:#a6e22e">fog</span> ) <span style="color:#f92672">?</span> <span style="color:#e6db74">&#39;#define USE_FOG&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;&#39;</span>,
         ( <span style="color:#a6e22e">parameters</span>.<span style="color:#a6e22e">useFog</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">parameters</span>.<span style="color:#a6e22e">fogExp2</span> ) <span style="color:#f92672">?</span> <span style="color:#e6db74">&#39;#define FOG_EXP2&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;&#39;</span>
-    ].<span style="color:#a6e22e">filter</span>( <span style="color:#a6e22e">filterEmptyLine</span> ).<span style="color:#a6e22e">join</span>( <span style="color:#e6db74">&#39;\n&#39;</span> );
-    <span style="color:#75715e">// GLSL 3.0 conversion
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">prefixVertex</span> <span style="color:#f92672">=</span> [
+    <span style="color:#a6e22e">lter</span>( <span style="color:#a6e22e">filterEmptyLine</span> ).<span style="color:#a6e22e">join</span>( <span style="color:#e6db74">&#39;\n&#39;</span> );
+    <span style="color:#a6e22e">LSL</span> <span style="color:#ae81ff">3.0</span> <span style="color:#a6e22e">conversion</span>
+    <span style="color:#a6e22e">ixVertex</span> <span style="color:#f92672">=</span> [
         <span style="color:#e6db74">&#39;#version 300 es\n&#39;</span>,
         <span style="color:#e6db74">&#39;#define attribute in&#39;</span>,
         <span style="color:#e6db74">&#39;#define varying out&#39;</span>,
         <span style="color:#e6db74">&#39;#define texture2D texture&#39;</span>
-    ].<span style="color:#a6e22e">join</span>( <span style="color:#e6db74">&#39;\n&#39;</span> ) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">prefixVertex</span>;
+    <span style="color:#66d9ef">in</span>( <span style="color:#e6db74">&#39;\n&#39;</span> ) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">prefixVertex</span>;
 }
 </code></pre></div><p>``</p>
 </li>
@@ -194,33 +195,32 @@
 <span style="color:#66d9ef">import</span> <span style="color:#a6e22e">fog_pars_fragment</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./ShaderChunk/fog_pars_fragment.glsl.js&#39;</span>;
 ...
 <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ShaderChunk</span> <span style="color:#f92672">=</span> {
-    <span style="color:#a6e22e">fog_vertex</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_vertex</span>,
-    <span style="color:#a6e22e">fog_pars_vertex</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_pars_vertex</span>,
-    <span style="color:#a6e22e">fog_fragment</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_fragment</span>,
-    <span style="color:#a6e22e">fog_pars_fragment</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_pars_fragment</span>,
-    ...
-}
+    <span style="color:#a6e22e">vertex</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_vertex</span>,
+    <span style="color:#a6e22e">pars_vertex</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_pars_vertex</span>,
+    <span style="color:#a6e22e">fragment</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_fragment</span>,
+    <span style="color:#a6e22e">pars_fragment</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">fog_pars_fragment</span>,
+    }
 </code></pre></div><p>``</p>
 <p>这些片段均为为单一功能提供的变量声明与计算处理。以雾化属性的片元着色器宏代码为例:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">// fog_pars_fragment.glsl
 </span><span style="color:#75715e"></span><span style="color:#75715e">#ifdef USE_FOG
-</span><span style="color:#75715e"></span>    uniform vec3 fogColor;
-    varying <span style="color:#66d9ef">float</span> fogDepth;
-    <span style="color:#75715e">#ifdef FOG_EXP2
-</span><span style="color:#75715e"></span>        uniform <span style="color:#66d9ef">float</span> fogDensity;
-    <span style="color:#75715e">#else
-</span><span style="color:#75715e"></span>        uniform <span style="color:#66d9ef">float</span> fogNear;
+</span><span style="color:#75715e"></span>    orm vec3 fogColor;
+    ing <span style="color:#66d9ef">float</span> fogDepth;
+    ef FOG_EXP2
+        uniform <span style="color:#66d9ef">float</span> fogDensity;
+    e
+        uniform <span style="color:#66d9ef">float</span> fogNear;
         uniform <span style="color:#66d9ef">float</span> fogFar;
-    <span style="color:#75715e">#endif
-</span><span style="color:#75715e">#endif
+    <span style="color:#66d9ef">if</span>
+<span style="color:#75715e">#endif
 </span><span style="color:#75715e"></span><span style="color:#75715e">// fog_fragment.glsl
 </span><span style="color:#75715e"></span><span style="color:#75715e">#ifdef USE_FOG
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">#ifdef FOG_EXP2
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">float</span> fogFactor <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.0</span> <span style="color:#f92672">-</span> exp( <span style="color:#f92672">-</span> fogDensity <span style="color:#f92672">*</span> fogDensity <span style="color:#f92672">*</span> fogDepth <span style="color:#f92672">*</span> fogDepth );
-    <span style="color:#75715e">#else
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">float</span> fogFactor <span style="color:#f92672">=</span> smoothstep( fogNear, fogFar, fogDepth );
-    <span style="color:#75715e">#endif
-</span><span style="color:#75715e"></span>    gl_FragColor.rgb <span style="color:#f92672">=</span> mix( gl_FragColor.rgb, fogColor, fogFactor );
+</span><span style="color:#75715e"></span>    ef FOG_EXP2
+        <span style="color:#66d9ef">float</span> fogFactor <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.0</span> <span style="color:#f92672">-</span> exp( <span style="color:#f92672">-</span> fogDensity <span style="color:#f92672">*</span> fogDensity <span style="color:#f92672">*</span> fogDepth <span style="color:#f92672">*</span> fogDepth );
+    e
+        <span style="color:#66d9ef">float</span> fogFactor <span style="color:#f92672">=</span> smoothstep( fogNear, fogFar, fogDepth );
+    <span style="color:#66d9ef">if</span>
+    ragColor.rgb <span style="color:#f92672">=</span> mix( gl_FragColor.rgb, fogColor, fogFactor );
 <span style="color:#75715e">#endif
 </span></code></pre></div><p>``</p>
 <p>关于这里的代码段命名规则，经观察后应该是使用<code>{NAME}_{SHADER}</code>表示main函数中代码，使用<code>{NAME}_pars_{SHADER}</code>表示开头的变量声明。</p>
@@ -228,13 +228,12 @@
 </li>
 <li>
 <p>预置着色方案对象: ShaderLib</p>
-<p>我们可以看到ShaderChunk提供的是细粒度的GLSL预处理代码，距离最终完整的shader代码还差很远、</p>
+<p>我们可以看到ShaderChunk提供的是细粒度的GLSL预处理代码，距离最终完整的shader代码还差很远。</p>
 <p>Three将预置的着色方案代码放在了<code>src/renderers/shaders/ShaderLib</code>路径下，这些代码也是使用ShaderChunk统一保存。 在外层使用了一个ShaderLib对象来保存这些预置的着色方案(以lambert光照模型的材质为例):</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/renderers/shaders/ShaderLib.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ShaderLib</span> <span style="color:#f92672">=</span> {
-    ...
-    <span style="color:#a6e22e">lambert</span><span style="color:#f92672">:</span> {
-        <span style="color:#a6e22e">uniforms</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">mergeUniforms</span>( [
+        <span style="color:#a6e22e">ert</span><span style="color:#f92672">:</span> {
+        <span style="color:#a6e22e">uniforms</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">mergeUniforms</span>([
             <span style="color:#a6e22e">UniformsLib</span>.<span style="color:#a6e22e">common</span>,
             <span style="color:#a6e22e">UniformsLib</span>.<span style="color:#a6e22e">specularmap</span>,
             <span style="color:#a6e22e">UniformsLib</span>.<span style="color:#a6e22e">envmap</span>,
@@ -246,13 +245,10 @@
             {
                 <span style="color:#a6e22e">emissive</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">value</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Color</span>( <span style="color:#ae81ff">0x000000</span> ) }
             }
-        ] ),
-
+        ]),
         <span style="color:#a6e22e">vertexShader</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">ShaderChunk</span>.<span style="color:#a6e22e">meshlambert_vert</span>,
-        <span style="color:#a6e22e">fragmentShader</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">ShaderChunk</span>.<span style="color:#a6e22e">meshlambert_frag</span>
-
-    },
-    ...
+        <span style="color:#a6e22e">fragmentShader</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">ShaderChunk</span>.<span style="color:#a6e22e">meshlambert_frag</span>,
+        ...
 }
 </code></pre></div><p>``</p>
 <p>可以看看<code>ShaderChunk.meshlambert_vert</code>中的内容:</p>
@@ -262,18 +258,16 @@ varying vec3 vLightFront;
 varying vec3 vIndirectFront;
 
 <span style="color:#75715e">#ifdef DOUBLE_SIDED
-</span><span style="color:#75715e"></span>    varying vec3 vLightBack;
-    varying vec3 vIndirectBack;
+</span><span style="color:#75715e"></span>    ing vec3 vLightBack;
+    ing vec3 vIndirectBack;
 <span style="color:#75715e">#endif
 </span><span style="color:#75715e"></span>
 <span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;common&gt;</span><span style="color:#75715e">
 </span><span style="color:#75715e"></span>...
 
 <span style="color:#66d9ef">void</span> main() {
-    <span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;fog_vertex&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>    ...
-}
-
+    lude <span style="color:#f92672">&lt;</span>fog_vertex<span style="color:#f92672">&gt;</span>
+    }
 </code></pre></div><p>``
 在这里通过<code>#include</code>引入的东东即为<code>ShaderChunk</code>路径下的GLSL宏代码。此时应该会产生一个问号，不要着急接着往下看。</p>
 </li>
@@ -357,7 +351,7 @@ varying vec3 vIndirectFront;
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/threejs'>threejs</a></li>
+                <li><a href='/tags/threejs'>threejs</a></li>
                 
             </ul>
             
@@ -379,6 +373,56 @@ varying vec3 vIndirectFront;
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -425,15 +469,15 @@ varying vec3 vIndirectFront;
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -442,7 +486,7 @@ varying vec3 vIndirectFront;
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -451,7 +495,7 @@ varying vec3 vIndirectFront;
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -461,7 +505,7 @@ varying vec3 vIndirectFront;
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -501,8 +545,6 @@ varying vec3 vIndirectFront;
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -588,47 +630,6 @@ varying vec3 vIndirectFront;
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

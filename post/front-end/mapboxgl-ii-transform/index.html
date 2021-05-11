@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>MapboxGL简析(二)：变换 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="MapboxGL简析(二)：变换 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/mapboxgl-ii-transform/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -152,20 +154,20 @@
 </span><span style="color:#75715e"></span>    <span style="color:#a6e22e">startZoom</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getZoom</span>(),
     <span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;zoom&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">options</span> <span style="color:#f92672">?</span> <span style="color:#f92672">+</span><span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">startZoom</span>,
     <span style="color:#75715e">// 触发属性开始变化事件
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_prepareEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">noMoveStart</span>, <span style="color:#a6e22e">currently</span>);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">prepareEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">noMoveStart</span>, <span style="color:#a6e22e">currently</span>);
     <span style="color:#75715e">// 执行封装的类rAF方法，在回调方法中进行姿态属性的插值，其中k为利用now计算的时间差除以设置中经过的时间duration得到的步进值t
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_ease</span>((<span style="color:#a6e22e">k</span>) =&gt; {
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">ease</span>((<span style="color:#a6e22e">k</span>) =&gt; {
         <span style="color:#75715e">// 对各属性进行插值，步进值k根据经过的时段比例计算
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_zooming</span>) {
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">zooming</span>) {
             <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">interpolate</span>(<span style="color:#a6e22e">startZoom</span>, <span style="color:#a6e22e">zoom</span>, <span style="color:#a6e22e">k</span>);
         }
         ...
     }, (<span style="color:#a6e22e">interruptingEaseId</span><span style="color:#f92672">?:</span> <span style="color:#a6e22e">string</span>) =&gt; {
         <span style="color:#75715e">// 触发属性结束变化事件
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_afterEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">interruptingEaseId</span>);
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">afterEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">interruptingEaseId</span>);
     }, <span style="color:#a6e22e">options</span><span style="color:#960050;background-color:#1e0010">）</span>
     <span style="color:#75715e">// 封装对于渐变属性的事件触发
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_prepareEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">noMoveStart</span>, <span style="color:#a6e22e">currently</span>);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">prepareEase</span>(<span style="color:#a6e22e">eventData</span>, <span style="color:#a6e22e">options</span>.<span style="color:#a6e22e">noMoveStart</span>, <span style="color:#a6e22e">currently</span>);
 }
 </code></pre></div><h4 id="巡航赋值">巡航赋值</h4>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 带有巡航效果的姿态改变
@@ -179,25 +181,25 @@
     <span style="color:#75715e">// 整条巡航路线的长度
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">S</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">r</span>(<span style="color:#ae81ff">1</span>) <span style="color:#f92672">-</span> <span style="color:#a6e22e">r0</span>) <span style="color:#f92672">/</span> <span style="color:#a6e22e">rho</span>;
     <span style="color:#75715e">// 返回地平面的可见范围
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">w</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) =&gt; <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">s</span>) {
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">w</span><span style="color:#f92672">:</span> (<span style="color:#ae81ff">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) =&gt; <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">s</span>) {
         <span style="color:#66d9ef">return</span> (<span style="color:#a6e22e">cosh</span>(<span style="color:#a6e22e">r0</span>) <span style="color:#f92672">/</span> <span style="color:#a6e22e">cosh</span>(<span style="color:#a6e22e">r0</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">rho</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">s</span>));
     };
     <span style="color:#75715e">// 返回巡航路线与地平面的距离
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">u</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) =&gt; <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">s</span>) {
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">u</span><span style="color:#f92672">:</span> (<span style="color:#ae81ff">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) =&gt; <span style="color:#a6e22e">number</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">s</span>) {
         <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">w0</span> <span style="color:#f92672">*</span> ((<span style="color:#a6e22e">cosh</span>(<span style="color:#a6e22e">r0</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">tanh</span>(<span style="color:#a6e22e">r0</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">rho</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">s</span>) <span style="color:#f92672">-</span> <span style="color:#a6e22e">sinh</span>(<span style="color:#a6e22e">r0</span>)) <span style="color:#f92672">/</span> <span style="color:#a6e22e">rho2</span>) <span style="color:#f92672">/</span> <span style="color:#a6e22e">u1</span>;
     };
     <span style="color:#75715e">// S、w与u参与属性插值
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_ease</span>((<span style="color:#a6e22e">k</span>) =&gt; {
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">ease</span>((<span style="color:#a6e22e">k</span>) =&gt; {
         <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">k</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">S</span>;
         <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">scale</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">/</span> <span style="color:#a6e22e">w</span>(<span style="color:#a6e22e">s</span>);
         <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">zoom</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">k</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">zoom</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">startZoom</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">scaleZoom</span>(<span style="color:#a6e22e">scale</span>);
-        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_rotating</span>) {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">rotating</span>) {
             <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">bearing</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">interpolate</span>(<span style="color:#a6e22e">startBearing</span>, <span style="color:#a6e22e">bearing</span>, <span style="color:#a6e22e">k</span>);
         }
         ...
         <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newCenter</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">k</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">center</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">unproject</span>(<span style="color:#a6e22e">from</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">delta</span>.<span style="color:#a6e22e">mult</span>(<span style="color:#a6e22e">u</span>(<span style="color:#a6e22e">s</span>))).<span style="color:#a6e22e">mult</span>(<span style="color:#a6e22e">scale</span>));
         <span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">setLocationAtPoint</span>(<span style="color:#a6e22e">tr</span>.<span style="color:#a6e22e">renderWorldCopies</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">newCenter</span>.<span style="color:#a6e22e">wrap</span>() <span style="color:#f92672">:</span> <span style="color:#a6e22e">newCenter</span>, <span style="color:#a6e22e">pointAtOffset</span>);
-    }, () =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_afterEase</span>(<span style="color:#a6e22e">eventData</span>), <span style="color:#a6e22e">options</span>);
+    }, () =&gt; <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">afterEase</span>(<span style="color:#a6e22e">eventData</span>), <span style="color:#a6e22e">options</span>);
 }
 </code></pre></div><h3 id="相机变换-1">相机变换</h3>
 <p>可以看到，Camera类中对于任何改变姿态的操作都是通过修改transform对象上的属性实现，而transform对象是负责存储相机在3D空间中的各种变换矩阵与其他属性的一个对象。</p>
@@ -205,35 +207,35 @@
 <p>如pitch与center的setter属性拦截器：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">set</span> <span style="color:#a6e22e">pitch</span>(<span style="color:#a6e22e">pitch</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">clamp</span>(<span style="color:#a6e22e">pitch</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">minPitch</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">maxPitch</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">180</span> <span style="color:#f92672">*</span> Math.<span style="color:#a6e22e">PI</span>;
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">p</span>) <span style="color:#66d9ef">return</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_unmodified</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">p</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcMatrices</span>();
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">pitch</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">p</span>) <span style="color:#66d9ef">return</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">unmodified</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">pitch</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">p</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">calcMatrices</span>();
 }
 <span style="color:#a6e22e">set</span> <span style="color:#a6e22e">center</span>(<span style="color:#a6e22e">center</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">LngLat</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lat</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_center</span>.<span style="color:#a6e22e">lat</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lng</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_center</span>.<span style="color:#a6e22e">lng</span>) <span style="color:#66d9ef">return</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_unmodified</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_center</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">center</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_constrain</span>();
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcMatrices</span>();
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lat</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lat</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lng</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">lng</span>) <span style="color:#66d9ef">return</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">unmodified</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">center</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">center</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">constrain</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">calcMatrices</span>();
 }
 </code></pre></div><p>下面来看看计算各种变换相关矩阵信息的函数 <strong>_calcMatrices()</strong> :</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_calcMatrices</span>() {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">calcMatrices</span>() {
     <span style="color:#75715e">/*
 </span><span style="color:#75715e">     * 计算投影矩阵
 </span><span style="color:#75715e">     */</span>
     <span style="color:#75715e">// 计算相机的近裁面与远裁面距离
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">furthestDistance</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">cos</span>(Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">topHalfSurfaceDistance</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">cameraToCenterDistance</span>;
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">furthestDistance</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">cos</span>(Math.<span style="color:#a6e22e">PI</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">pitch</span>) <span style="color:#f92672">*</span> <span style="color:#a6e22e">topHalfSurfaceDistance</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">cameraToCenterDistance</span>;
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">farZ</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">furthestDistance</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1.01</span>;
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">nearZ</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">50</span>;
     <span style="color:#75715e">// 本地坐标系到GL坐标系的变换矩阵
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">m</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Float64Array</span>(<span style="color:#ae81ff">16</span>);
-    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">perspective</span>(<span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_fov</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>, <span style="color:#a6e22e">nearZ</span>, <span style="color:#a6e22e">farZ</span>);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">perspective</span>(<span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">fov</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>, <span style="color:#a6e22e">nearZ</span>, <span style="color:#a6e22e">farZ</span>);
     <span style="color:#a6e22e">m</span>[<span style="color:#ae81ff">8</span>] <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">offset</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span>;
     <span style="color:#a6e22e">m</span>[<span style="color:#ae81ff">9</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">offset</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>;
     <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">scale</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#ae81ff">1</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>]);
     <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">cameraToCenterDistance</span>]);
-    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">rotateX</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_pitch</span>);
+    <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">rotateX</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">pitch</span>);
     <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">rotateZ</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">angle</span>);
     <span style="color:#a6e22e">mat4</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">m</span>, <span style="color:#a6e22e">m</span>, [<span style="color:#f92672">-</span><span style="color:#a6e22e">x</span>, <span style="color:#f92672">-</span><span style="color:#a6e22e">y</span>, <span style="color:#ae81ff">0</span>]);
     <span style="color:#75715e">/*
@@ -355,7 +357,7 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/mapbox'>mapbox</a></li>
+                <li><a href='/tags/mapbox'>mapbox</a></li>
                 
             </ul>
             
@@ -377,6 +379,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -423,15 +475,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -440,7 +492,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -449,7 +501,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -459,7 +511,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -499,8 +551,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -586,47 +636,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

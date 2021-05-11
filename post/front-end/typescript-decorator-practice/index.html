@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>TypeScript装饰器整理及用例介绍 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="TypeScript装饰器整理及用例介绍 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/typescript-decorator-practice/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -159,7 +161,7 @@
   <span style="color:#a6e22e">sex</span>: <span style="color:#66d9ef">string</span>;
 
   <span style="color:#66d9ef">@fooAccessorDcrt</span>(<span style="color:#66d9ef">false</span>)
-  <span style="color:#a6e22e">get</span> <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>;
+  <span style="color:#66d9ef">get</span> <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>;
 
   <span style="color:#66d9ef">@fooMethodDcrt</span>(<span style="color:#e6db74">&#39;Good morning&#39;</span>)
   <span style="color:#a6e22e">say</span>(<span style="color:#66d9ef">@fooParaDcrt</span> <span style="color:#a6e22e">words</span>) {
@@ -170,17 +172,17 @@
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">lihua</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Student</span>(<span style="color:#e6db74">&#39;lihua&#39;</span>)
 <span style="color:#a6e22e">lihua</span>.<span style="color:#a6e22e">sex</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;female&#39;</span>
 <span style="color:#a6e22e">lihua</span>.<span style="color:#a6e22e">say</span>(<span style="color:#e6db74">&#39;hello decorator&#39;</span>) <span style="color:#75715e">// =&gt; Say hello decorator from fooMethodDcrt\n hello decorator
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">lihua</span>.<span style="color:#a6e22e">type</span>) <span style="color:#75715e">// =&gt; Student
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">lihua</span>.<span style="color:#66d9ef">type</span>) <span style="color:#75715e">// =&gt; Student
 </span></code></pre></div><p>装饰器部分</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#75715e">// 类装饰器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">fooClassDcrt</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">T</span> <span style="color:#66d9ef">extends</span> {<span style="color:#66d9ef">new</span>(...<span style="color:#a6e22e">args</span>:<span style="color:#66d9ef">any</span>[])<span style="color:#f92672">:</span>{}}<span style="color:#f92672">&gt;</span>(<span style="color:#66d9ef">constructor</span><span style="color:#f92672">:</span><span style="color:#a6e22e">T</span>) {
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">fooClassDcrt</span>&lt;<span style="color:#f92672">T</span> <span style="color:#a6e22e">extends</span> {<span style="color:#a6e22e">new</span><span style="color:#960050;background-color:#1e0010">(</span><span style="color:#a6e22e">...args</span><span style="color:#960050;background-color:#1e0010">:</span><span style="color:#a6e22e">any</span><span style="color:#960050;background-color:#1e0010">[]):</span>{}}&gt;(<span style="color:#66d9ef">constructor</span><span style="color:#f92672">:</span><span style="color:#a6e22e">T</span>) {
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">class</span> <span style="color:#66d9ef">extends</span> <span style="color:#66d9ef">constructor</span> {
-    <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Student&#34;</span>
+    <span style="color:#66d9ef">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Student&#34;</span>
   }
 }
 <span style="color:#75715e">// 属性装饰器
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">fooPropDcrt</span>(<span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">string</span>) {
-  <span style="color:#66d9ef">return</span> (<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">propertyKey</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">symbol</span>) <span style="color:#f92672">=&gt;</span> {
+  <span style="color:#66d9ef">return</span> (<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">propertyKey</span>: <span style="color:#66d9ef">string</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">symbol</span>) <span style="color:#f92672">=&gt;</span> {
     <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Prop::</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">propertyKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> meta value: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">value</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
   }
 }
@@ -306,8 +308,8 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;reflec-metadata&#39;</span>
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">logType</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">string</span>) <span style="color:#f92672">=&gt;</span> {
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">propertyKey</span>: <span style="color:#66d9ef">string</span>) <span style="color:#f92672">=&gt;</span> {
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">type</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Reflect</span>.<span style="color:#a6e22e">getMetadata</span>(<span style="color:#e6db74">&#34;design:type&#34;</span>, <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">propertyKey</span>);
-    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">value</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> - </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">propertyKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> type: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">type</span>.<span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">type</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Reflect</span>.<span style="color:#a6e22e">getMetadata</span>(<span style="color:#e6db74">&#34;design:type&#34;</span>, <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">propertyKey</span>);
+    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">value</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> - </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">propertyKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> type: </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">type</span>.<span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
   }
 }
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Foo</span> { 
@@ -321,7 +323,7 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;reflec-metadata&#39;</span>
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">logParamTypes</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">propertyKey</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">descriptor</span>) <span style="color:#f92672">=&gt;</span> {
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">types</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Reflect</span>.<span style="color:#a6e22e">getMetadata</span>(<span style="color:#e6db74">&#34;design:paramtypes&#34;</span>, <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">propertyKey</span>);
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">types</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">type</span> <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">type</span>.<span style="color:#a6e22e">name</span>).<span style="color:#a6e22e">join</span>(<span style="color:#e6db74">&#39;,&#39;</span>)
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">types</span>.<span style="color:#a6e22e">map</span>(<span style="color:#66d9ef">type</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">type</span>.<span style="color:#a6e22e">name</span>).<span style="color:#a6e22e">join</span>(<span style="color:#e6db74">&#39;,&#39;</span>)
   <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">propertyKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> param types: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">s</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
 }
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Foo</span> { 
@@ -334,8 +336,8 @@
 <p><code>design:returntype</code> - 返回值元信息</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;reflec-metadata&#39;</span>
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">logReturnTypes</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">propertyKey</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">descriptor</span>) <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">type</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Reflect</span>.<span style="color:#a6e22e">getMetadata</span>(<span style="color:#e6db74">&#34;design:returntype&#34;</span>, <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">propertyKey</span>);
-  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">propertyKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> return types: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">type</span>.<span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">type</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Reflect</span>.<span style="color:#a6e22e">getMetadata</span>(<span style="color:#e6db74">&#34;design:returntype&#34;</span>, <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">propertyKey</span>);
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">propertyKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> return types: </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">type</span>.<span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
 }
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Foo</span> { 
   <span style="color:#66d9ef">@logReturnTypes</span>
@@ -382,7 +384,7 @@
 <h3 id="vue-vue-class-component--vue-property-decorator">vue: vue-class-component &amp; vue-property-decorator</h3>
 <p>如果使用ts编写vue项目并使用类组件的话少不了<a href="">vue-class-component</a>与<a href="">vue-property-decorator</a>，其中提供了vue相关组件与属性的装饰器，来看看它们的使用与实现。</p>
 <p>在class类型的Vue组件中使用装饰器：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Component</span>, <span style="color:#a6e22e">Vue</span>, <span style="color:#a6e22e">Prop</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;vue-property-decorator&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Component</span>, <span style="color:#a6e22e">Vue</span>, <span style="color:#a6e22e">Prop</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;vue-property-decorator&#39;</span>
 
 <span style="color:#66d9ef">@Component</span>
 <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FooComponent</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">Vue</span> {
@@ -400,7 +402,7 @@
 </span><span style="color:#75715e"></span>  (<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">Vue</span>, <span style="color:#a6e22e">key</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span>
 }
 <span style="color:#75715e">// 装饰器工厂的辅助方法
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createDecorator</span> (<span style="color:#a6e22e">factory</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">options</span>: <span style="color:#66d9ef">ComponentOptions</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Vue</span><span style="color:#f92672">&gt;</span>, <span style="color:#a6e22e">key</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">void</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">VueDecorator</span> {
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createDecorator</span> (<span style="color:#a6e22e">factory</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">options</span>: <span style="color:#66d9ef">ComponentOptions</span>&lt;<span style="color:#f92672">Vue</span>&gt;, <span style="color:#a6e22e">key</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">void</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">VueDecorator</span> {
   <span style="color:#66d9ef">return</span> (<span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">Vue</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">Vue</span>, <span style="color:#a6e22e">key?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">index?</span>: <span style="color:#66d9ef">any</span>) <span style="color:#f92672">=&gt;</span> {
     <span style="color:#75715e">// 在类构造函数的属性中保存装饰器的用于数据同步等方法(factory)
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">Ctor</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;function&#39;</span>
@@ -417,9 +419,9 @@
 }
 </code></pre></div><p>其次是Compnent类装饰器工厂方法：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">componentFactory</span> (
-  <span style="color:#a6e22e">Component</span>: <span style="color:#66d9ef">VueClass</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Vue</span><span style="color:#f92672">&gt;</span>,
-  <span style="color:#a6e22e">options</span>: <span style="color:#66d9ef">ComponentOptions</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Vue</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> {}
-)<span style="color:#f92672">:</span> <span style="color:#a6e22e">VueClass</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Vue</span><span style="color:#f92672">&gt;</span> {
+  <span style="color:#a6e22e">Component</span>: <span style="color:#66d9ef">VueClass</span>&lt;<span style="color:#f92672">Vue</span>&gt;,
+  <span style="color:#a6e22e">options</span>: <span style="color:#66d9ef">ComponentOptions</span>&lt;<span style="color:#f92672">Vue</span>&gt; <span style="color:#f92672">=</span> {}
+)<span style="color:#f92672">:</span> <span style="color:#a6e22e">VueClass</span>&lt;<span style="color:#f92672">Vue</span>&gt; {
   <span style="color:#75715e">// 1. 解析原型的属性及方法等，赋值到options上
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">proto</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Component</span>.<span style="color:#a6e22e">prototype</span>
   Object.<span style="color:#a6e22e">getOwnPropertyNames</span>(<span style="color:#a6e22e">proto</span>).<span style="color:#a6e22e">forEach</span>(<span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">key</span>) {...}
@@ -439,7 +441,7 @@
   <span style="color:#75715e">// 4. 结合父类与options生成构造函数并返回
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">superProto</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">getPrototypeOf</span>(<span style="color:#a6e22e">Component</span>.<span style="color:#a6e22e">prototype</span>)
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">Super</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">superProto</span> <span style="color:#66d9ef">instanceof</span> <span style="color:#a6e22e">Vue</span>
-    <span style="color:#f92672">?</span> <span style="color:#a6e22e">superProto</span>.<span style="color:#66d9ef">constructor</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">VueClass</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Vue</span><span style="color:#f92672">&gt;</span>
+    <span style="color:#f92672">?</span> <span style="color:#a6e22e">superProto</span>.<span style="color:#66d9ef">constructor</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">VueClass</span>&lt;<span style="color:#f92672">Vue</span>&gt;
     <span style="color:#f92672">:</span> <span style="color:#a6e22e">Vue</span>
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">Extended</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Super</span>.<span style="color:#a6e22e">extend</span>(<span style="color:#a6e22e">options</span>)
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Extended</span>
@@ -452,14 +454,14 @@
 </span><span style="color:#75715e"></span>    <span style="color:#a6e22e">applyMetadata</span>(<span style="color:#a6e22e">options</span>, <span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">key</span>)
     <span style="color:#75715e">// 与target同步options中的属性配置，并保存该操作(__decorators__)
 </span><span style="color:#75715e"></span>    <span style="color:#a6e22e">createDecorator</span>((<span style="color:#a6e22e">componentOptions</span>, <span style="color:#a6e22e">k</span>) <span style="color:#f92672">=&gt;</span> {
-      ;(<span style="color:#a6e22e">componentOptions</span>.<span style="color:#a6e22e">props</span> <span style="color:#f92672">||</span> ((<span style="color:#a6e22e">componentOptions</span>.<span style="color:#a6e22e">props</span> <span style="color:#f92672">=</span> {}) <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">any</span>))[ <span style="color:#a6e22e">k</span> ] <span style="color:#f92672">=</span> <span style="color:#a6e22e">options</span>
+      ;(<span style="color:#a6e22e">componentOptions</span>.<span style="color:#a6e22e">props</span> <span style="color:#f92672">||</span> ((<span style="color:#a6e22e">componentOptions</span>.<span style="color:#a6e22e">props</span> <span style="color:#f92672">=</span> {}) <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">any</span>))[ <span style="color:#a6e22e">k</span> ] <span style="color:#f92672">=</span> <span style="color:#a6e22e">options</span>
     })(<span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">key</span>)
   }
 }
 </code></pre></div><p><strong>可以看出，Vue类类型组件相关的装饰器函数会将不同方法与属性配置同步到父类的构造器上，即在实例化前注入相关属性。</strong></p>
 <h3 id="server-routing-controllers">server: routing-controllers</h3>
 <p>routing-controllers的装饰器作用与vue的类似，但它使用了另一种实现方式。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Controller</span>, <span style="color:#a6e22e">Body</span>, <span style="color:#a6e22e">Post</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#34;routing-controllers&#34;</span>;
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Controller</span>, <span style="color:#a6e22e">Body</span>, <span style="color:#a6e22e">Post</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#34;routing-controllers&#34;</span>;
 
 <span style="color:#66d9ef">@Controller</span>()
 <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UserController</span> {
@@ -470,9 +472,9 @@
 }
 </code></pre></div><p>控制器类装饰器：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Controller</span>(<span style="color:#a6e22e">baseRoute?</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> Function {
-  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">object</span>: <span style="color:#66d9ef">Function</span>) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> (<span style="color:#66d9ef">object</span><span style="color:#f92672">:</span> Function) {
     <span style="color:#a6e22e">getMetadataArgsStorage</span>().<span style="color:#a6e22e">controllers</span>.<span style="color:#a6e22e">push</span>({
-        <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;default&#34;</span>,
+        <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;default&#34;</span>,
         <span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">object</span>,
         <span style="color:#a6e22e">route</span>: <span style="color:#66d9ef">baseRoute</span>
     });
@@ -497,9 +499,9 @@
 <p><strong>可以看出，这些装饰器函数中主要执行了实例化前的参数准备，使用独立的对象保存实参，便于最终实例化时的参数解析、服务注册与对象生成。</strong></p>
 <p>不仅是controller的类装饰器会预存实参，HTTP的方法装饰器与参数装饰器同样，如下所示：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ts" data-lang="ts"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Post</span>(<span style="color:#a6e22e">route?</span>: <span style="color:#66d9ef">string</span><span style="color:#f92672">|</span>RegExp)<span style="color:#f92672">:</span> Function {
-  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">object</span>: <span style="color:#66d9ef">Object</span>, <span style="color:#a6e22e">methodName</span>: <span style="color:#66d9ef">string</span>) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> (<span style="color:#66d9ef">object</span><span style="color:#f92672">:</span> Object, <span style="color:#a6e22e">methodName</span>: <span style="color:#66d9ef">string</span>) {
     <span style="color:#a6e22e">getMetadataArgsStorage</span>().<span style="color:#a6e22e">actions</span>.<span style="color:#a6e22e">push</span>({
-        <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;post&#34;</span>,
+        <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;post&#34;</span>,
         <span style="color:#a6e22e">target</span>: <span style="color:#66d9ef">object.constructor</span>,
         <span style="color:#a6e22e">method</span>: <span style="color:#66d9ef">methodName</span>,
         <span style="color:#a6e22e">route</span>: <span style="color:#66d9ef">route</span>
@@ -507,10 +509,10 @@
   };
 }
 <span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">Body</span>(<span style="color:#a6e22e">options?</span>: <span style="color:#66d9ef">BodyOptions</span>)<span style="color:#f92672">:</span> Function {
-  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">object</span>: <span style="color:#66d9ef">Object</span>, <span style="color:#a6e22e">methodName</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>) {
+  <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">function</span> (<span style="color:#66d9ef">object</span><span style="color:#f92672">:</span> Object, <span style="color:#a6e22e">methodName</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">number</span>) {
     <span style="color:#a6e22e">getMetadataArgsStorage</span>().<span style="color:#a6e22e">params</span>.<span style="color:#a6e22e">push</span>({
-      <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;body&#34;</span>,
-      <span style="color:#a6e22e">object</span>: <span style="color:#66d9ef">object</span>,
+      <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;body&#34;</span>,
+      <span style="color:#66d9ef">object</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">object</span>,
       <span style="color:#a6e22e">method</span>: <span style="color:#66d9ef">methodName</span>,
       <span style="color:#a6e22e">index</span>: <span style="color:#66d9ef">index</span>,
       <span style="color:#a6e22e">parse</span>: <span style="color:#66d9ef">false</span>,
@@ -561,7 +563,7 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/typescript'>typescript</a></li>
+                <li><a href='/tags/typescript'>typescript</a></li>
                 
             </ul>
             
@@ -583,6 +585,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -629,15 +681,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -646,7 +698,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -655,7 +707,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -665,7 +717,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -705,8 +757,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -792,47 +842,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

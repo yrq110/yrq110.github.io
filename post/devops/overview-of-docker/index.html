@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>鸟瞰Docker | ￥ЯႭ1I0</title>
     <meta property="og:title" content="鸟瞰Docker - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/devops/overview-of-docker/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/devops'>devops</a></span>
+            <span class="meta-category"><a href='/categories/devops'>devops</a></span>
             
         </div>
         
@@ -95,11 +97,15 @@
 <p>指的是在PC或服务器所安装的OS（主机OS）上，虚拟化出了其他的机器。</p>
 <p>简单的说虚拟化就是<code>在一台笔电上启动了另一台虚拟化的笔电</code>。</p>
 <p>以前的虚拟化(主机型虚拟化，即虚拟机)是像下图这样。在主机OS上使用虚拟化的软件/Hypervisor，创建虚拟机/访客OS，在其中构建应用执行环境后再执行应用程序。</p>
-<p><img src="https://camo.qiitausercontent.com/52d5734228a167dc7da5b4036d9e9c9eec8dbb1b/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f34643437333334362d373034352d653936392d373635662d3334383963353664343134352e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/52d5734228a167dc7da5b4036d9e9c9eec8dbb1b/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f34643437333334362d373034352d653936392d373635662d3334383963353664343134352e706e67" />   
+    </p>
 <h2 id="容器型虚拟化">容器型虚拟化？</h2>
 <p>除此之外，就是Docker所提供的容器型虚拟化了。</p>
 <p>容器型虚拟化的构成由下图所示。</p>
-<p><img src="https://camo.qiitausercontent.com/e1829a8f27e2a0656d1d7bdfea06fc98b0b565b8/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f39393631326331312d343262302d393438352d376261342d3230336231313862393534352e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/e1829a8f27e2a0656d1d7bdfea06fc98b0b565b8/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f39393631326331312d343262302d393438352d376261342d3230336231313862393534352e706e67" />   
+    </p>
 <p>与以前的主机型虚拟化不同，不用启动访客OS，而是使用在主机OS上运行的Docker Engine，构建被称作容器的中间件环境，并在其中进行应用的各种操作。</p>
 <p>这样一来，与之前的主机型虚拟化相比，容器型虚拟化具有非常显著的轻量化特征。</p>
 <h2 id="使用docker的好处">使用Docker的好处</h2>
@@ -117,7 +123,9 @@
 <h2 id="标签-tag">标签 Tag</h2>
 <p>Docker的镜像具有标签的概念，指的是镜像的版本。</p>
 <p>比如说，在下面的这个nginx镜像中有着<code>1.14-perl</code>和<code>alpine</code>等不同标签，可以根据情况选择使用的版本。</p>
-<p><img src="https://camo.qiitausercontent.com/f0349dc5e96905da38aa586ba1005357072c2ddf/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f63646165653035342d356138372d316566642d646461302d3931663236353938336433332e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/f0349dc5e96905da38aa586ba1005357072c2ddf/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f63646165653035342d356138372d316566642d646461302d3931663236353938336433332e706e67" />   
+    </p>
 <p>若不指定标签，则默认使用<code>latest</code>标签。</p>
 <p>镜像名称与标签名称使用<code>:</code>分隔，如下所示：</p>
 <pre><code>nginx:latest
@@ -128,7 +136,9 @@ nginx:1.14-perl
 <li>分层的结构</li>
 <li>生成镜像后无法再次编辑(只读)</li>
 </ol>
-<p><img src="https://camo.qiitausercontent.com/30b8872915b4437a88860d666329b2f7ebf21549/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37666266626538392d383162352d393165382d316566612d3331616134386163346531632e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/30b8872915b4437a88860d666329b2f7ebf21549/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37666266626538392d383162352d393165382d316566612d3331616134386163346531632e706e67" />   
+    </p>
 <p>镜像是由不同层级组成的，每次安装一个中间件时都会叠加一层(一个安装命令会累积一层)。</p>
 <p>并且镜像的层是只读不能编辑的，只有从镜像启动容器后的容器层是可以编辑的。</p>
 <p>从镜像启动容器后，在容器内安装任何中间件的改动均会保存到容器层中，可以再次从容器中生成(commit)镜像。</p>
@@ -244,7 +254,9 @@ nginx:1.14-perl
 </tr>
 </tbody>
 </table>
-<p><img src="https://camo.qiitausercontent.com/7de62ce86f2eba6862f8ca689603741a57d5bfc6/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37646130636238362d653330352d376663302d316665312d6437626534643836666662612e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/7de62ce86f2eba6862f8ca689603741a57d5bfc6/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37646130636238362d653330352d376663302d316665312d6437626534643836666662612e706e67" />   
+    </p>
 <h1 id="docker-hub">Docker Hub</h1>
 <h2 id="在docker-hub共享镜像">在Docker Hub共享镜像</h2>
 <p>与Github类似，需要有Dockerhub的账号。</p>
@@ -413,10 +425,14 @@ $ docker run -itd --name tmpfs-test --mount type<span style="color:#f92672">=</s
 <li>在yml文件的所在路径下，执行<code>$ docker-compose up</code></li>
 </ol>
 <h2 id="不使用docker-compose时">不使用Docker Compose时</h2>
-<p><img src="https://camo.qiitausercontent.com/f9d9c76ca2220972a216b2a9e55300b74a7d6835/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36376365303638312d376562352d363435312d633836312d6132646333313237656335372e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/f9d9c76ca2220972a216b2a9e55300b74a7d6835/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36376365303638312d376562352d363435312d633836312d6132646333313237656335372e706e67" />   
+    </p>
 <p>必须要一个一个的设置各个容器的选项才能正常启动。</p>
 <h2 id="使用docker-compose时">使用Docker Compose时</h2>
-<p><img src="https://camo.qiitausercontent.com/bb16ede939c3772533715a916b0be87588d18b2c/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37626433323263352d336632332d393762352d653936372d6161663831343237633962312e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/bb16ede939c3772533715a916b0be87588d18b2c/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37626433323263352d336632332d393762352d653936372d6161663831343237633962312e706e67" />   
+    </p>
 <p>定义<code>docker-compose.yml</code>后，使用<code>docker-compose up</code>命令就可以一次启动多个容器了。</p>
 <h2 id="docker-compose管理命令">docker-compose管理命令</h2>
 <table>
@@ -468,24 +484,24 @@ $ docker run -itd --name tmpfs-test --mount type<span style="color:#f92672">=</s
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> PYTHONUNBUFFERED <span style="color:#ae81ff">1</span> <span style="color:#75715e"># 设置无缓冲的python标准输出环境变量</span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> mkdir /service  <span style="color:#75715e"># 创建service目录</span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /service # 移动到service目录</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> requirements.txt /service/  <span style="color:#75715e"># 将requirements.txt(事先创建)放在service目录</span> <span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> requirements.txt /service/  <span style="color:#75715e"># 将requirements.txt(事先创建)放在service目录 </span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> . /service/ <span style="color:#75715e"># 将构建所需文件全部放在`/service`目录下</span><span style="color:#960050;background-color:#1e0010">
 </span></code></pre></div><h3 id="2-创建docker-composeyml">2. 创建docker-compose.yml</h3>
 <p>创建如下的<code>docker-compose.yml</code>文件:</p>
 <p><code>docker-compose.yml</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml"><span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#39;3&#39;</span> <span style="color:#75715e"># 指定docker-compose的版本</span>
-<span style="color:#66d9ef">services</span>: <span style="color:#75715e"># 配置要启动服务的容器</span>
-  <span style="color:#66d9ef">db</span>: <span style="color:#75715e"># 启动db服务的容器</span>
-   <span style="color:#66d9ef">image</span>: postgres <span style="color:#75715e"># 使用dockerhub上的postgres:latest镜像</span>
-  <span style="color:#66d9ef">web</span>: <span style="color:#75715e"># 启动web服务的容器</span>
-   <span style="color:#66d9ef">build</span>: . <span style="color:#75715e"># 使用当前目录下的dockerfile创建镜像</span>
-   <span style="color:#66d9ef">command</span>: python3 manage.py runserver <span style="color:#ae81ff">0.0.0.0</span>:<span style="color:#ae81ff">8000</span>  ＃ 指定容器启动时执行的命令
-   <span style="color:#66d9ef">volumes</span>:
-    - .:/app <span style="color:#75715e"># 将当前路径通过bind mount的方式挂载到/app目录</span>
-   <span style="color:#66d9ef">posts</span>:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml"><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#39;3&#39;</span> <span style="color:#75715e"># 指定docker-compose的版本</span>
+<span style="color:#f92672">services</span>: <span style="color:#75715e"># 配置要启动服务的容器</span>
+  <span style="color:#f92672">db</span>: <span style="color:#75715e"># 启动db服务的容器</span>
+   <span style="color:#f92672">image</span>: <span style="color:#ae81ff">postgres</span> <span style="color:#75715e"># 使用dockerhub上的postgres:latest镜像</span>
+  <span style="color:#f92672">web</span>: <span style="color:#75715e"># 启动web服务的容器</span>
+   <span style="color:#f92672">build</span>: <span style="color:#ae81ff">.</span> <span style="color:#75715e"># 使用当前目录下的dockerfile创建镜像</span>
+   <span style="color:#f92672">command</span>: <span style="color:#ae81ff">python3 manage.py runserver 0.0.0.0:8000  ＃ 指定容器启动时执行的命令</span>
+   <span style="color:#f92672">volumes</span>:
+    - <span style="color:#ae81ff">.:/app</span> <span style="color:#75715e"># 将当前路径通过bind mount的方式挂载到/app目录</span>
+   <span style="color:#f92672">posts</span>:
     - <span style="color:#e6db74">&#34;8000:8000&#34;</span> <span style="color:#75715e"># 映射主机的8000端口到容器的8000端口</span>
-   <span style="color:#66d9ef">depends_on</span>: <span style="color:#75715e"># 启动web服务容器前优先启动db服务容器</span>
-    - db
+   <span style="color:#f92672">depends_on</span>: <span style="color:#75715e"># 启动web服务容器前优先启动db服务容器</span>
+    - <span style="color:#ae81ff">db</span>
 </code></pre></div><h3 id="3-执行docker-compose">3. 执行docker-compose</h3>
 <p>使用如下命令在启动使用<code>docker-compose.yml</code>定义的web服务容器同时，创建django项目。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose run web django-admin.py startproject test .
@@ -496,7 +512,9 @@ $ docker run -itd --name tmpfs-test --mount type<span style="color:#f92672">=</s
 <p><code>Docker Machine</code>是一个可以通过CLI的方式管理(创建、启动、停止、重启)Docker Engine上虚拟机的工具。</p>
 <p>在macOS上Docker Machine使用虚拟机软件(Virtual Box)作为驱动来管理Docker Engine上搭载的虚拟机。</p>
 <p>如下图所示，可以在PC机内启动多个docker-machine并在其中使用docker的功能，比如执行容器等。</p>
-<p><img src="https://camo.qiitausercontent.com/493bb153c036cc3bb5203744007460f02a38c1ba/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f39323331626632662d626665612d323638392d626163372d3431323736666165656433642e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/493bb153c036cc3bb5203744007460f02a38c1ba/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f39323331626632662d626665612d323638392d626163372d3431323736666165656433642e706e67" />   
+    </p>
 <p>此外，将由docker-machine启动的运行Docker Engine的虚拟机称为<code>Docker主机</code>。</p>
 <h2 id="docker-machine管理命令">Docker Machine管理命令</h2>
 <table>
@@ -612,7 +630,9 @@ $ eval <span style="color:#66d9ef">$(</span>docker-machine env AWS虚拟机名<s
 <li>worker节点：执行容器</li>
 <li>manager节点： 执行容器 + 管理其他节点</li>
 </ol>
-<p><img src="https://camo.qiitausercontent.com/df993fe61ea872c4b0b9f57c00ab007823901503/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37366535363561302d656264642d373938622d616534372d3863663636643566626161332e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/df993fe61ea872c4b0b9f57c00ab007823901503/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37366535363561302d656264642d373938622d616534372d3863663636643566626161332e706e67" />   
+    </p>
 <h3 id="swarm管理命令">Swarm管理命令</h3>
 <ul>
 <li>
@@ -654,7 +674,9 @@ $ docker swarm init --advertise-addr 与其他节点通信所用IP<span style="c
 <p>可以通过各种各样的管理功能，使用网络将Docker主机像蜂群(Swarm)一样聚合在一起。</p>
 <p>一般情况下，Web系统本地环境的服务是不止一台机器的，通常会将多台机器组合起来，将用户通过internet重定向到对应服务。</p>
 <p>对于这个<strong>多台机器</strong>使用<code>Docker machine</code>进行启动与管理，至于Docker主机间的相互连接、将其作为一个整体的管理、在系统的本地环境对外部的重定向进行负载均衡与提供其他多种功能，这些都是Docker Swarm所做的工作。</p>
-<p><img src="https://camo.qiitausercontent.com/4b879e1b2031256aa64ded28343369070293e221/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37383933623537322d356335352d303230392d343061612d3831613463656164303431642e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/4b879e1b2031256aa64ded28343369070293e221/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f37383933623537322d356335352d303230392d343061612d3831613463656164303431642e706e67" />   
+    </p>
 <h3 id="使用service与task跨docker主机启动容器">使用Service与Task跨Docker主机启动容器</h3>
 <p>首先，使用Docker Swarm的Service与Task功能可以跨Docker主机的启动与管理容器。</p>
 <p>Service是用来<strong>定义在什么节点上使用什么镜像启动几个容器</strong>，Task是用来<strong>将Service在容器上分别执行</strong>。</p>
@@ -664,7 +686,9 @@ $ docker swarm init --advertise-addr 与其他节点通信所用IP<span style="c
 </code></pre></div><p>在上述命令中，使用manager节点生成了<code>从nginx镜像启动三个容器</code>的Service，那么会产生三个<code>从nginx镜像启动容器</code>的Task。</p>
 <p>使用Service时并不需要在每个Docker主机上启动容器，一次启动后由哪个节点启动哪个容器(任务的分配)是自动决定的。这种将通过服务生成的任务分配给节点的功能称为调度(schedule)。</p>
 <p>在没有特别指定的情况下，会根据CPU与内存的空闲资源状态进行调度，用户无需去管理docker主机配置等。</p>
-<p><img src="https://camo.qiitausercontent.com/10793cb07634c45f5f22c1a4ca754a8265ce6f0a/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f38323966643765382d656261312d656534662d386634652d6364366162343062346530392e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/10793cb07634c45f5f22c1a4ca754a8265ce6f0a/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f38323966643765382d656261312d656534662d386634652d6364366162343062346530392e706e67" />   
+    </p>
 <p><strong>节点的可用性</strong></p>
 <p>查看Swarm集群中的所有节点：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker node ls
@@ -737,42 +761,46 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
 <h3 id="auto-healing">Auto Healing</h3>
 <p>当Swarm中的节点出现由于大量请求导致负载过大等问题而down机时，该机器所启动的容器可以由其他机器上启动的容器替代，这就是自动修复(Auto Healing)功能。</p>
 <p>对于manager节点down掉的情况，可以准备多个manager节点，未雨绸缪。</p>
-<p><img src="https://camo.qiitausercontent.com/529d1beb7ec906d255117d173cda26bbea3468cf/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36316465623962302d396163302d343164612d323932322d3637386439303233633338352e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/529d1beb7ec906d255117d173cda26bbea3468cf/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36316465623962302d396163302d343164612d323932322d3637386439303233633338352e706e67" />   
+    </p>
 <h1 id="使用docker-compose创建service">使用Docker compose创建Service</h1>
 <p>服务的创建可以使用<code>$ docker service create</code>命令，也可以通过<code>docker-compose.yml</code>文件中描述的定义来自动创建多个服务。</p>
-<p><img src="https://camo.qiitausercontent.com/ce5b94ef5c86803357c488509d45b6687b684d95/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f31633530376133642d306361312d393431612d663033302d3237373936333834333763322e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/ce5b94ef5c86803357c488509d45b6687b684d95/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f31633530376133642d306361312d393431612d663033302d3237373936333834333763322e706e67" />   
+    </p>
 <p><code>docker-compose.yml</code>的文件内容如下:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#39;3.4&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#39;3.4&#39;</span>
 
-<span style="color:#66d9ef">services</span>: <span style="color:#75715e"># 记录要执行的容器</span>
-  <span style="color:#66d9ef">wordpress</span>: <span style="color:#75715e"># wordpress容器</span>
-   <span style="color:#66d9ef">image</span>: wordpress <span style="color:#75715e"># 使用wordpress:latest镜像</span>
-   <span style="color:#66d9ef">ports</span>:
+<span style="color:#f92672">services</span>: <span style="color:#75715e"># 记录要执行的容器</span>
+  <span style="color:#f92672">wordpress</span>: <span style="color:#75715e"># wordpress容器</span>
+   <span style="color:#f92672">image</span>: <span style="color:#ae81ff">wordpress</span> <span style="color:#75715e"># 使用wordpress:latest镜像</span>
+   <span style="color:#f92672">ports</span>:
     - <span style="color:#ae81ff">8080</span>:<span style="color:#ae81ff">80</span> <span style="color:#75715e"># 映射主机8080端口到容器的80端口</span>
-   <span style="color:#66d9ef">environment</span>:
-    <span style="color:#66d9ef">WORDPRESS_DB_PASSWORD</span>: ----- <span style="color:#75715e"># 与mysql容器的密码一致</span>
-   <span style="color:#66d9ef">deploy</span>: <span style="color:#75715e"># 在这里设置Docker Swarm的Service</span>
-    <span style="color:#66d9ef">replicas</span>: <span style="color:#ae81ff">2</span> <span style="color:#75715e"># 复制数量</span>
-    <span style="color:#66d9ef">placement</span>:
-      <span style="color:#66d9ef">constraints</span>: 
-       - node.role == worker <span style="color:#75715e"># 只在worker节点上执行</span>
-   <span style="color:#66d9ef">depends_on</span>:
-     - mysql <span style="color:#75715e"># 启动依赖于mysql容器</span>
+   <span style="color:#f92672">environment</span>:
+    <span style="color:#f92672">WORDPRESS_DB_PASSWORD</span>: ----- <span style="color:#75715e"># 与mysql容器的密码一致</span>
+   <span style="color:#f92672">deploy</span>: <span style="color:#75715e"># 在这里设置Docker Swarm的Service</span>
+    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">2</span> <span style="color:#75715e"># 复制数量</span>
+    <span style="color:#f92672">placement</span>:
+      <span style="color:#f92672">constraints</span>: 
+       - <span style="color:#ae81ff">node.role == worker</span> <span style="color:#75715e"># 只在worker节点上执行</span>
+   <span style="color:#f92672">depends_on</span>:
+     - <span style="color:#ae81ff">mysql</span> <span style="color:#75715e"># 启动依赖于mysql容器</span>
 
-  <span style="color:#66d9ef">mysql</span>: <span style="color:#75715e"># mysql容器</span>
-   <span style="color:#66d9ef">image</span>: mysql:<span style="color:#ae81ff">5.7</span> <span style="color:#75715e"># 指定镜像版本</span>
-   <span style="color:#66d9ef">environment</span>:
-    <span style="color:#66d9ef">MYSQL_ROOT_PASSWORD</span>: ----- <span style="color:#75715e"># 设置密码</span>
-   <span style="color:#66d9ef">volumes</span>:
-    - mysql_vol:/var/lib/mysql <span style="color:#75715e"># 生成名为mysql_vol的卷，挂载到容器的指定目录上</span>
-   <span style="color:#66d9ef">deploy</span>: <span style="color:#75715e">#　在这里设置Docker Swarm的Service</span>
-    <span style="color:#66d9ef">replicas</span>: <span style="color:#ae81ff">1</span>
-    <span style="color:#66d9ef">placement</span>:
-     <span style="color:#66d9ef">constraints</span>:
-      - node.role == manager <span style="color:#75715e"># 在manager节点上执行</span>
+  <span style="color:#f92672">mysql</span>: <span style="color:#75715e"># mysql容器</span>
+   <span style="color:#f92672">image</span>: <span style="color:#ae81ff">mysql:5.7</span> <span style="color:#75715e"># 指定镜像版本</span>
+   <span style="color:#f92672">environment</span>:
+    <span style="color:#f92672">MYSQL_ROOT_PASSWORD</span>: ----- <span style="color:#75715e"># 设置密码</span>
+   <span style="color:#f92672">volumes</span>:
+    - <span style="color:#ae81ff">mysql_vol:/var/lib/mysql</span> <span style="color:#75715e"># 生成名为mysql_vol的卷，挂载到容器的指定目录上</span>
+   <span style="color:#f92672">deploy</span>: <span style="color:#75715e">#　在这里设置Docker Swarm的Service</span>
+    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">1</span>
+    <span style="color:#f92672">placement</span>:
+     <span style="color:#f92672">constraints</span>:
+      - <span style="color:#ae81ff">node.role == manager</span> <span style="color:#75715e"># 在manager节点上执行</span>
 
-<span style="color:#66d9ef">volumes</span>:
-  <span style="color:#66d9ef">mysql_vol</span>: ＃定义卷
+<span style="color:#f92672">volumes</span>:
+  <span style="color:#f92672">mysql_vol</span>: <span style="color:#ae81ff">＃定义卷</span>
 </code></pre></div><p>之后使用下面的<code>$ docker stack deploy</code>命令，来根据<code>docker-compose.yml</code>文件生成Swarm中的服务。stack的名称会作为所生成服务名的前缀。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker stack deploy --compose-file docker-compose.yml<span style="color:#f92672">(</span>指定的compose文件<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>生成的stack名<span style="color:#f92672">]</span>
 </code></pre></div><p><code>stack</code>是构成特定环境中的service集合, 它是自动部署多个相互关联的服务的简便方法，而无需单独定义每个服务。</p>
@@ -800,7 +828,9 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
 </tbody>
 </table>
 <h1 id="最终效果图">最终效果图</h1>
-<p><img src="https://camo.qiitausercontent.com/561d7bcb981db075ed94a319e718ab030ef7cc2c/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36376439633036342d343832362d623938622d326333332d3463336264653839636363362e706e67" alt=""></p>
+<p>
+        <img class="mx-auto" alt="" src="https://camo.qiitausercontent.com/561d7bcb981db075ed94a319e718ab030ef7cc2c/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3230393930392f36376439633036342d343832362d623938622d326333332d3463336264653839636363362e706e67" />   
+    </p>
 <h1 id="原文信息">原文信息</h1>
 <hr>
 <ul>
@@ -830,7 +860,7 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/docker'>docker</a></li>
+                <li><a href='/tags/docker'>docker</a></li>
                 
             </ul>
             
@@ -852,6 +882,56 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -898,15 +978,15 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -915,7 +995,7 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -924,7 +1004,7 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -934,7 +1014,7 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -974,8 +1054,6 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -1061,47 +1139,6 @@ $ docker service inspect —pretty <span style="color:#f92672">[</span>服务名
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

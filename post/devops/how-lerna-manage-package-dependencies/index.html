@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Lerna的依赖管理及hoisting浅析 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Lerna的依赖管理及hoisting浅析 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/devops/how-lerna-manage-package-dependencies/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/devops'>devops</a></span>
+            <span class="meta-category"><a href='/categories/devops'>devops</a></span>
             
         </div>
         
@@ -227,7 +229,7 @@
       }
     }
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">mostOccurenceCount</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span>) {
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_seed</span>(<span style="color:#a6e22e">mostOccurencePattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>});
+      <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">seed</span>(<span style="color:#a6e22e">mostOccurencePattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>});
     }
   }
 }
@@ -267,7 +269,7 @@
     <span style="color:#75715e">// 将包含peerDependencies的依赖添加到队尾，依次处理有序队列中的依赖
 </span><span style="color:#75715e"></span>    <span style="color:#a6e22e">sortedQueue</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">sortedQueue</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">queue</span>);
     <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">pattern</span>, <span style="color:#a6e22e">parent</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">sortedQueue</span>) {
-      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">info</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_seed</span>(<span style="color:#a6e22e">pattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">parent</span>});
+      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">info</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">seed</span>(<span style="color:#a6e22e">pattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">parent</span>});
       <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">info</span>) { <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hoist</span>(<span style="color:#a6e22e">info</span>); }
     }
   }
@@ -276,7 +278,7 @@
 <li>
 <p>更新提升后的依赖信息</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> [<span style="color:#a6e22e">pattern</span>, <span style="color:#a6e22e">parent</span>] <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">sortedQueue</span>) {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">info</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_seed</span>(<span style="color:#a6e22e">pattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">parent</span>});
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">info</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">seed</span>(<span style="color:#a6e22e">pattern</span>, {<span style="color:#a6e22e">isDirectRequire</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">parent</span>});
   <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">info</span>) {
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hoist</span>(<span style="color:#a6e22e">info</span>);
   }
@@ -325,9 +327,9 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/lerna'>lerna</a></li>
+                <li><a href='/tags/lerna'>lerna</a></li>
                 
-                <li><a href='http://yrq110.me/tags/yarn'>yarn</a></li>
+                <li><a href='/tags/yarn'>yarn</a></li>
                 
             </ul>
             
@@ -349,6 +351,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -395,15 +447,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -412,7 +464,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -421,7 +473,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -431,7 +483,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -471,8 +523,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -558,47 +608,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

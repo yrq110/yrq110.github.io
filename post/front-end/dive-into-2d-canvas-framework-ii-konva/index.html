@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Canvas2D渲染库简析:（二）Konva | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Canvas2D渲染库简析:（二）Konva - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-ii-konva/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -141,49 +143,49 @@
 <p>API的处理：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 直接使用
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">moveTo</span>(<span style="color:#a6e22e">a0</span>, <span style="color:#a6e22e">a1</span>) {
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>.<span style="color:#a6e22e">moveTo</span>(<span style="color:#a6e22e">a0</span>, <span style="color:#a6e22e">a1</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">moveTo</span>(<span style="color:#a6e22e">a0</span>, <span style="color:#a6e22e">a1</span>);
 }
 <span style="color:#75715e">// 参数简单检查
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">createImageData</span>(<span style="color:#a6e22e">a0</span>, <span style="color:#a6e22e">a1</span>) {
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">arguments</span>;
   <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">2</span>) {
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>.<span style="color:#a6e22e">createImageData</span>(<span style="color:#a6e22e">a0</span>, <span style="color:#a6e22e">a1</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">createImageData</span>(<span style="color:#a6e22e">a0</span>, <span style="color:#a6e22e">a1</span>);
   } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">1</span>) {
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>.<span style="color:#a6e22e">createImageData</span>(<span style="color:#a6e22e">a0</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">createImageData</span>(<span style="color:#a6e22e">a0</span>);
   }
 }
 <span style="color:#75715e">// 兼容性处理
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">setLineDash</span>(<span style="color:#a6e22e">a0</span>) {
   <span style="color:#75715e">// works for Chrome and IE11
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>.<span style="color:#a6e22e">setLineDash</span>) {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>.<span style="color:#a6e22e">setLineDash</span>(<span style="color:#a6e22e">a0</span>);
-  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#e6db74">&#39;mozDash&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>) {
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">setLineDash</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">setLineDash</span>(<span style="color:#a6e22e">a0</span>);
+  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#e6db74">&#39;mozDash&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>) {
     <span style="color:#75715e">// verified that this works in firefox
-</span><span style="color:#75715e"></span>    (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>[<span style="color:#e6db74">&#39;mozDash&#39;</span>]) <span style="color:#f92672">=</span> <span style="color:#a6e22e">a0</span>;
-  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#e6db74">&#39;webkitLineDash&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>) {
+</span><span style="color:#75715e"></span>    (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>[<span style="color:#e6db74">&#39;mozDash&#39;</span>]) <span style="color:#f92672">=</span> <span style="color:#a6e22e">a0</span>;
+  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#e6db74">&#39;webkitLineDash&#39;</span> <span style="color:#66d9ef">in</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>) {
     <span style="color:#75715e">// does not currently work for Safari
-</span><span style="color:#75715e"></span>    (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_context</span>[<span style="color:#e6db74">&#39;webkitLineDash&#39;</span>]) <span style="color:#f92672">=</span> <span style="color:#a6e22e">a0</span>;
+</span><span style="color:#75715e"></span>    (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">context</span>[<span style="color:#e6db74">&#39;webkitLineDash&#39;</span>]) <span style="color:#f92672">=</span> <span style="color:#a6e22e">a0</span>;
   }
   <span style="color:#75715e">// no support for IE9 and IE10
 </span><span style="color:#75715e"></span>}
 </code></pre></div><p>为了SceneCanvas和HitCanvas准备特殊的Context：<strong>SceneContext</strong>与<strong>HitContext</strong></p>
 <p>两者是绑定于Layer中SceneCanvas和HitCanvas的Context对象，继承自Context，实现了各自的<code>_fill()</code>与<code>_stroke()</code>方法。如HitContext：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">HitContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">Context</span> {
-  <span style="color:#a6e22e">_fill</span>(<span style="color:#a6e22e">shape</span>) {
+  <span style="color:#ae81ff">_</span><span style="color:#a6e22e">fill</span>(<span style="color:#a6e22e">shape</span>) {
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">save</span>();
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setAttr</span>(<span style="color:#e6db74">&#39;fillStyle&#39;</span>, <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">colorKey</span>);
-    <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">_fillFuncHit</span>(<span style="color:#66d9ef">this</span>);
+    <span style="color:#a6e22e">shape</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">fillFuncHit</span>(<span style="color:#66d9ef">this</span>);
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">restore</span>();
   }
-  <span style="color:#a6e22e">_stroke</span>(<span style="color:#a6e22e">shape</span>) {
+  <span style="color:#ae81ff">_</span><span style="color:#a6e22e">stroke</span>(<span style="color:#a6e22e">shape</span>) {
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">hasHitStroke</span>()) {
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_applyLineCap</span>(<span style="color:#a6e22e">shape</span>);
+      <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">applyLineCap</span>(<span style="color:#a6e22e">shape</span>);
       <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">hitStrokeWidth</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">hitStrokeWidth</span>();
       <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">strokeWidth</span> <span style="color:#f92672">=</span>
         <span style="color:#a6e22e">hitStrokeWidth</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;auto&#39;</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">strokeWidth</span>() <span style="color:#f92672">:</span> <span style="color:#a6e22e">hitStrokeWidth</span>;
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setAttr</span>(<span style="color:#e6db74">&#39;lineWidth&#39;</span>, <span style="color:#a6e22e">strokeWidth</span>);
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setAttr</span>(<span style="color:#e6db74">&#39;strokeStyle&#39;</span>, <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">colorKey</span>);
-      <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">_strokeFuncHit</span>(<span style="color:#66d9ef">this</span>);
+      <span style="color:#a6e22e">shape</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">strokeFuncHit</span>(<span style="color:#66d9ef">this</span>);
       <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">strokeScaleEnabled</span>) {
         <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">restore</span>();
       }
@@ -210,7 +212,7 @@
 <p>与Fabric类似，也是先通过显式调用Node的变换方法或通过控制器来修改变换属性，再计算变换矩阵重新渲染。其中使用Trasnform类来管理操作与矩阵的关系。</p>
 <p>Konva中变换属性转换为变换矩阵的过程：属性 =&gt; 变换操作 =&gt; 变换矩阵。</p>
 <p><strong>变换属性 =&gt; 变换操作</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_getTransform</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Transform</span> {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">getTransform</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Transform</span> {
     <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">m</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Transform</span>();
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">x</span> <span style="color:#f92672">!==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">y</span> <span style="color:#f92672">!==</span> <span style="color:#ae81ff">0</span>) {
       <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">translate</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>);
@@ -255,12 +257,12 @@
 }
 <span style="color:#a6e22e">setNode</span>(<span style="color:#a6e22e">node</span>) {
   <span style="color:#75715e">// 绑定节点，清空缓存
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_node</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">node</span>;
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_resetTransformCache</span>();
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">node</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">node</span>;
+  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">resetTransformCache</span>();
   <span style="color:#75715e">// 监听节点属性的变化，回调中更新控制器
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">onChange</span> <span style="color:#f92672">=</span> () =&gt; {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_resetTransformCache</span>();
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_transforming</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">resetTransformCache</span>();
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">transforming</span>) {
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">update</span>();
     }
   };
@@ -282,28 +284,28 @@
 <ol>
 <li>
 <p>初始化时在每个控制器上添加mousedown事件监听</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_createAnchor</span>(<span style="color:#a6e22e">name</span>) {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">createAnchor</span>(<span style="color:#a6e22e">name</span>) {
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">anchor</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Rect</span>({...});
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">self</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>;
   <span style="color:#a6e22e">anchor</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;mousedown touchstart&#39;</span>, <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">e</span>) {
-   <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">_handleMouseDown</span>(<span style="color:#a6e22e">e</span>);
+   <span style="color:#a6e22e">self</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">handleMouseDown</span>(<span style="color:#a6e22e">e</span>);
   });
 }
 </code></pre></div></li>
 <li>
 <p>触发回调时添加mousemove事件监听</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_handleMouseDown</span>(<span style="color:#a6e22e">e</span>) {
-  window.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;mousemove&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_handleMouseMove</span>);
-  window.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;touchmove&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_handleMouseMove</span>);
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">handleMouseDown</span>(<span style="color:#a6e22e">e</span>) {
+  window.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;mousemove&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">handleMouseMove</span>);
+  window.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;touchmove&#39;</span>, <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">handleMouseMove</span>);
 }
 </code></pre></div></li>
 <li>
 <p>计算移动的变化量，更新需要变动的控制器位置</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_handleMouseMove</span>(<span style="color:#a6e22e">e</span>) {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">handleMouseMove</span>(<span style="color:#a6e22e">e</span>) {
   <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_movingAnchorName</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;bottom-center&#39;</span>) {
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">movingAnchorName</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;bottom-center&#39;</span>) {
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">y</span>(<span style="color:#a6e22e">anchorNode</span>.<span style="color:#a6e22e">y</span>());
-  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_movingAnchorName</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;bottom-right&#39;</span>) {
+  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">movingAnchorName</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;bottom-right&#39;</span>) {
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">keepProportion</span>) {
       <span style="color:#a6e22e">newHypotenuse</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">sqrt</span>( Math.<span style="color:#a6e22e">pow</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">x</span>() <span style="color:#f92672">-</span> <span style="color:#a6e22e">padding</span>, <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span> Math.<span style="color:#a6e22e">pow</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">y</span>() <span style="color:#f92672">-</span> <span style="color:#a6e22e">padding</span>, <span style="color:#ae81ff">2</span>));
       <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">reverseX</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.top-left&#39;</span>).<span style="color:#a6e22e">x</span>() <span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">x</span>() <span style="color:#f92672">?</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>;
@@ -313,19 +315,19 @@
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">x</span>(<span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">padding</span>);
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">y</span>(<span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">padding</span>);
     }
-  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_movingAnchorName</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;rotater&#39;</span>) {
+  } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">movingAnchorName</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;rotater&#39;</span>) {
   <span style="color:#75715e">// ...
 </span><span style="color:#75715e"></span>}
 </code></pre></div></li>
 <li>
 <p>通过计算变化后的控制器位置形成的区域，得到节点需要适应的变换后区域</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_handleMouseMove</span>(<span style="color:#a6e22e">e</span>) {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">handleMouseMove</span>(<span style="color:#a6e22e">e</span>) {
   <span style="color:#75715e">// ...
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">x</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">absPos</span>.<span style="color:#a6e22e">x</span>;
   <span style="color:#a6e22e">y</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">absPos</span>.<span style="color:#a6e22e">y</span>;
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">width</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">x</span>() <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.top-left&#39;</span>).<span style="color:#a6e22e">x</span>();
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">height</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.bottom-right&#39;</span>).<span style="color:#a6e22e">y</span>() <span style="color:#f92672">-</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">findOne</span>(<span style="color:#e6db74">&#39;.top-left&#39;</span>).<span style="color:#a6e22e">y</span>();
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_fitNodeInto</span>(
+  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">fitNodeInto</span>(
     {
       <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">offsetX</span>(),
       <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">offsetY</span>(),
@@ -351,11 +353,11 @@
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getLayer</span>().<span style="color:#a6e22e">batchDraw</span>();
 <span style="color:#75715e">// src/BaseLayer.ts
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">batchDraw</span>() {
-  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_waitingForDraw</span>) {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_waitingForDraw</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">waitingForDraw</span>) {
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">waitingForDraw</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
     <span style="color:#a6e22e">Util</span>.<span style="color:#a6e22e">requestAnimFrame</span>(() =&gt; {
       <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">draw</span>();
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_waitingForDraw</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+      <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">waitingForDraw</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
     });
   }
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
@@ -383,7 +385,7 @@
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> (<span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">INTERSECTION_OFFSETS_LEN</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
   <span style="color:#a6e22e">intersectionOffset</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">INTERSECTION_OFFSETS</span>[<span style="color:#a6e22e">i</span>];
   <span style="color:#75715e">// 计算得到相交对象
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getIntersection</span>({
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">getIntersection</span>({
     <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">intersectionOffset</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">spiralSearchDistance</span>,
     <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">intersectionOffset</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">spiralSearchDistance</span>
   });
@@ -402,7 +404,7 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// 取得hitCanvas上下文中光标位置的像素值
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hitCanvas</span>.<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">getImageData</span>(Math.<span style="color:#a6e22e">round</span>(<span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">ratio</span>), Math.<span style="color:#a6e22e">round</span>(<span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">ratio</span>), <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>).<span style="color:#a6e22e">data</span>;
 <span style="color:#75715e">// 将rga转换为hex，与shape的colorKey比较
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">colorKey</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Util</span>.<span style="color:#a6e22e">_rgbToHex</span>(<span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">1</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">2</span>]);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">colorKey</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Util</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">rgbToHex</span>(<span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">1</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">2</span>]);
 <span style="color:#75715e">// shapes中包含所有添加过的图形对象，每个图形用一个随机hex颜色表示它的key
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">shape</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">shapes</span>[<span style="color:#e6db74">&#39;#&#39;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">colorKey</span>];
 <span style="color:#75715e">// 若hit graph中当前位置的颜色与某个图形的代表颜色相同，则该图形为光标命中的对象
@@ -411,7 +413,7 @@
 <li>
 <p>Stage::targetShape</p>
 <p>得到targetShape后，就会触发各种交互事件了</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">targetShape</span>.<span style="color:#a6e22e">_fireAndBubble</span>(<span style="color:#a6e22e">SOME_MOUSE_EVENT</span>, { <span style="color:#a6e22e">evt</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">evt</span>, <span style="color:#a6e22e">pointerId</span> });
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">targetShape</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">fireAndBubble</span>(<span style="color:#a6e22e">SOME_MOUSE_EVENT</span>, { <span style="color:#a6e22e">evt</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">evt</span>, <span style="color:#a6e22e">pointerId</span> });
 </code></pre></div></li>
 </ol>
 <p>要达到<strong>通过比较hit graph上光标位置与代表图形key的像素值是否相同来判断是否命中</strong>的目的，需要<strong>事先在layer的HitCanvas上画出Shape对象的hit graph</strong>，在这一部分做了以下工作：</p>
@@ -437,7 +439,7 @@
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
 }
 <span style="color:#75715e">// Layer::drawHit() =&gt; Container::drawHit(), Container继承自Node，实现了抽象类drawHit()
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_drawChildren</span>(<span style="color:#a6e22e">canvas</span>, <span style="color:#e6db74">&#39;drawHit&#39;</span>, <span style="color:#a6e22e">top</span>, <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">caching</span>, <span style="color:#a6e22e">caching</span>);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">drawChildren</span>(<span style="color:#a6e22e">canvas</span>, <span style="color:#e6db74">&#39;drawHit&#39;</span>, <span style="color:#a6e22e">top</span>, <span style="color:#66d9ef">false</span>, <span style="color:#a6e22e">caching</span>, <span style="color:#a6e22e">caching</span>);
 <span style="color:#75715e">// Container::_drawChildren()
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">children</span>.<span style="color:#a6e22e">each</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">child</span>) {
   <span style="color:#75715e">// 在每一个子元素上执行drawHit()，子元素为Shape或Group类型
@@ -448,7 +450,7 @@
   <span style="color:#75715e">// 获取内置或自定义Shape对象中实现的_hitFunc或_sceneFunc
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">drawFunc</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hitFunc</span>() <span style="color:#f92672">||</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">sceneFunc</span>();
   <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">save</span>(); <span style="color:#75715e">// 这里的context为HitContext对象
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">_applyTransform</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">context</span>, <span style="color:#a6e22e">top</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">layer</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">applyTransform</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">context</span>, <span style="color:#a6e22e">top</span>);
   <span style="color:#a6e22e">drawFunc</span>.<span style="color:#a6e22e">call</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">context</span>, <span style="color:#66d9ef">this</span>);
   <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">restore</span>();
 }
@@ -456,11 +458,11 @@
 </ul>
 <p>此时还有一个问题，就是在绘制HitCanvas时并没有体现出使用了colorKey的颜色去绘制，其实这个fillStyle的设置操作在之前出现过，在HitContext类中：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">HitContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">Context</span> {
-  <span style="color:#a6e22e">_fill</span>(<span style="color:#a6e22e">shape</span>) {
+  <span style="color:#ae81ff">_</span><span style="color:#a6e22e">fill</span>(<span style="color:#a6e22e">shape</span>) {
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">save</span>();
     <span style="color:#75715e">// 在这里设置hit graph的填充样式
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setAttr</span>(<span style="color:#e6db74">&#39;fillStyle&#39;</span>, <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">colorKey</span>);
-    <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">_fillFuncHit</span>(<span style="color:#66d9ef">this</span>); <span style="color:#75715e">// =&gt; this.fill()
+    <span style="color:#a6e22e">shape</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">fillFuncHit</span>(<span style="color:#66d9ef">this</span>); <span style="color:#75715e">// =&gt; this.fill()
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">restore</span>();
   }
 }
@@ -491,13 +493,13 @@
   <span style="color:#75715e">// 在父类Container中处理layer的当前父子关系等
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">super</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">layer</span>);
   <span style="color:#75715e">// 设置当前尺寸
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">_setCanvasSize</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span>(), <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>());
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">layer</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setCanvasSize</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">width</span>(), <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span>());
   <span style="color:#75715e">// 绘制layer中的内容
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">draw</span>();
   <span style="color:#75715e">// 将Canvas元素插入到DOM树中
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Konva</span>.<span style="color:#a6e22e">isBrowser</span>) {
     <span style="color:#75715e">// 这里仅添加了SceneCanvas，而没有添加HitCanvas
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">content</span>.<span style="color:#a6e22e">appendChild</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">_canvas</span>);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">content</span>.<span style="color:#a6e22e">appendChild</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">canvas</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">canvas</span>);
   }
 }
 </code></pre></div><p>Layer并没有实现自身的add方法，默认执行Container中的add方法</p>
@@ -508,13 +510,13 @@
      <span style="color:#a6e22e">child</span>.<span style="color:#a6e22e">moveTo</span>(<span style="color:#66d9ef">this</span>);
      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
    }
-   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_children</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">children</span>;
+   <span style="color:#66d9ef">var</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">children</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">children</span>;
    <span style="color:#75715e">// 2. 验证child可用性，该方法为子类实现
-</span><span style="color:#75715e"></span>   <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_validateAdd</span>(<span style="color:#a6e22e">child</span>);
-   <span style="color:#a6e22e">child</span>.<span style="color:#a6e22e">index</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">_children</span>.<span style="color:#a6e22e">length</span>;
+</span><span style="color:#75715e"></span>   <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">validateAdd</span>(<span style="color:#a6e22e">child</span>);
+   <span style="color:#a6e22e">child</span>.<span style="color:#a6e22e">index</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">children</span>.<span style="color:#a6e22e">length</span>;
    <span style="color:#a6e22e">child</span>.<span style="color:#a6e22e">parent</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>;
    <span style="color:#75715e">// 3. 保存到children数组中
-</span><span style="color:#75715e"></span>   <span style="color:#a6e22e">_children</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">child</span>);
+</span><span style="color:#75715e"></span>   <span style="color:#ae81ff">_</span><span style="color:#a6e22e">children</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">child</span>);
 }
 </code></pre></div><p>关于Layer的draw()方法的执行在上面目标检测的部分刚刚提到过，会依次执行children中每个child的相关绘制方法。</p>
 <p>需要注意一点的是： <strong>当在Stage对象上执行draw()时，会清空并重绘所有Layer的内容</strong>，这是由于Layer作为Stage的child，在执行它的drawScene方法时会根据其clearBeforeDraw属性(默认为true)来清空内容，之后再执行绘制。</p>
@@ -575,9 +577,9 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                <li><a href='/tags/canvas'>canvas</a></li>
                 
-                <li><a href='http://yrq110.me/tags/konva'>konva</a></li>
+                <li><a href='/tags/konva'>konva</a></li>
                 
             </ul>
             
@@ -599,6 +601,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -645,15 +697,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -662,7 +714,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -671,7 +723,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -681,7 +733,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -721,8 +773,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -808,47 +858,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

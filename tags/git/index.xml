@@ -6,11 +6,7 @@
     <description>Recent content in git on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sat, 29 Dec 2018 10:23:52 +0800</lastBuildDate>
-    
-	<atom:link href="http://yrq110.me/tags/git/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 29 Dec 2018 10:23:52 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/git/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>git rebase/submodule/flow介绍</title>
       <link>http://yrq110.me/post/devops/git-rebase-submodule-and-flow/</link>

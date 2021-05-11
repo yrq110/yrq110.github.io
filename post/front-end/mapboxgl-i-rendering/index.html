@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>MapboxGL简析(一)：渲染 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="MapboxGL简析(一)：渲染 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/mapboxgl-i-rendering/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -107,7 +109,9 @@
   <span style="color:#a6e22e">center</span><span style="color:#f92672">:</span> [<span style="color:#f92672">-</span><span style="color:#ae81ff">74.50</span>, <span style="color:#ae81ff">40</span>],
   <span style="color:#a6e22e">zoom</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">9</span>
 });
-</code></pre></div><p><img src="/images/blog/front-end/mapbox-intro/mb-start.jpg" alt=""></p>
+</code></pre></div><p>
+        <img class="mx-auto" alt="" src="/images/blog/front-end/mapbox-intro/mb-start.jpg" />   
+    </p>
 <p>在生成地图的过程中，Map对象在初始化时主要做了下面几件事:</p>
 <ol>
 <li>容器绑定与元素创建</li>
@@ -115,24 +119,24 @@
 <li>渲染器生成</li>
 </ol>
 <h3 id="容器绑定与元素创建">容器绑定与元素创建</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_setupContainer</span>() {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">setupContainer</span>() {
     <span style="color:#75715e">// 根容器元素
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">container</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_container</span>;
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">container</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">container</span>;
     <span style="color:#a6e22e">container</span>.<span style="color:#a6e22e">classList</span>.<span style="color:#a6e22e">add</span>(<span style="color:#e6db74">&#39;mapboxgl-map&#39;</span>);
     <span style="color:#75715e">// 创建一个隐藏元素用来检测是否正常加载css文件
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">missingCSSCanary</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_missingCSSCanary</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canary&#39;</span>, <span style="color:#a6e22e">container</span>);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">missingCSSCanary</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">missingCSSCanary</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canary&#39;</span>, <span style="color:#a6e22e">container</span>);
     <span style="color:#a6e22e">missingCSSCanary</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">visibility</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;hidden&#39;</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_detectMissingCSS</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">detectMissingCSS</span>();
     <span style="color:#75715e">// 创建画布容器及画布元素
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">canvasContainer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvasContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canvas-container&#39;</span>, <span style="color:#a6e22e">container</span>);
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_interactive</span>) { <span style="color:#a6e22e">canvasContainer</span>.<span style="color:#a6e22e">classList</span>.<span style="color:#a6e22e">add</span>(<span style="color:#e6db74">&#39;mapboxgl-interactive&#39;</span>); }
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvas</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canvas&#39;</span>, <span style="color:#a6e22e">canvasContainer</span>);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">canvasContainer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">canvasContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canvas-container&#39;</span>, <span style="color:#a6e22e">container</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">interactive</span>) { <span style="color:#a6e22e">canvasContainer</span>.<span style="color:#a6e22e">classList</span>.<span style="color:#a6e22e">add</span>(<span style="color:#e6db74">&#39;mapboxgl-interactive&#39;</span>); }
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">canvas</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-canvas&#39;</span>, <span style="color:#a6e22e">canvasContainer</span>);
     <span style="color:#75715e">// 获取尺寸信息并调整
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dimensions</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_containerDimensions</span>();
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_resizeCanvas</span>(<span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">1</span>]);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dimensions</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">containerDimensions</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">resizeCanvas</span>(<span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">dimensions</span>[<span style="color:#ae81ff">1</span>]);
     <span style="color:#75715e">// 创建控制器容器
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">controlContainer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controlContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-control-container&#39;</span>, <span style="color:#a6e22e">container</span>);
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">positions</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controlPositions</span> <span style="color:#f92672">=</span> {};
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">controlContainer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">controlContainer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">&#39;mapboxgl-control-container&#39;</span>, <span style="color:#a6e22e">container</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">positions</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">controlPositions</span> <span style="color:#f92672">=</span> {};
     [<span style="color:#e6db74">&#39;top-left&#39;</span>, <span style="color:#e6db74">&#39;top-right&#39;</span>, <span style="color:#e6db74">&#39;bottom-left&#39;</span>, <span style="color:#e6db74">&#39;bottom-right&#39;</span>].<span style="color:#a6e22e">forEach</span>((<span style="color:#a6e22e">positionName</span>) =&gt; {
         <span style="color:#a6e22e">positions</span>[<span style="color:#a6e22e">positionName</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">DOM</span>.<span style="color:#a6e22e">create</span>(<span style="color:#e6db74">&#39;div&#39;</span>, <span style="color:#e6db74">`mapboxgl-ctrl-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">positionName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, <span style="color:#a6e22e">controlContainer</span>);
     });
@@ -160,11 +164,11 @@
 </ol>
 <p><strong>_update()方法</strong></p>
 <p>当有需要改变地图内容的事件发生时，均会调用_update()方法:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_update</span>(<span style="color:#a6e22e">updateStyle</span><span style="color:#f92672">?:</span> <span style="color:#66d9ef">boolean</span>) {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">updateStyle</span><span style="color:#f92672">?:</span> <span style="color:#66d9ef">boolean</span>) {
   <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>) <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
   <span style="color:#75715e">// 更新样式与资源
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_styleDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_styleDirty</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">updateStyle</span>;
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sourcesDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">styleDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">styleDirty</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">updateStyle</span>;
+  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">sourcesDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
   <span style="color:#75715e">// 重绘，执行_render()
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">triggerRepaint</span>();
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
@@ -196,12 +200,12 @@
 <h3 id="渲染器配置">渲染器配置</h3>
 <p>根据canvas画布的webgl context来创建painter渲染器，并封装render方法，绘制style对象。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/ui/map
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">_setupPainter</span>() {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">gl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;webgl&#39;</span>, <span style="color:#a6e22e">attributes</span>) <span style="color:#f92672">||</span>
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;experimental-webgl&#39;</span>, <span style="color:#a6e22e">attributes</span>);
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">_</span><span style="color:#a6e22e">setupPainter</span>() {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">gl</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;webgl&#39;</span>, <span style="color:#a6e22e">attributes</span>) <span style="color:#f92672">||</span>
+      <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">canvas</span>.<span style="color:#a6e22e">getContext</span>(<span style="color:#e6db74">&#39;experimental-webgl&#39;</span>, <span style="color:#a6e22e">attributes</span>);
   <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">painter</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Painter</span>(<span style="color:#a6e22e">gl</span>, <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>);
 }
-<span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">paintStartTimeStamp</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+<span style="color:#ae81ff">_</span><span style="color:#a6e22e">render</span>(<span style="color:#a6e22e">paintStartTimeStamp</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
   ...
   <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">render</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>, {<span style="color:#75715e">/*options*/</span>});
 }
@@ -228,7 +232,7 @@
     <span style="color:#75715e">/* 1. 对于支持离屏渲染/预渲染(hasOffscreenPass)的图层在FBO中进行绘制 */</span>
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;offscreen&#39;</span>;
     <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layerId</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">layerIds</span>) {
-        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">_layers</span>[<span style="color:#a6e22e">layerId</span>];
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">layers</span>[<span style="color:#a6e22e">layerId</span>];
         <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">hasOffscreenPass</span>() <span style="color:#f92672">||</span> <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">isHidden</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>.<span style="color:#a6e22e">zoom</span>)) <span style="color:#66d9ef">continue</span>;
         <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">coords</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">coordsDescending</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>];
         <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;custom&#39;</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">coords</span>.<span style="color:#a6e22e">length</span>) <span style="color:#66d9ef">continue</span>;
@@ -242,7 +246,7 @@
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderPass</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;opaque&#39;</span>;
     <span style="color:#75715e">// 由上至下依次绘制蒙版与图层
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layerIds</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span><span style="color:#f92672">--</span>) {
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderTileClippingMasks</span>(<span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
+        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">renderTileClippingMasks</span>(<span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
         <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCache</span>, <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
     }
     <span style="color:#75715e">/* 3. 绘制半透明图层 */</span>
@@ -251,7 +255,7 @@
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">layerIds</span>.<span style="color:#a6e22e">length</span>; <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">currentLayer</span><span style="color:#f92672">++</span>) {
         <span style="color:#75715e">// 为symbol元素层添加了特殊的瓦片数据，没有使用瓦片裁剪(tiles clipping)，因此也无需单独执行蒙版裁剪
 </span><span style="color:#75715e"></span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">coords</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;symbol&#39;</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">coordsDescendingSymbol</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">coordsDescending</span>)[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>];
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderTileClippingMasks</span>(<span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coordsAscending</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>]);
+        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">renderTileClippingMasks</span>(<span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coordsAscending</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>]);
         <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">renderLayer</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">sourceCache</span>, <span style="color:#a6e22e">layer</span>, <span style="color:#a6e22e">coords</span>);
     }
 }
@@ -324,7 +328,7 @@
 <p>Bucket对象是可以看做是一个将矢量瓦片等数据转换成WebGL渲染所需Buffer数据的对象。每个Bucket对象中都会保存该类型图层所需的顶点与索引数组数据。</p>
 <p>以LineBucket中处理layout数据的例子:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/data/bucket/line_bucket
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">addFeature</span>(<span style="color:#a6e22e">feature</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">BucketFeature</span>, <span style="color:#a6e22e">geometry</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span>Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Point</span><span style="color:#f92672">&gt;&gt;</span>, <span style="color:#a6e22e">index</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>, <span style="color:#a6e22e">canonical</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">CanonicalTileID</span>, <span style="color:#a6e22e">imagePositions</span><span style="color:#f92672">:</span> {[<span style="color:#a6e22e">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>]<span style="color:#f92672">:</span> <span style="color:#a6e22e">ImagePosition</span>}) {
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">addFeature</span>(<span style="color:#a6e22e">feature</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">BucketFeature</span>, <span style="color:#a6e22e">geometry</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span>Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">Point</span><span style="color:#f92672">&gt;&gt;</span>, <span style="color:#a6e22e">index</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>, <span style="color:#a6e22e">canonical</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">CanonicalTileID</span>, <span style="color:#a6e22e">imagePositions</span><span style="color:#f92672">:</span> {[<span style="color:#ae81ff">_</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>]<span style="color:#f92672">:</span> <span style="color:#a6e22e">ImagePosition</span>}) {
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layout</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">layers</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">layout</span>;
     <span style="color:#75715e">// 解析layout中的属性
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">join</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layout</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;line-join&#39;</span>).<span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">feature</span>, {});
@@ -379,7 +383,7 @@
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getLayer</span>(<span style="color:#a6e22e">layerId</span>);
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">deepEqual</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">getLayoutProperty</span>(<span style="color:#a6e22e">name</span>), <span style="color:#a6e22e">value</span>)) <span style="color:#66d9ef">return</span>;
     <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">setLayoutProperty</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">options</span>);
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updateLayer</span>(<span style="color:#a6e22e">layer</span>);
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updateLayer</span>(<span style="color:#a6e22e">layer</span>);
 }
 
 <span style="color:#a6e22e">setPaintProperty</span>(<span style="color:#a6e22e">layerId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">string</span>, <span style="color:#a6e22e">value</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>, <span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">StyleSetterOptions</span> <span style="color:#f92672">=</span> {}) {
@@ -387,36 +391,36 @@
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">deepEqual</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">getPaintProperty</span>(<span style="color:#a6e22e">name</span>), <span style="color:#a6e22e">value</span>)) <span style="color:#66d9ef">return</span>;
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">requiresRelayout</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">setPaintProperty</span>(<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">options</span>);
     <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">requiresRelayout</span>) {
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updateLayer</span>(<span style="color:#a6e22e">layer</span>);
+        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updateLayer</span>(<span style="color:#a6e22e">layer</span>);
     }
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedPaintProps</span>[<span style="color:#a6e22e">layerId</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">changed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updatedPaintProps</span>[<span style="color:#a6e22e">layerId</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
 }
 </code></pre></div><p>在这里style会更新对应layer上的layout与paint属性值，并且设置改动标记，在下一次渲染的update中执行更新。</p>
 <p>其中在layout改变时一定会执行_updateLayer方法，而当paint改变时若为需要重新布局的情况(cross-faded值等)，也会执行_updateLayer。</p>
 <p>_updateLayer中主要做了: 保存需要的更新layerId、更新source、设置标记。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/style/style
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">_updateLayer</span>(<span style="color:#a6e22e">layer</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">StyleLayer</span>) {
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">_</span><span style="color:#a6e22e">updateLayer</span>(<span style="color:#a6e22e">layer</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">StyleLayer</span>) {
     <span style="color:#75715e">// 保存需要更新的图层id，在下一次update时处理
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedLayers</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
-    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedSources</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>] <span style="color:#f92672">&amp;&amp;</span>
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updatedLayers</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updatedSources</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>] <span style="color:#f92672">&amp;&amp;</span>
         <span style="color:#75715e">//Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
 </span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">sourceCaches</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>].<span style="color:#a6e22e">getSource</span>().<span style="color:#a6e22e">type</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;raster&#39;</span>) {
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedSources</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;reload&#39;</span>;
+        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updatedSources</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;reload&#39;</span>;
         <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">sourceCaches</span>[<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">source</span>].<span style="color:#a6e22e">pause</span>();
     }
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">changed</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
 }
 </code></pre></div><p>现在回想一下最开始map的_render中方法，其实在执行painter的渲染方前会先根据缩放等属性更新当前style的属性与资源:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/ui/map
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">paintStartTimeStamp</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_styleDirty</span>) {
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">_</span><span style="color:#a6e22e">render</span>(<span style="color:#a6e22e">paintStartTimeStamp</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">number</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">styleDirty</span>) {
         ...
         <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">parameters</span>);
     }
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sourcesDirty</span>) {
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_sourcesDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#a6e22e">_updateSources</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">sourcesDirty</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">sourcesDirty</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">style</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updateSources</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>);
     }
     ...
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">painter</span>.<span style="color:#a6e22e">render</span>()
@@ -424,12 +428,12 @@
 </code></pre></div><p>在style的update中会更新图层数据并根据传入的缩放系数重新计算paint属性。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/style/style
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">parameters</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">EvaluationParameters</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changed</span>) {
-        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updatedIds</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updatedLayers</span>);
-        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">removedIds</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_removedLayers</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">changed</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updatedIds</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updatedLayers</span>);
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">removedIds</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">keys</span>(<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">removedLayers</span>);
         
         <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">updatedIds</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">removedIds</span>.<span style="color:#a6e22e">length</span>) {
-            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_updateWorkerLayers</span>(<span style="color:#a6e22e">updatedIds</span>, <span style="color:#a6e22e">removedIds</span>);
+            <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">updateWorkerLayers</span>(<span style="color:#a6e22e">updatedIds</span>, <span style="color:#a6e22e">removedIds</span>);
         } 
     }
 }
@@ -445,9 +449,9 @@
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">layerConfigs</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">LayerSpecification</span><span style="color:#f92672">&gt;</span>, <span style="color:#a6e22e">removedIds</span><span style="color:#f92672">:</span> Array<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">string</span><span style="color:#f92672">&gt;</span>) {
     <span style="color:#75715e">// layerConfigs为序列化后需要更新的layer数据
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layerConfig</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">layerConfigs</span>) {
-        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_layerConfigs</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">layerConfig</span>;
-        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_layers</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">createStyleLayer</span>(<span style="color:#a6e22e">layerConfig</span>);
-        <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">_featureFilter</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">featureFilter</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">filter</span>);
+        <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">layerConfigs</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">layerConfig</span>;
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">layer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">layers</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">createStyleLayer</span>(<span style="color:#a6e22e">layerConfig</span>);
+        <span style="color:#a6e22e">layer</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">featureFilter</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">featureFilter</span>(<span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">filter</span>);
         <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">keyCache</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>])
             <span style="color:#66d9ef">delete</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">keyCache</span>[<span style="color:#a6e22e">layerConfig</span>.<span style="color:#a6e22e">id</span>];
     }
@@ -478,7 +482,7 @@
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">stack</span> <span style="color:#f92672">=</span> [];
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> [];
     <span style="color:#75715e">// 添加初始的根瓦片
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderWorldCopies</span>) {
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">renderWorldCopies</span>) {
         <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">3</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
             <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">newRootTile</span>(<span style="color:#f92672">-</span><span style="color:#a6e22e">i</span>));
             <span style="color:#a6e22e">stack</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">newRootTile</span>(<span style="color:#a6e22e">i</span>));
@@ -545,7 +549,7 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/mapbox'>mapbox</a></li>
+                <li><a href='/tags/mapbox'>mapbox</a></li>
                 
             </ul>
             
@@ -567,6 +571,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -613,15 +667,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -630,7 +684,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -639,7 +693,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -649,7 +703,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -689,8 +743,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -776,47 +828,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

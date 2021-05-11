@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Puppeteer常用API浅析 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Puppeteer常用API浅析 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/swim-in-shallow-puppeteer-api/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -105,26 +107,26 @@
 <h2 id="example">Example</h2>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">puppeteer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;puppeteer&#39;</span>);
 
-(<span style="color:#a6e22e">async</span>() =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>();
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
+(<span style="color:#66d9ef">async</span>() =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">puppeteer</span>.<span style="color:#a6e22e">launch</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
 
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://developers.google.com/web/&#39;</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://developers.google.com/web/&#39;</span>);
 
   <span style="color:#75715e">// Type into search box.
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">type</span>(<span style="color:#e6db74">&#39;#searchbox input&#39;</span>, <span style="color:#e6db74">&#39;Headless Chrome&#39;</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">type</span>(<span style="color:#e6db74">&#39;#searchbox input&#39;</span>, <span style="color:#e6db74">&#39;Headless Chrome&#39;</span>);
 
   <span style="color:#75715e">// Wait for suggest overlay to appear and click &#34;show all results&#34;.
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">allResultsSelector</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;.devsite-suggest-all-results&#39;</span>;
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">allResultsSelector</span>);
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">click</span>(<span style="color:#a6e22e">allResultsSelector</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">allResultsSelector</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">click</span>(<span style="color:#a6e22e">allResultsSelector</span>);
 
   <span style="color:#75715e">// Wait for the results page to load and display the results.
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">resultsSelector</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;.gsc-results .gsc-thumbnail-inside a.gs-title&#39;</span>;
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">resultsSelector</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">resultsSelector</span>);
 
   <span style="color:#75715e">// Extract the results from the page.
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">links</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">resultsSelector</span> =&gt; {
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">links</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">resultsSelector</span> =&gt; {
     <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">anchors</span> <span style="color:#f92672">=</span> Array.<span style="color:#a6e22e">from</span>(document.<span style="color:#a6e22e">querySelectorAll</span>(<span style="color:#a6e22e">resultsSelector</span>));
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">anchors</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">anchor</span> =&gt; {
       <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">title</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">anchor</span>.<span style="color:#a6e22e">textContent</span>.<span style="color:#a6e22e">split</span>(<span style="color:#e6db74">&#39;|&#39;</span>)[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">trim</span>();
@@ -133,7 +135,7 @@
   }, <span style="color:#a6e22e">resultsSelector</span>);
   <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">links</span>.<span style="color:#a6e22e">join</span>(<span style="color:#e6db74">&#39;\n&#39;</span>));
 
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
 })();
 
 </code></pre></div><h1 id="most-used">Most used</h1>
@@ -159,19 +161,19 @@
 <h2 id="browsernewpage">browser.newPage()</h2>
 <p>newPage为browser中浏览器上下文的方法，在进行页面的操作时需要传递浏览器contextId</p>
 <p>使用CDP中Target域的<code>Target.createTarget</code>创建页面:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_createPageInContext</span>(<span style="color:#a6e22e">contextId</span>) {
-  <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>);
-  <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">_initializedPromise</span>, <span style="color:#e6db74">&#39;Failed to create target for page&#39;</span>);
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">async</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">createPageInContext</span>(<span style="color:#a6e22e">contextId</span>) {
+  <span style="color:#66d9ef">const</span> {<span style="color:#a6e22e">targetId</span>} <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">connection</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Target.createTarget&#39;</span>, {<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;about:blank&#39;</span>, <span style="color:#a6e22e">browserContextId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">contextId</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">undefined</span>});
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">targets</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">targetId</span>);
+  <span style="color:#a6e22e">assert</span>(<span style="color:#66d9ef">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">initializedPromise</span>, <span style="color:#e6db74">&#39;Failed to create target for page&#39;</span>);
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">page</span>();
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">page</span>;
 }
 </code></pre></div><h2 id="pagegoto">page.goto()</h2>
 <p>实际上是执行FrameManager对象的navigate()方法:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Page -&gt; FrameManager(_frameManager)
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">navigate</span>(<span style="color:#a6e22e">client</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">referrer</span>, <span style="color:#a6e22e">frameId</span>) {
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">navigate</span>(<span style="color:#a6e22e">client</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">referrer</span>, <span style="color:#a6e22e">frameId</span>) {
   <span style="color:#66d9ef">try</span> {
-    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Page.navigate&#39;</span>, {<span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">referrer</span>, <span style="color:#a6e22e">frameId</span>});
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Page.navigate&#39;</span>, {<span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">referrer</span>, <span style="color:#a6e22e">frameId</span>});
     <span style="color:#a6e22e">ensureNewDocumentNavigation</span> <span style="color:#f92672">=</span> <span style="color:#f92672">!!</span><span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">loaderId</span>;
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">errorText</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">errorText</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> at </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">url</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>) <span style="color:#f92672">:</span> <span style="color:#66d9ef">null</span>;
   } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">error</span>) {
@@ -194,28 +196,28 @@
 <li>_secondaryWorld - 负责操作行为，</li>
 </ul>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Page -&gt; FrameManager(_frameManager) -&gt; DOMWorld(_secondaryWorld)
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">click</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">options</span>) {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span>);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">async</span> <span style="color:#a6e22e">click</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">options</span>) {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span>);
   <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">handle</span>, <span style="color:#e6db74">&#39;No node found for selector: &#39;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">selector</span>);
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">click</span>(<span style="color:#a6e22e">options</span>);
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">click</span>(<span style="color:#a6e22e">options</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
 }
 </code></pre></div><h2 id="page-pageevaluate-pageeval">page.$(), page.evaluate(), page.$eval()</h2>
 <p>属于<code>_frameManager</code>中<code>_mainWorld</code>的操作，executionContext中执行元素选择与<code>evaluate</code>等操作。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Page -&gt; FrameManager(_frameManager) -&gt; DOMWorld(_mainWorld)
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span>) {
-  <span style="color:#66d9ef">const</span> document <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_document</span>();
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> document.<span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span>);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">async</span> <span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span>) {
+  <span style="color:#66d9ef">const</span> document <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span>document();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> document.<span style="color:#a6e22e">$</span>(<span style="color:#a6e22e">selector</span>);
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">value</span>;
 }
 ...
-<span style="color:#a6e22e">async</span> <span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">pageFunction</span>, ...<span style="color:#a6e22e">args</span>) {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">executionContext</span>();
+<span style="color:#66d9ef">async</span> <span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">pageFunction</span>, ...<span style="color:#a6e22e">args</span>) {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">executionContext</span>();
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">evaluate</span>(<span style="color:#a6e22e">pageFunction</span>, ...<span style="color:#a6e22e">args</span>);
 }
 ...
-<span style="color:#a6e22e">async</span> <span style="color:#a6e22e">$eval</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">pageFunction</span>, ...<span style="color:#a6e22e">args</span>) {
-  <span style="color:#66d9ef">const</span> document <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_document</span>();
+<span style="color:#66d9ef">async</span> <span style="color:#a6e22e">$eval</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">pageFunction</span>, ...<span style="color:#a6e22e">args</span>) {
+  <span style="color:#66d9ef">const</span> document <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span>document();
   <span style="color:#66d9ef">return</span> document.<span style="color:#a6e22e">$eval</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">pageFunction</span>, ...<span style="color:#a6e22e">args</span>);
 }
 ...
@@ -223,27 +225,27 @@
 </code></pre></div><p>除此之外，还有用来选择多个元素和Handle的<code>page.$$()</code>, <code>page.$$eval()</code>方法。</p>
 <h2 id="pagewaitforselector">Page.waitForSelector()</h2>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Page -&gt; FrameManager(_frameManager)
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">options</span>) {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_secondaryWorld</span>.<span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">options</span>);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">async</span> <span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">options</span>) {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">secondaryWorld</span>.<span style="color:#a6e22e">waitForSelector</span>(<span style="color:#a6e22e">selector</span>, <span style="color:#a6e22e">options</span>);
   <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">handle</span>)
     <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span>;
   <span style="color:#75715e">// executionContext -&gt; [CDP]Runtime Domain -&gt; ExecutionContextDescription
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">mainExecutionContext</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_mainWorld</span>.<span style="color:#a6e22e">executionContext</span>();
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">mainExecutionContext</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">mainWorld</span>.<span style="color:#a6e22e">executionContext</span>();
   <span style="color:#75715e">// _adoptElementHandle -&gt; [CDP]DOM Domain -&gt; describeNode + resolveNode
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">mainExecutionContext</span>.<span style="color:#a6e22e">_adoptElementHandle</span>(<span style="color:#a6e22e">handle</span>);
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">mainExecutionContext</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">adoptElementHandle</span>(<span style="color:#a6e22e">handle</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">result</span>;
 }
 
 <span style="color:#75715e">// Page -&gt; FrameManager(_frameManager) -&gt; DOMWorld(_secondaryWorld)
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">_waitForSelectorOrXPath</span>(<span style="color:#a6e22e">selectorOrXPath</span>, <span style="color:#a6e22e">isXPath</span>, <span style="color:#a6e22e">options</span> <span style="color:#f92672">=</span> {}) {
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">async</span> <span style="color:#ae81ff">_</span><span style="color:#a6e22e">waitForSelectorOrXPath</span>(<span style="color:#a6e22e">selectorOrXPath</span>, <span style="color:#a6e22e">isXPath</span>, <span style="color:#a6e22e">options</span> <span style="color:#f92672">=</span> {}) {
   ...
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">polling</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">waitForVisible</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">waitForHidden</span> <span style="color:#f92672">?</span> <span style="color:#e6db74">&#39;raf&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;mutation&#39;</span>;
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">title</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">isXPath</span> <span style="color:#f92672">?</span> <span style="color:#e6db74">&#39;XPath&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;selector&#39;</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> &#34;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">selectorOrXPath</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">waitForHidden</span> <span style="color:#f92672">?</span> <span style="color:#e6db74">&#39; to be hidden&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;&#39;</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>;
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">waitTask</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">WaitTask</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">predicate</span>, <span style="color:#a6e22e">title</span>, <span style="color:#a6e22e">polling</span>, <span style="color:#a6e22e">timeout</span>, <span style="color:#a6e22e">selectorOrXPath</span>, <span style="color:#a6e22e">isXPath</span>, <span style="color:#a6e22e">waitForVisible</span>, <span style="color:#a6e22e">waitForHidden</span>);
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">waitTask</span>.<span style="color:#a6e22e">promise</span>;
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handle</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">waitTask</span>.<span style="color:#a6e22e">promise</span>;
   <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">asElement</span>()) {
-    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
+    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">dispose</span>();
     <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span>;
   }
   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">handle</span>.<span style="color:#a6e22e">asElement</span>();
@@ -271,12 +273,12 @@
 <p>例子:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pptrFirefox</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;puppeteer-firefox&#39;</span>);
 
-(<span style="color:#a6e22e">async</span> () =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">pptrFirefox</span>.<span style="color:#a6e22e">launch</span>();
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://example.com&#39;</span>);
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({<span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;example.png&#39;</span>});
-  <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
+(<span style="color:#66d9ef">async</span> () =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">browser</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">pptrFirefox</span>.<span style="color:#a6e22e">launch</span>();
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">page</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">newPage</span>();
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#66d9ef">goto</span>(<span style="color:#e6db74">&#39;https://example.com&#39;</span>);
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">page</span>.<span style="color:#a6e22e">screenshot</span>({<span style="color:#a6e22e">path</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;example.png&#39;</span>});
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">browser</span>.<span style="color:#a6e22e">close</span>();
 })();
 </code></pre></div><p>语法与puppeteer保持一致。</p>
         </div>
@@ -299,7 +301,7 @@
     <h2>See Also</h2>
     <ul class="listing">
         
-        <li><a href="/post/front-end/some-tips-of-using-puppetter/">可爱的Puppeteer使用小技巧</a></li>
+        <li><a href="/post/front-end/some-tips-of-using-puppetter/">几个Puppeteer使用小技巧</a></li>
         
         <li><a href="/post/front-end/under-the-hood-at-event-loop/">当我们在说事件循环时，我们在说什么</a></li>
         
@@ -313,9 +315,9 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/puppeteer'>puppeteer</a></li>
+                <li><a href='/tags/puppeteer'>puppeteer</a></li>
                 
-                <li><a href='http://yrq110.me/tags/node'>node</a></li>
+                <li><a href='/tags/node'>node</a></li>
                 
             </ul>
             
@@ -337,6 +339,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -383,15 +435,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -400,7 +452,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -409,7 +461,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -419,7 +471,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -459,8 +511,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -546,47 +596,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Canvas2D渲染库简析:（一）Fabric | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Canvas2D渲染库简析:（一）Fabric - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/dive-into-2d-canvas-framework-i-fabric/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -143,7 +145,7 @@
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">height</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fontSize</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1.5</span>;
     <span style="color:#66d9ef">this</span>.
   },
-  <span style="color:#a6e22e">_render</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">ctx</span>) {
+  <span style="color:#ae81ff">_</span><span style="color:#a6e22e">render</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">ctx</span>) {
     <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">font</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;30px Sans&#34;</span>;
     <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span><span style="color:#f92672">=</span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">colors</span>.<span style="color:#a6e22e">length</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">&gt;</span><span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">--</span>) {
       <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">fillStyle</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">colors</span>[<span style="color:#a6e22e">i</span>];
@@ -261,7 +263,7 @@ $$</p>
   <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">save</span>();
   <span style="color:#75715e">//apply viewport transform once for all rendering process
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">1</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">3</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">4</span>], <span style="color:#a6e22e">v</span>[<span style="color:#ae81ff">5</span>]);
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderObjects</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">objects</span>);
+  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">renderObjects</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">objects</span>);
   <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">restore</span>();
 }
 </code></pre></div><p>相关的zoom/pan操作对视口变换矩阵的修改：</p>
@@ -300,7 +302,7 @@ $$</p>
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">shouldCenterOrigin</span> <span style="color:#f92672">=</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">originX</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;center&#39;</span> <span style="color:#f92672">||</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">originY</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;center&#39;</span>) <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">centeredRotation</span>;
   <span style="color:#75715e">// 以中心为变换基准点
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">shouldCenterOrigin</span>) {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setOriginToCenter</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setOriginToCenter</span>();
   }
   <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;angle&#39;</span>, <span style="color:#a6e22e">angle</span>);
   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
@@ -309,8 +311,8 @@ $$</p>
 <li>
 <p>控制器上的交互</p>
 <p>控制器交互处理过程中最终会调用canvas上的object变换方法，如_rotateObject：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">_rotateObject</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>) {
-  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">t</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_currentTransform</span>,
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#ae81ff">_</span><span style="color:#a6e22e">rotateObject</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>) {
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">t</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">currentTransform</span>,
       <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">constraintPosition</span>,
       <span style="color:#a6e22e">constraintPosition</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">translateToOriginPoint</span>(<span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">getCenterPoint</span>(), <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">originX</span>, <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">originY</span>);
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">lastAngle</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">atan2</span>(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">ey</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">constraintPosition</span>.<span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">ex</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">constraintPosition</span>.<span style="color:#a6e22e">x</span>),
@@ -358,19 +360,19 @@ $$</p>
   <span style="color:#66d9ef">return</span> [<span style="color:#a6e22e">cos</span>, <span style="color:#a6e22e">sin</span>, <span style="color:#f92672">-</span><span style="color:#a6e22e">sin</span>, <span style="color:#a6e22e">cos</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>];
 },
 <span style="color:#75715e">// src/mixins/object_geometry.mixin.js
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">_calcTranslateMatrix</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>() {
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">_</span><span style="color:#a6e22e">calcTranslateMatrix</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>() {
   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">center</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getCenterPoint</span>();
   <span style="color:#66d9ef">return</span> [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">center</span>.<span style="color:#a6e22e">y</span>];
 },
 </code></pre></div><p>计算控制器坐标变换位置：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/mixins/object_geometry.mixin.js
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">calcCoords</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">absolute</span>) {
-  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">rotateMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcRotateMatrix</span>(),
-      <span style="color:#a6e22e">translateMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_calcTranslateMatrix</span>(),
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">rotateMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">calcRotateMatrix</span>(),
+      <span style="color:#a6e22e">translateMatrix</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">calcTranslateMatrix</span>(),
       <span style="color:#a6e22e">startMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multiplyMatrices</span>(<span style="color:#a6e22e">translateMatrix</span>, <span style="color:#a6e22e">rotateMatrix</span>),
       <span style="color:#a6e22e">vpt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getViewportTransform</span>(),
       <span style="color:#a6e22e">finalMatrix</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">absolute</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">startMatrix</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">multiplyMatrices</span>(<span style="color:#a6e22e">vpt</span>, <span style="color:#a6e22e">startMatrix</span>),
-      <span style="color:#a6e22e">dim</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getTransformedDimensions</span>(),
+      <span style="color:#a6e22e">dim</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">getTransformedDimensions</span>(),
       <span style="color:#a6e22e">w</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">dim</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>, <span style="color:#a6e22e">h</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">dim</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>,
       <span style="color:#a6e22e">tl</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">h</span> }, <span style="color:#a6e22e">finalMatrix</span>),
       <span style="color:#a6e22e">tr</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformPoint</span>({ <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">h</span> }, <span style="color:#a6e22e">finalMatrix</span>),
@@ -413,14 +415,14 @@ $$</p>
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">pointer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getPointer</span>(<span style="color:#a6e22e">e</span>, <span style="color:#66d9ef">true</span>),
       <span style="color:#a6e22e">aObjects</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getActiveObjects</span>();
   <span style="color:#75715e">// 若存在激活中的对象，则再判断他们的分组和顶点选择情况
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">aObjects</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">skipGroup</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">activeObject</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_searchPossibleTargets</span>([<span style="color:#a6e22e">activeObject</span>], <span style="color:#a6e22e">pointer</span>)) {
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">aObjects</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">skipGroup</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">activeObject</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">searchPossibleTargets</span>([<span style="color:#a6e22e">activeObject</span>], <span style="color:#a6e22e">pointer</span>)) {
     <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">activeObject</span>;
   }
   <span style="color:#75715e">// -------------------------
 </span><span style="color:#75715e"></span>  <span style="color:#75715e">// 其他关于当前激活对象的条件判断
 </span><span style="color:#75715e"></span>  <span style="color:#75715e">// -------------------------
 </span><span style="color:#75715e"></span>  <span style="color:#75715e">// 接着寻找新的激活对象
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_searchPossibleTargets</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_objects</span>, <span style="color:#a6e22e">pointer</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">searchPossibleTargets</span>(<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">objects</span>, <span style="color:#a6e22e">pointer</span>);
   <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">e</span>[<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">altSelectionKey</span>] <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">activeTarget</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">target</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">activeTarget</span>) {
     <span style="color:#a6e22e">target</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">activeTarget</span>;
     <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">targets</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">activeTargetSubs</span>;
@@ -470,10 +472,10 @@ $$</p>
 <p>对象处理</p>
 <p>设置对象属性, 计算边界点用于拖拽变换, 触发事件</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/static_canvas.class.js
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">_onObjectAdded</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">obj</span>) {
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">_</span><span style="color:#a6e22e">onObjectAdded</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">obj</span>) {
   <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">stateful</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">setupState</span>();
   <span style="color:#75715e">// 绑定canvas属性
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">_set</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>, <span style="color:#66d9ef">this</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">set</span>(<span style="color:#e6db74">&#39;canvas&#39;</span>, <span style="color:#66d9ef">this</span>);
   <span style="color:#75715e">// 设置包围矩形四角坐标，用于拖拽变换
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">setCoords</span>();
   <span style="color:#75715e">// 在canvas与对象上触发事件
@@ -500,14 +502,14 @@ $$</p>
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">render</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">ctx</span>) {
   <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">save</span>()
   <span style="color:#75715e">// 应用融合选项(globalCompositeOperation)
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setupCompositeOperation</span>(<span style="color:#a6e22e">ctx</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setupCompositeOperation</span>(<span style="color:#a6e22e">ctx</span>);
   <span style="color:#75715e">// 绘制表示选中区域的矩形
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawSelectionBackground</span>(<span style="color:#a6e22e">ctx</span>); 
   <span style="color:#75715e">// 在ctx上应用变换矩阵
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">ctx</span>); 
   <span style="color:#75715e">// 设置透明度(gloablAlpha)与阴影(shadow*属性)
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setOpacity</span>(<span style="color:#a6e22e">ctx</span>); 
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setShadow</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setOpacity</span>(<span style="color:#a6e22e">ctx</span>); 
+  <span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setShadow</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
   <span style="color:#75715e">// 绘制对象的主函数
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawObject</span>(<span style="color:#a6e22e">ctx</span>);
   <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">restore</span>()
@@ -516,12 +518,12 @@ $$</p>
 <li>
 <p>在drawObject中会进行属性设置与绘制</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// src/shapes/object.class.js
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_renderBackground</span>(<span style="color:#a6e22e">ctx</span>);
-<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setStrokeStyles</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
-<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_setFillStyles</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">renderBackground</span>(<span style="color:#a6e22e">ctx</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setStrokeStyles</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">setFillStyles</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#66d9ef">this</span>);
 <span style="color:#75715e">// 自定义对象实现的_render()渲染方法会在这里被执行
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_render</span>(<span style="color:#a6e22e">ctx</span>);
-<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_drawClipPath</span>(<span style="color:#a6e22e">ctx</span>);
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">render</span>(<span style="color:#a6e22e">ctx</span>);
+<span style="color:#66d9ef">this</span>.<span style="color:#ae81ff">_</span><span style="color:#a6e22e">drawClipPath</span>(<span style="color:#a6e22e">ctx</span>);
 <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fill</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">originalFill</span>;
 <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">stroke</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">originalStroke</span>;
 </code></pre></div></li>
@@ -580,7 +582,7 @@ $$</p>
 <li>绘制背景色，canvas backgroundColor</li>
 <li>绘制背景图片，canvas backgroundImage</li>
 <li>绘制图形对象，canvas objects</li>
-<li>绘制图形对象控制器，canvas objects&rsquo; controls</li>
+<li>绘制图形对象控制器，canvas objects' controls</li>
 <li>绘制图形对象选择器，canvas object selection</li>
 <li>绘制裁剪区域层，canvas clipped area</li>
 <li>绘制层叠图像，canvas overlay image</li>
@@ -674,9 +676,9 @@ $$</p>
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/canvas'>canvas</a></li>
+                <li><a href='/tags/canvas'>canvas</a></li>
                 
-                <li><a href='http://yrq110.me/tags/fabric'>fabric</a></li>
+                <li><a href='/tags/fabric'>fabric</a></li>
                 
             </ul>
             
@@ -698,6 +700,56 @@ $$</p>
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -744,15 +796,15 @@ $$</p>
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -761,7 +813,7 @@ $$</p>
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -770,7 +822,7 @@ $$</p>
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -780,7 +832,7 @@ $$</p>
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -820,8 +872,6 @@ $$</p>
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -907,47 +957,6 @@ $$</p>
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>

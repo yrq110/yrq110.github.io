@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
 
     <title>Web Worker融会贯通 | ￥ЯႭ1I0</title>
     <meta property="og:title" content="Web Worker融会贯通 - ￥ЯႭ1I0">
@@ -20,15 +21,16 @@
         
     <meta name="author" content="yrq110">
     <meta property="og:url" content="http://yrq110.me/post/front-end/introduction-to-web-worker/">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
     <link rel="stylesheet" href='/css/style.css'>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     
-
-
+    
+    
+    
     
     
 </head>
@@ -79,7 +81,7 @@
         <div class="post-meta">
             <span>|</span>
             
-            <span class="meta-category"><a href='http://yrq110.me/categories/front-end'>front-end</a></span>
+            <span class="meta-category"><a href='/categories/front-end'>front-end</a></span>
             
         </div>
         
@@ -146,13 +148,19 @@
 <li><strong>网络访问</strong>: XMLHttpRequest(Service Worker中无法使用)</li>
 </ul>
 <p>主线程与worker线程之间的消息传递示意图:
-<img src="https://cdn-images-1.medium.com/max/1600/1*Cvw3z6LjQG9VnXc7NUz7bA.png" alt=""></p>
+
+        <img class="mx-auto" alt="" src="https://cdn-images-1.medium.com/max/1600/1*Cvw3z6LjQG9VnXc7NUz7bA.png" />   
+    </p>
 <h2 id="提升渲染性能">提升渲染性能</h2>
 <p>具体可以看看<a href="https://medium.com/launch-school/what-are-web-workers-4a0e1ded7a67">这篇文章</a></p>
 <p>直接在主线程中运行一段代码
-<img src="https://cdn-images-1.medium.com/max/800/1*n_HhYQ4Sk7E9u8M9oUNAjg.png" alt=""></p>
+
+        <img class="mx-auto" alt="" src="https://cdn-images-1.medium.com/max/800/1*n_HhYQ4Sk7E9u8M9oUNAjg.png" />   
+    </p>
 <p>使用worker后
-<img src="https://cdn-images-1.medium.com/max/800/1*xQSjqbNvWAHhic_JKJobpA.png" alt=""></p>
+
+        <img class="mx-auto" alt="" src="https://cdn-images-1.medium.com/max/800/1*xQSjqbNvWAHhic_JKJobpA.png" />   
+    </p>
 <p>worker的执行不会影响到页面渲染进程的执行</p>
 <h1 id="怎么用">怎么用</h1>
 <ol>
@@ -196,15 +204,15 @@
 <span style="color:#66d9ef">import</span> <span style="color:#a6e22e">axios</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;axios&#39;</span>
 <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">intervalTasks</span> <span style="color:#f92672">=</span> []
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pollingPeriod</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">5000</span>
-<span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">e</span> =&gt; {
+<span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">e</span> =&gt; {
     <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">message</span>, <span style="color:#a6e22e">id</span>, <span style="color:#a6e22e">token</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>
     <span style="color:#66d9ef">switch</span> (<span style="color:#a6e22e">message</span>) {
         <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">WORKER_SIGNAL</span>.<span style="color:#a6e22e">AUDIO_POLLING</span><span style="color:#f92672">:</span>
             <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">apiURL</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/upload/status&#39;</span>
             <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">param</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`?ids=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>
-            <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">interval</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">setInterval</span>(<span style="color:#a6e22e">async</span>() =&gt; {
+            <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">interval</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">setInterval</span>(<span style="color:#66d9ef">async</span>() =&gt; {
                 <span style="color:#66d9ef">try</span> {
-                    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">res</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">url</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">param</span>, { <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">token</span> } })
+                    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">res</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">url</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">param</span>, { <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">token</span> } })
                     <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;success&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>})
                 } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">err</span>) {
                     <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;error&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">err</span>})
@@ -288,12 +296,12 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// node-worker.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">WORKER_SIGNAL</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@/utils/config&#39;</span>
 <span style="color:#66d9ef">import</span> <span style="color:#a6e22e">nodeUtils</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@/utils/node&#39;</span>
-<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">e</span> =&gt; {
+<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">e</span> =&gt; {
     <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">message</span>, <span style="color:#a6e22e">detailInfos</span>,<span style="color:#a6e22e">type</span>,<span style="color:#a6e22e">targetPath</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>
     <span style="color:#66d9ef">switch</span> (<span style="color:#a6e22e">message</span>) {
         <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">WORKER_SIGNAL</span>.<span style="color:#a6e22e">EXPORT_CONFERENCE</span><span style="color:#f92672">:</span>
             <span style="color:#66d9ef">try</span> {
-                <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">nodeUtils</span>.<span style="color:#a6e22e">generateOfficeWord</span>(<span style="color:#a6e22e">detailInfos</span>, <span style="color:#a6e22e">type</span>, <span style="color:#a6e22e">targetPath</span>)
+                <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">nodeUtils</span>.<span style="color:#a6e22e">generateOfficeWord</span>(<span style="color:#a6e22e">detailInfos</span>, <span style="color:#a6e22e">type</span>, <span style="color:#a6e22e">targetPath</span>)
                 <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;success&#39;</span>})
             } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">err</span>) {
                 <span style="color:#a6e22e">self</span>.<span style="color:#a6e22e">postMessage</span>({<span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;error&#39;</span><span style="color:#960050;background-color:#1e0010">，</span> <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">err</span>})
@@ -349,9 +357,9 @@
 </span><span style="color:#e6db74">	}
 </span><span style="color:#e6db74">`</span>);
 
-(<span style="color:#a6e22e">async</span> () =&gt; {
-	<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;3 + 9 = &#39;</span>, <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">9</span>));
-	<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;1 + 2 = &#39;</span>, <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>));
+(<span style="color:#66d9ef">async</span> () =&gt; {
+	<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;3 + 9 = &#39;</span>, <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">9</span>));
+	<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;1 + 2 = &#39;</span>, <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">worker</span>.<span style="color:#a6e22e">add</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>));
 })();
 </code></pre></div><h3 id="workerize-loader的使用">workerize-loader的使用</h3>
 <p>如果是在webpack环境中需要使用<code>workerize-loader</code>来载入worker:</p>
@@ -380,7 +388,7 @@
   <span style="color:#75715e">// 若为函数，则获取函数的字符串转化结果
 </span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">code</span><span style="color:#f92672">===</span><span style="color:#e6db74">&#39;function&#39;</span>) <span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`(</span><span style="color:#e6db74">${</span>Function.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">code</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">)(</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">)`</span>;
   <span style="color:#75715e">// 转换为commonjs模块规范
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">toCjs</span>(<span style="color:#a6e22e">code</span>, <span style="color:#a6e22e">exportsObjName</span>, <span style="color:#a6e22e">exports</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">`</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">n(</span><span style="color:#e6db74">${</span>Function.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">setup</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">)(self,</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">,{})`</span>;
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">code</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">toCjs</span>(<span style="color:#a6e22e">code</span>, <span style="color:#a6e22e">exportsObjName</span>, <span style="color:#a6e22e">exports</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">`\n(</span><span style="color:#e6db74">${</span>Function.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">setup</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">)(self,</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">,{})`</span>;
 	<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">URL</span>.<span style="color:#a6e22e">createObjectURL</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Blob</span>([<span style="color:#a6e22e">code</span>])),
 		<span style="color:#a6e22e">worker</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">options</span>);
     ...
@@ -397,7 +405,7 @@
 		<span style="color:#a6e22e">exports</span>[<span style="color:#a6e22e">name</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
 		<span style="color:#66d9ef">return</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">before</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">.</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">type</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">ws</span><span style="color:#e6db74">}${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>;
 	});
-	<span style="color:#66d9ef">return</span> <span style="color:#e6db74">`var </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">={};</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">n</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">code</span><span style="color:#e6db74">}</span><span style="color:#960050;background-color:#1e0010">\</span><span style="color:#e6db74">n</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">;`</span>;
+	<span style="color:#66d9ef">return</span> <span style="color:#e6db74">`var </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">={};\n</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">code</span><span style="color:#e6db74">}</span><span style="color:#e6db74">\n</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">exportsObjName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">;`</span>;
 }
 </code></pre></div><h2 id="comlink--comlink-loader">comlink &amp; comlink-loader</h2>
 <p>如果想使用简化的worker操作接口，可以使用comlink:</p>
@@ -419,7 +427,7 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">api</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxy</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#39;worker.js&#39;</span>));
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">obj</span> <span style="color:#f92672">=</span> { <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span> };
 <span style="color:#75715e">// await api.setXto4(obj); obj.x仍为0
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">await</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">setXto4</span>(<span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxyValue</span>(<span style="color:#a6e22e">obj</span>)); <span style="color:#75715e">//obj.x变成了4
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">await</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">setXto4</span>(<span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxyValue</span>(<span style="color:#a6e22e">obj</span>)); <span style="color:#75715e">//obj.x变成了4
 </span><span style="color:#75715e"></span><span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">obj</span>.<span style="color:#a6e22e">x</span>);
 </code></pre></div></li>
 </ul>
@@ -428,8 +436,8 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// main.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">MyClass</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Comlink</span>.<span style="color:#a6e22e">proxy</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#e6db74">&#34;worker.js&#34;</span>));
 <span style="color:#75715e">// `instance` is an instance of `MyClass` that lives in the worker!
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">MyClass</span>();
-<span style="color:#a6e22e">await</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">logSomething</span>(); <span style="color:#75715e">// logs “myValue = 42”
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">MyClass</span>();
+<span style="color:#66d9ef">await</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">logSomething</span>(); <span style="color:#75715e">// logs “myValue = 42”
 </span><span style="color:#75715e"></span>
 <span style="color:#75715e">// worker.js
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myValue</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">42</span>;
@@ -458,12 +466,12 @@
 </span><span style="color:#75715e"></span>  <span style="color:#a6e22e">activateEndpoint</span>(<span style="color:#a6e22e">endpoint</span>);
   <span style="color:#75715e">// 返回一个绑定了endpoint中的代理对象、值或其他类型
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">cbProxy</span>(
-    <span style="color:#a6e22e">async</span> <span style="color:#a6e22e">irequest</span> =&gt; {
+    <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">irequest</span> =&gt; {
       <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">args</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">WrappedValue</span>[] <span style="color:#f92672">=</span> [];
       <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">irequest</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;APPLY&#34;</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">irequest</span>.<span style="color:#a6e22e">type</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;CONSTRUCT&#34;</span>)
       <span style="color:#a6e22e">args</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">irequest</span>.<span style="color:#a6e22e">argumentsList</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">wrapValue</span>);
       <span style="color:#75715e">// 获取监听到的MessageEvent事件对象
-</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">pingPongMessage</span>(
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">pingPongMessage</span>(
         <span style="color:#a6e22e">endpoint</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">Endpoint</span>,
         Object.<span style="color:#a6e22e">assign</span>({}, <span style="color:#a6e22e">irequest</span>, { <span style="color:#a6e22e">argumentsList</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">args</span> }),
         <span style="color:#a6e22e">transferableProperties</span>(<span style="color:#a6e22e">args</span>)
@@ -550,7 +558,7 @@
             
             <ul class="clearfix">
                 
-                <li><a href='http://yrq110.me/tags/web-worker'>web worker</a></li>
+                <li><a href='/tags/web-worker'>web worker</a></li>
                 
             </ul>
             
@@ -572,6 +580,56 @@
     </div>
     
 </div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
 
                 </div>
 
@@ -618,15 +676,15 @@
     </li>
     
     <li>
-        <a href="http://yrq110.me/post/front-end/arrow-function-in-class-proporties/" title="class中的箭头函数会输出什么">class中的箭头函数会输出什么</a>
-    </li>
-    
-    <li>
         <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
     </li>
     
     <li>
         <a href="http://yrq110.me/post/front-end/typescript-decorator-practice/" title="TypeScript装饰器整理及用例介绍">TypeScript装饰器整理及用例介绍</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/dive-into-playwright/" title="跨平台的浏览器自动化工具Playwright简析">跨平台的浏览器自动化工具Playwright简析</a>
     </li>
     
 </ul>
@@ -635,7 +693,7 @@
     
 
     <section class="widget">
-        <h3 class="widget-title">分类</h3>
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
     <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (1)</a></li>
@@ -644,7 +702,7 @@
     
     <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
     
-    <li><a href="http://yrq110.me/categories/front-end/">front-end (27)</a></li>
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
     
     <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
     
@@ -654,7 +712,7 @@
     </section>
 
     <section class="widget">
-        <h3 class="widget-title">标签</h3>
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
     <a href="http://yrq110.me/tags/blink/">blink</a>
@@ -694,8 +752,6 @@
     <a href="http://yrq110.me/tags/hugo/">hugo</a>
     
     <a href="http://yrq110.me/tags/iframe/">iframe</a>
-    
-    <a href="http://yrq110.me/tags/javascript/">javascript</a>
     
     <a href="http://yrq110.me/tags/konva/">konva</a>
     
@@ -781,47 +837,6 @@
             </div>
         </div>
     </div>
-    <footer id="footer">
-    <div class="container">
-        &copy; 2020 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>.
-        Powered by <a rel="nofollow noreferer noopener" href="https://gohugo.io" target="_blank">Hugo</a>.
-        <a href="https://www.flysnow.org/" target="_blank">Theme</a> based on <a href="https://github.com/flysnow-org/maupassant-hugo" target="_blank">maupassant</a>.
-        
-    </div>
-</footer>
-
-
-    
-    <script type="text/javascript">
-        window.MathJax = {
-            tex2jax: {
-                inlineMath: [['$', '$']],
-                processEscapes: true
-                }
-            };
-    </script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
-
-<a id="rocket" href="#top"></a>
-<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-131471642-1', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-
-
-
-
 </body>
 
 </html>
