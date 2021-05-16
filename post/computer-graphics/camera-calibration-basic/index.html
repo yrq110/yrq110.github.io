@@ -97,11 +97,12 @@
 <p>将世界空间中的一点转换为相机图像中的一点，即从真实空间投影到图像空间的过程，主要分为两步:</p>
 <ol>
 <li>世界坐标系(3D) ==&gt; 相机坐标系(3D)</li>
-<li>相机坐标系(3D) ==&gt; 图像平面(2D)</li>
+<li>相机坐标系(3D) ==&gt; 像素平面(2D)</li>
 </ol>
 <p>为了实现这个投影过程，需要得到三维空间中变换的<strong>外参矩阵</strong>与三维到图像空间变换的<strong>内参矩阵</strong>，即<strong>相机标定(Camera Calibration)</strong>。</p>
 <p>整个过程可以用下面的公式表示:</p>
 <p>$$
+s
 \begin{bmatrix}
 u \newline
 v \newline
@@ -111,7 +112,7 @@ v \newline
 \begin{bmatrix} X_w \newline Y_w \newline Z_w \newline 1
 \end{bmatrix}
 $$</p>
-<p>其中$s$为比例因子，$K$为内参矩阵，$T$为外参矩阵，$[u,v]$为图像平面坐标，$[X,Y,Z]$为世界坐标系坐标</p>
+<p>其中$s$为比例因子，$K$为内参矩阵，$T$为外参矩阵，$[u,v]$为像素平面坐标，$[X,Y,Z]$为世界坐标系坐标</p>
 <h3 id="外参矩阵">外参矩阵</h3>
 <p>外参矩阵即从世界坐标原点移动到相机中心的变换矩阵。</p>
 <p>$$
@@ -128,22 +129,22 @@ $$</p>
 \begin{bmatrix} X_c \newline Y_c \newline Z_c \end{bmatrix}=T\begin{bmatrix} X_w \newline Y_w \newline Z_w \newline 1 \end{bmatrix}
 $$</p>
 <h3 id="内参矩阵">内参矩阵</h3>
-<p>内参矩阵即从相机中心利用相似性投影到图像平面的变换矩阵。</p>
+<p>内参矩阵即从相机中心利用相似性投影到像素平面的变换矩阵。</p>
 <p>$$
 K=
 \begin{bmatrix}
-f_{x} &amp; 0 &amp; c_{x} \newline
+f_{x} &amp; k &amp; c_{x} \newline
 0     &amp; f_{y} &amp; c_{y} \newline
 0 &amp; 0 &amp; 1
 \end{bmatrix}
 $$</p>
-<p>其中$c_{x}$与$c_{y}$表示光心/投影中心(optical center)，$f_{x}$与$f_{y}$表示两个方向上的焦距(focal length)。</p>
-<p>得到图像平面上的点:</p>
+<p>其中$c_{x}$与$c_{y}$表示像素空间的光心/投影中心(optical center)，$f_{x}$与$f_{y}$表示焦距(focal length)，$k$表示倾斜系数，$k=f_xtan\alpha$。</p>
+<p>得到像素平面上的点:</p>
 <p>$$
 \begin{bmatrix} u \newline v \newline 1\end{bmatrix}=K\begin{bmatrix} X_c \newline Y_c \newline Z_c \end{bmatrix}
 $$</p>
 <h2 id="畸变系数">畸变系数</h2>
-<p>相机在成像时可能根据设备原因会产生一定的位置误差，通过估计的畸变系数可得到三维空间中的点在图像平面的真实位置。</p>
+<p>相机在成像时可能根据设备原因会产生一定的位置误差，通过估计的畸变系数可得到三维空间中的点在像素平面的真实位置。</p>
 <p><strong>径向畸变</strong></p>
 <p>产生原因: 镜头在聚焦大量光线时在边缘会出现一定幅度的弯曲，产生图像边缘扭曲的效果。</p>
 <p>常用使用$r=0$处的泰勒级数展开的前几项来近似描述径向畸变，畸变后的归一化坐标为:
@@ -169,15 +170,15 @@ x_{distorted}=x+2p_1xy+p_2(r^2+2x^2) \newline
 y_{distorted}=y+2p_2xy+p_1(r^2+2y^2) \newline
 \end{array}
 $$</p>
-<p><strong>图像平面</strong></p>
-<p>一般只使用综上5个畸变参数来描述透镜畸变，即:</p>
+<p><strong>像素平面</strong></p>
+<p>实际计算过程中，如果考虑太多高阶的畸变参数，会导致标定求解的不稳定，一般只使用综上5个畸变参数来描述透镜畸变，即:</p>
 <p>$$
 \begin{array}{l}
 x_{distorted}=x(1+k_1r^2+k_2r^4+k_3r^6)+2p_1xy+p_2(r^2+2x^2) \newline
 y_{distorted}=y(1+k_1r^2+k_2r^4+k_3r^6)+2p_2xy+p_1(r^2+2y^2) \newline
 \end{array}
 $$</p>
-<p>得到畸变后的点之后，再利用内参矩阵得到在图像平面上对应的点:</p>
+<p>得到畸变后的点之后，再利用内参矩阵得到在像素平面上对应的点:</p>
 <p>$$
 \begin{bmatrix}
 u \newline
