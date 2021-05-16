@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>calibration on ￥ЯႭ1I0</title>
+    <link>http://yrq110.me/tags/calibration/</link>
+    <description>Recent content in calibration on ￥ЯႭ1I0</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 14 May 2021 16:32:20 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/calibration/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>相机标定入门</title>
+      <link>http://yrq110.me/post/computer-graphics/camera-calibration-basic/</link>
+      <pubDate>Fri, 14 May 2021 16:32:20 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/computer-graphics/camera-calibration-basic/</guid>
+      <description>&lt;p&gt;CV或融合标注中的一个常见概念，简单介绍:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;内参与外参矩阵&lt;/li&gt;
+&lt;li&gt;畸变系数&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

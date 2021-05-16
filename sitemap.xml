@@ -3,16 +3,41 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>http://yrq110.me/post/</loc>
-    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url><url>
-    <loc>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</loc>
-    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
+    <loc>http://yrq110.me/tags/calibration/</loc>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url><url>
     <loc>http://yrq110.me/categories/</loc>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/categories/computer-graphics/</loc>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/tags/</loc>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/post/computer-graphics/camera-calibration-basic/</loc>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/</loc>
+    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/post/front-end/contents-about-blink-web-worker/</loc>
     <lastmod>2020-06-07T17:14:32+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -22,17 +47,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url><url>
-    <loc>http://yrq110.me/tags/</loc>
-    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
     <loc>http://yrq110.me/tags/web-worker/</loc>
-    <lastmod>2020-06-07T17:14:32+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
-    <loc>http://yrq110.me/</loc>
     <lastmod>2020-06-07T17:14:32+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -69,11 +84,6 @@
   </url><url>
     <loc>http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/</loc>
     <lastmod>2020-05-06T19:15:03+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
-    <loc>http://yrq110.me/categories/computer-graphics/</loc>
-    <lastmod>2020-05-05T14:26:32+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url><url>
