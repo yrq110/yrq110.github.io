@@ -3,7 +3,37 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>http://yrq110.me/post/</loc>
-    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/categories/</loc>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/categories/computer-graphics/</loc>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/tags/</loc>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/tags/webgpu/</loc>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/post/computer-graphics/webgpu-explainer/</loc>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url><url>
+    <loc>http://yrq110.me/</loc>
+    <lastmod>2021-07-11T00:27:25+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url><url>
@@ -12,27 +42,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url><url>
-    <loc>http://yrq110.me/categories/</loc>
-    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
-    <loc>http://yrq110.me/categories/computer-graphics/</loc>
-    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
-    <loc>http://yrq110.me/tags/</loc>
-    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
     <loc>http://yrq110.me/post/computer-graphics/camera-calibration-basic/</loc>
-    <lastmod>2021-05-14T16:32:20+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
-    <loc>http://yrq110.me/</loc>
     <lastmod>2021-05-14T16:32:20+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -248,11 +258,6 @@
     <priority>0.5</priority>
   </url><url>
     <loc>http://yrq110.me/tags/gpu/</loc>
-    <lastmod>2019-10-28T20:44:07+08:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url><url>
-    <loc>http://yrq110.me/tags/webgpu/</loc>
     <lastmod>2019-10-28T20:44:07+08:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

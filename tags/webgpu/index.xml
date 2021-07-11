@@ -6,7 +6,22 @@
     <description>Recent content in webgpu on ￥ЯႭ1I0</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Mon, 28 Oct 2019 20:44:07 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/webgpu/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 11 Jul 2021 00:27:25 +0800</lastBuildDate><atom:link href="http://yrq110.me/tags/webgpu/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>WebGPU导游手册</title>
+      <link>http://yrq110.me/post/computer-graphics/webgpu-explainer/</link>
+      <pubDate>Sun, 11 Jul 2021 00:27:25 +0800</pubDate>
+      
+      <guid>http://yrq110.me/post/computer-graphics/webgpu-explainer/</guid>
+      <description>&lt;p&gt;解释部分WebGPU设计的核心内容，方便理解下一代Web图形技术&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;与WebGL的差异&lt;/li&gt;
+&lt;li&gt;GPU Buffer的可见性、映射与所有权&lt;/li&gt;
+&lt;li&gt;多线程&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>Web也要在GPU并行计算中分一杯羹？</title>
       <link>http://yrq110.me/post/front-end/try-gpu-operations-in-web/</link>

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>WebGPU导游手册 | ￥ЯႭ1I0</title>
+    <meta property="og:title" content="WebGPU导游手册 - ￥ЯႭ1I0">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-07-11T00:27:25&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-07-11T00:27:25&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="WebGPU导游手册">
+        
+    <meta name="author" content="yrq110">
+    <meta property="og:url" content="http://yrq110.me/post/computer-graphics/webgpu-explainer/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://yrq110.me/">
+                        ￥ЯႭ1I0
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://yrq110.me/">首页</a>
+                    
+                    <a  href="http://yrq110.me/archives/" title="归档">归档</a>
+                    
+                    <a  href="http://yrq110.me/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">WebGPU导游手册</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月11日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/computer-graphics'>computer-graphics</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>解释部分WebGPU设计的核心内容，方便理解下一代Web图形技术</p>
+<ul>
+<li>与WebGL的差异</li>
+<li>GPU Buffer的可见性、映射与所有权</li>
+<li>多线程</li>
+<li>&hellip;</li>
+</ul>
+<h2 id="webgl与webgpu">WebGL与WebGPU</h2>
+<ul>
+<li>它们的共同目标是让web页面使用GPU执行运算与绘制复杂图像，但通过WebGPU可以使用GPU上更高级的特性</li>
+<li>WebGL主要用来绘图，需要引入大量额外的处理才能使其进行其他类型的运算，而WebGPU优先支持的就是GPU上的通用计算(general computations)</li>
+</ul>
+<h3 id="webgpu不同于webgl的用例">WebGPU不同于WebGL的用例</h3>
+<ul>
+<li>绘制包含大量不同对象(如CAD模型)的高精细度场景</li>
+<li>执行渲染真实场景所需的高级算法</li>
+<li>在GPU上更高效的执行机器学习模型</li>
+</ul>
+<h3 id="目标">目标</h3>
+<ul>
+<li>同时支持屏上与离屏的现代图形渲染</li>
+<li>在GPU上更高效的执行通用计算任务</li>
+<li>支持针对多种底层GPU API的实现: D3D12, Metal, Vulkan</li>
+<li>提供一种人类可写的语言来配置在GPU上执行的运算</li>
+<li>尽可能地使应用能在不同的用户系统与浏览器间移植</li>
+<li>提供一个在web上暴露现代GPU能力的框架，WebGPU的结构与现在所有的底层GPU API都很相似，但没有提供他们的所有功能，在之后的计划会扩展它使其具有更现代的功能</li>
+</ul>
+<h3 id="为何不是webgl30">为何不是WebGL3.0</h3>
+<ul>
+<li>WebGL历史悠久，其设计可追溯到1992的OpenGL1.0，更远可以到1980年代的IRIS GL。这一族规范具有庞大可用的知识体系与可移植性强(OpenGL ES =&gt; WebGL)等优点。</li>
+<li>同时也意味着WebGL与现代GPU的设计相性不合，会导致一些CPU与GPU的性能问题，也使在现代的底层GPU API的上层实现WebGL变得更加困难。<a href="https://www.khronos.org/registry/webgl/specs/latest/2.0-compute/">WebGL 2.0 Compute</a>曾尝试给2.0上添加通用计算能力，但与底层图形API的相性不合使其变得很难实现</li>
+</ul>
+<h2 id="gpu-buffer">GPU Buffer</h2>
+<h3 id="gpu与cpu的内存可见性">GPU与CPU的内存可见性</h3>
+<ul>
+<li>对于独显，多数GPU分配的内存空间对于CPU是不可见的，存在于GPU的RAM(或VRAM中)</li>
+<li>对于集显，多数内存分配都使用(与CPU)相同的物理设备，但由于各种原因不会被GPU可见。为了让CPU看到GPU Buffer中的内容，它必须能<strong>被映射</strong>，使其在应用的虚拟内存空间中可用。GPUBuffer为了可被映射需要被进行特殊的分配，这会降低从GPU访问的效率</li>
+</ul>
+<p>在浏览器中，GPU驱动器会在GPU进程中被加载，因此底层的GPU Buffer仅能被映射到GPU进程的虚拟内存中，通常不会被直接映射到内容进程中，在这种结构中实现需要在GPU与内容进程间的共享内存中提供一个额外的暂存空间</p>
+<table>
+<thead>
+<tr>
+<th>&ndash;</th>
+<th>普通ArrayBuffer</th>
+<th>Shared Memory</th>
+<th>可映射的GPU buffer</th>
+<th>不可映射的GPU buffer (或纹理)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU, 内容进程中</td>
+<td>可见</td>
+<td>可见</td>
+<td>不可见</td>
+<td>不可见</td>
+</tr>
+<tr>
+<td>CPU, GPU进程中</td>
+<td>不可见</td>
+<td>可见</td>
+<td>可见</td>
+<td>不可见</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>不可见</td>
+<td>不可见</td>
+<td>可见</td>
+<td>可见</td>
+</tr>
+</tbody>
+</table>
+<h3 id="buffer映射与所有权">Buffer映射与所有权</h3>
+<p>GPUBuffer对象表示了一块可由其他GPU操作使用的内存空间。该块内存可被线性的访问，与GPUTexture不同的是，GPUTexture纹素序列的内存布局是未知的。</p>
+<p><strong>CPU与GPU间的所有权传递</strong></p>
+<p>为了可移植性与一致性，WebGPU避免了几乎所有的数据竞争。由于某些驱动器会需要额外的<strong>共享内存</strong>功能，因此映射buffer上的数据竞争会提高不可移植的风险。这就是为何GPUBuffer的映射通过CPU与GPU间的所有权转移来完成，<strong>同一时刻仅有一方可以访问，因此不会存在竞态</strong></p>
+<p>当应用请求去映射一个buffer时，会初始化将buffer所有权到CPU的转移。此时可能GPU在该buffer上还需要执行一些操作，则此次转移需要等待所有之前入队的GPU操作全部完成。这就是为何<strong>映射buffer是异步操作</strong>。</p>
+<p>当CPU中的应用使用完buffer后，可以通过<strong>取消映射</strong>来将所有权还给GPU，该操作时立即执行，使应用失去在CPU中对该buffer的所有访问权限。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myMapReadBuffer</span> <span style="color:#f92672">=</span> ...;
+<span style="color:#66d9ef">await</span> <span style="color:#a6e22e">myMapReadBuffer</span>.<span style="color:#a6e22e">mapAsync</span>(<span style="color:#a6e22e">GPUMapMode</span>.<span style="color:#a6e22e">READ</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">4</span>);
+<span style="color:#75715e">// Do something with the mapped buffer.
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">buffer</span>.<span style="color:#a6e22e">unmap</span>();
+</code></pre></div><p>将所有权转移给CPU时，可能需要从底层映射的Buffer(GPU进程)复制到内容进程可见的共享内存。为了避免不必要的复制，应用程序可以在调用GPUBuffer.mapAsync时指定它感兴趣的范围。</p>
+<p>当GPUBuffer被CPU所拥有时，不能使用它提交任何设备上的操作，否则会出现校验错误，但可以用它来记录GPUCommandBuffer指令。</p>
+<p><strong>可映射buffer的创建</strong></p>
+<p>GPUBuffer底层buffer的物理内存位置取决于是否可映射与是否可映射用于读取或写入(比如底层API对于CPU缓存的行为进行了部分控制)。</p>
+<p>目前可映射buffer只能用于传输数据(因此除了MAP_*外只能包含COPY_SRC或COPY_DST的用法)。这就是为何应用必须在buffer创建时通过互斥的GPUBufferUsage.MAP_READ与GPUBufferUsage.MAP_WRITE标记指明其是可映射的:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myMapReadBuffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBuffer</span>({
+    <span style="color:#a6e22e">usage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">MAP_READ</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">COPY_DST</span>,
+    <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1000</span>,
+});
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myMapWriteBuffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBuffer</span>({
+    <span style="color:#a6e22e">usage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">MAP_WRITE</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">COPY_SRC</span>,
+    <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1000</span>,
+});
+</code></pre></div><p><strong>访问映射buffer</strong></p>
+<p>一旦一个GPUBuffer被映射了，则可以通过JS调用<code>GPUBuffer.getMappedRange</code>来访问其内存，返回一个ArrayBuffer对象。在调用GPUBuffer.unmap或GPUBuffer.destroy分离方法前均为可用的状态。</p>
+<p>这些ArrayBuffer并不是新分配的内存，而是指向内容进程中可用的共享内存指针。</p>
+<p>当所有权转移给GPU时，需要一份从共享内存到底层映射buffer的拷贝(PS:用来更新底层buffer)，<code>GPUBuffer.getMappedRange</code>可以得到用于映射的一个自定义范围的buffer(PS:共享内存中的buffer)，这样浏览器就知道底层buffer中哪部分已经无效，哪部分需要通过内存映射进行更新。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myMapReadBuffer</span> <span style="color:#f92672">=</span> ...;
+<span style="color:#66d9ef">await</span> <span style="color:#a6e22e">myMapReadBuffer</span>.<span style="color:#a6e22e">mapAsync</span>(<span style="color:#a6e22e">GPUMapMode</span>.<span style="color:#a6e22e">READ</span>);
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">myMapReadBuffer</span>.<span style="color:#a6e22e">getMappedRange</span>();
+<span style="color:#75715e">// Do something with the data
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">myMapReadBuffer</span>.<span style="color:#a6e22e">unmap</span>();
+</code></pre></div><p><strong>创建时映射buffer</strong></p>
+<p>一个常见需求是在创建GPUBuffer的同时就填充一些数据，可以通过四步实现: 创建底层buffer=&gt;创建映射buffer=&gt;填充映射buffer=&gt;复制映射buffer到底层buffer，这样做效率较低下。相反，可以在创建时就将buffer设为CPU所有的来实现。所有buffer可以在创建时就被映射，即是它们没有显式设置MAP_WRITE用法，即<strong>创建时映射</strong>。</p>
+<p>当一个buffer在创建时被映射时，它的行为就如映射buffer一般：使用<code>GPUBUffer.getMappedRange()</code>检索arraybuffer，使用<code>GPUBuffer.unmap()</code>将所有权转移给GPU。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">buffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">device</span>.<span style="color:#a6e22e">createBuffer</span>({
+    <span style="color:#a6e22e">usage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">GPUBufferUsage</span>.<span style="color:#a6e22e">UNIFORM</span>,
+    <span style="color:#a6e22e">size</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">256</span>,
+    <span style="color:#a6e22e">mappedAtCreation</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+});
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">buffer</span>.<span style="color:#a6e22e">getMappedRange</span>();
+<span style="color:#75715e">// write to data
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">buffer</span>.<span style="color:#a6e22e">unmap</span>();
+</code></pre></div><h2 id="多线程">多线程</h2>
+<ul>
+<li>多线程是现代图形API的一个关键部分，允许在多个线程进行录制指令、提交工作、给GPU传递数据等任务，缓解CPU侧瓶颈</li>
+<li>WebGPU的对象本质是与浏览器GPU进程中对象关联的<strong>句柄</strong>，因此在多线程中共享他们是相对简单的。如通过postMessage将<code>GPUTexture</code>对象传递给其他线程，创建一个新的GPUTexture JS对象，包含引用同一GPU进程中对象的句柄。</li>
+<li>一些如GPUBuffer的对象存在客户端状态(client-side state)，应用程序需要在多个线程中使用这些状态，而不必使用[Transferable]语义来回postMessage这些对象(也会创建新的包装对象并破坏旧引用)。因此这些对象也可以是[Serializable]的，但拥有少量的共享状态(内容侧)，像SharedArrayBuffer。</li>
+</ul>
+<p>以GPUBuffer对象的<code>buffer state</code>为例:</p>
+<ul>
+<li>主线程: <code>const B1 = device.createBuffer(...);.</code></li>
+<li>主线程: 使用postMessage将B1传递给Worker</li>
+<li>Worker线程: 收到message -&gt; B2，<strong>虽然B2是内部序列化后得到的新对象，但共享了buffer state状态</strong></li>
+<li>Worker线程: <code>const mapPromise = B2.mapAsync()</code> -&gt; 成功，将buffer设为<code>map pending</code>状态</li>
+<li>主线程:<code>B1.mapAsync()</code> -&gt; 失败，会抛出一个异常且无法改变buffer状态</li>
+<li>主线程: 编码一些使用B1的指令:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">encoder</span>.<span style="color:#a6e22e">copyBufferToTexture</span>(<span style="color:#a6e22e">B1</span>, <span style="color:#a6e22e">T</span>);
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">commandBuffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">encoder</span>.<span style="color:#a6e22e">finish</span>();
+</code></pre></div><p>-&gt; 成功，不依赖buffer的客户端状态</p>
+</li>
+<li>主线程: <code>queue.submit(commandBuffer)</code> -&gt; 失败，<strong>产生异步的WebGPU错误，由于CPU(Worker线程)拥有当前buffer的所有权</strong></li>
+<li>Worker线程: <code>await mapPromise</code>, 写入映射内存, <code>B2.unmap()</code>(状态变为unmapped，可用于GPU操作)</li>
+<li>主线程: <code>queue.submit(commandBuffer)</code> -&gt; 成功</li>
+<li>主线程: -&gt; 成功，将buffer设为<code>map pending</code>状态</li>
+</ul>
+<h2 id="指令编码与提交">指令编码与提交</h2>
+<p>WebGPU中的许多操作都是纯GPU端操作，不使用来自CPU的数据。这些操作不是直接发出的，而是通过类似构建器的<code>GPUCommandEncoder</code>接口编码进<code>GPUCommandBuffers</code>中，接着通过<code>gpuQueue.submit()</code>发送给GPU。</p>
+<p>底层图形API也使用了这种设计，可以提供如下便利:</p>
+<ul>
+<li>command buffer的编码独立于其他状态，允许编码(与验证)工作利用多个CPU线程执行</li>
+<li>一次能提供更多的工作量，允许GPU驱动器执行更多的全局优化，尤其是在跨GPU硬件的任务调度协调方面。</li>
+</ul>
+<h2 id="canvas输出">Canvas输出</h2>
+<p>将渲染完成的内容输出到窗口中。</p>
+<h3 id="交换链">交换链</h3>
+<ul>
+<li>以如下的结构提供展示层相关的交换链与纹理资源:
+<ul>
+<li><code>canvas.getContext('gpupresent')</code>提供一个<code>GPUCanvasContext</code>对象</li>
+<li><code>GPUCanvasContext.configureSwapChain({ device, format, usage })</code>提供一个<code>GPUSwapChain</code>对象
+<ul>
+<li>将之前所有的交换链变为不可用</li>
+<li>将canvas关联到所提供的逻辑设备上</li>
+<li>为提供的纹理设置<code>GPUTextureFormat</code>与<code>GPUTextureUsage</code></li>
+</ul>
+</li>
+<li><code>GPUSwapChain.getCurrentTexture()</code>提供一个<code>GPUTexture</code>对象</li>
+</ul>
+</li>
+<li>上面这个结构与底层图形API的相关内容具有很高的兼容性
+<ul>
+<li>如vulkan中在这里的处理: 设置surface展示模式与性能参数=&gt;创建交换链=&gt;获取交换链图像=&gt;获取图像视图</li>
+</ul>
+</li>
+<li>canvas接近底层图形API中surface的概念，这样的一个平台相关的surface对象会产生一个叫做<strong>交换链</strong>的对象，来提供用于绘制的1-3个纹理中最前端(up-front)或固定列表(fixed list)的纹理</li>
+</ul>
+<h3 id="当前纹理">当前纹理</h3>
+<ul>
+<li><code>GPUSwapChain</code>通过<code>getCurrentTexture()</code>提供一个<code>当前纹理</code></li>
+<li>对于canvas元素，会返回一个用于当前帧的纹理，<code>[[currentTexture]]</code></li>
+<li>在事件循环处理的<strong>更新渲染</strong>步骤中，浏览器合成器会获取<code>[[currentTexture]]</code>的所有权来用于显示，该内部插槽中的内容会在下一帧被清空</li>
+</ul>
+<h3 id="getswapchainpreferredformat">getSwapChainPreferredFormat()</h3>
+<ul>
+<li>由于不同硬件帧缓存的差别，不同设备在展示层表面的内存布局上有不同的偏好。虽然所有系统上都可以使用任一被允许的格式，但应用可能为了节省资源会使用偏好的格式。</li>
+<li>桌面系统硬件通常偏向bgra8unorm(4 bytes in BGRA order)，而移动端硬件则偏向rgba8unorm (4 bytes in RGBA order)</li>
+<li>对于高比特位深(high-bit-depth)，不同系统也有不同的偏好格式，如rgba16float或rgb10a2unorm</li>
+</ul>
+<h2 id="绑定模型与描述符集">绑定模型与描述符集</h2>
+<p>Todo</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://gpuweb.github.io/gpuweb/explainer/#background">WebGPU Explainer</a></li>
+</ul>
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="http://yrq110.me/">yrq110</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="http://yrq110.me/post/computer-graphics/webgpu-explainer/">http://yrq110.me/post/computer-graphics/webgpu-explainer/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/front-end/try-gpu-operations-in-web/">Web也要在GPU并行计算中分一杯羹？</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/webgpu'>webgpu</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+    <div class="post bg-white">
+      <script src="https://utteranc.es/client.js"
+            repo= "yrq110/blog-comments"
+            issue-term="pathname"
+            theme="github-light"
+            crossorigin="anonymous"
+            async>
+      </script>
+    </div>
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://yrq110.me/">￥ЯႭ1I0 By yrq110</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-131471642-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://yrq110.me/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/webgpu-explainer/" title="WebGPU导游手册">WebGPU导游手册</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/camera-calibration-basic/" title="相机标定中的投影与畸变处理">相机标定中的投影与畸变处理</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/contents-about-blink-web-worker/" title="Blink Worker纸上谈兵">Blink Worker纸上谈兵</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-ii-transform/" title="MapboxGL简析(二)：变换">MapboxGL简析(二)：变换</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/mapboxgl-i-rendering/" title="MapboxGL简析(一)：渲染">MapboxGL简析(一)：渲染</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-iii-material/" title="深入学习Three.js核心对象之（三）Material">深入学习Three.js核心对象之（三）Material</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-ii-geometry/" title="深入学习Three.js核心对象之（二）Geometry">深入学习Three.js核心对象之（二）Geometry</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/deep-in-threejs-core-objects-i-object3d/" title="深入学习Three.js核心对象之（一）Object3D">深入学习Three.js核心对象之（一）Object3D</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/computer-graphics/euler-angles-gimbal-lock-and-quaternion/" title="欧拉角、万向节死锁与四元数">欧拉角、万向节死锁与四元数</a>
+    </li>
+    
+    <li>
+        <a href="http://yrq110.me/post/front-end/cross-domain-and-cross-document-communication/" title="Web通信中的跨文档通信">Web通信中的跨文档通信</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="http://yrq110.me/categories/computer-graphics/">computer-graphics (3)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/database/">database (2)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/devops/">devops (5)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/front-end/">front-end (26)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/go/">go (1)</a></li>
+    
+    <li><a href="http://yrq110.me/categories/practice/">practice (2)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="http://yrq110.me/tags/blink/">blink</a>
+    
+    <a href="http://yrq110.me/tags/calibration/">calibration</a>
+    
+    <a href="http://yrq110.me/tags/canvas/">canvas</a>
+    
+    <a href="http://yrq110.me/tags/chrome/">chrome</a>
+    
+    <a href="http://yrq110.me/tags/chromium/">chromium</a>
+    
+    <a href="http://yrq110.me/tags/cross-document/">cross-document</a>
+    
+    <a href="http://yrq110.me/tags/css/">css</a>
+    
+    <a href="http://yrq110.me/tags/docker/">docker</a>
+    
+    <a href="http://yrq110.me/tags/dom/">dom</a>
+    
+    <a href="http://yrq110.me/tags/e2e/">e2e</a>
+    
+    <a href="http://yrq110.me/tags/electron/">electron</a>
+    
+    <a href="http://yrq110.me/tags/event-loop/">event-loop</a>
+    
+    <a href="http://yrq110.me/tags/fabric/">fabric</a>
+    
+    <a href="http://yrq110.me/tags/git/">git</a>
+    
+    <a href="http://yrq110.me/tags/git-submodule/">git-submodule</a>
+    
+    <a href="http://yrq110.me/tags/github/">github</a>
+    
+    <a href="http://yrq110.me/tags/gpu/">gpu</a>
+    
+    <a href="http://yrq110.me/tags/houdini/">houdini</a>
+    
+    <a href="http://yrq110.me/tags/hugo/">hugo</a>
+    
+    <a href="http://yrq110.me/tags/iframe/">iframe</a>
+    
+    <a href="http://yrq110.me/tags/konva/">konva</a>
+    
+    <a href="http://yrq110.me/tags/lerna/">lerna</a>
+    
+    <a href="http://yrq110.me/tags/libuv/">libuv</a>
+    
+    <a href="http://yrq110.me/tags/mapbox/">mapbox</a>
+    
+    <a href="http://yrq110.me/tags/maupassant/">maupassant</a>
+    
+    <a href="http://yrq110.me/tags/mongo/">mongo</a>
+    
+    <a href="http://yrq110.me/tags/mpvue/">mpvue</a>
+    
+    <a href="http://yrq110.me/tags/node/">node</a>
+    
+    <a href="http://yrq110.me/tags/offscreen-canvas/">offscreen canvas</a>
+    
+    <a href="http://yrq110.me/tags/pixi/">pixi</a>
+    
+    <a href="http://yrq110.me/tags/playwright/">playwright</a>
+    
+    <a href="http://yrq110.me/tags/postmessage/">postMessage</a>
+    
+    <a href="http://yrq110.me/tags/puppeteer/">puppeteer</a>
+    
+    <a href="http://yrq110.me/tags/quaternion/">quaternion</a>
+    
+    <a href="http://yrq110.me/tags/rendering-pipeline/">rendering pipeline</a>
+    
+    <a href="http://yrq110.me/tags/rotation/">rotation</a>
+    
+    <a href="http://yrq110.me/tags/skia/">skia</a>
+    
+    <a href="http://yrq110.me/tags/ssh/">ssh</a>
+    
+    <a href="http://yrq110.me/tags/svg/">svg</a>
+    
+    <a href="http://yrq110.me/tags/threejs/">threejs</a>
+    
+    <a href="http://yrq110.me/tags/typescript/">typescript</a>
+    
+    <a href="http://yrq110.me/tags/vue/">vue</a>
+    
+    <a href="http://yrq110.me/tags/web-worker/">web worker</a>
+    
+    <a href="http://yrq110.me/tags/webgpu/">webgpu</a>
+    
+    <a href="http://yrq110.me/tags/websocket/">websocket</a>
+    
+    <a href="http://yrq110.me/tags/wxapp/">wxapp</a>
+    
+    <a href="http://yrq110.me/tags/yarn/">yarn</a>
+    
+</div>
+    </section>
+
+    
+<section class="widget">
+    <h3 class="widget-title">友情链接</h3>
+    <ul class="widget-list">
+        
+        <li>
+            <a target="_blank" href="https://taoyuan.fun/" title="taoyuan">taoyuan</a>
+        </li>
+        
+        <li>
+            <a target="_blank" href="https://blog.cshayne.cn/" title="cshayne">cshayne</a>
+        </li>
+        
+    </ul>
+</section>
+
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://yrq110.me/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
